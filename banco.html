@@ -15,22 +15,29 @@
             border-radius: 15px; 
             background-color: #f4faff; 
             margin-bottom: 20px; 
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            position: relative; /* Para posicionar o botão de deletar */
         }
         .materia-tag { font-weight: bold; color: #2980b9; margin-bottom: 10px; display: block; font-size: 14px; }
         .texto-pergunta { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; }
         .respostas-lista { display: grid; gap: 8px; }
-        .item-resposta { 
-            background: white; 
-            padding: 12px; 
-            border: 1px solid #ccc; 
-            border-radius: 10px; 
-            font-size: 15px;
-            color: #444;
-        }
-        /* Estilo para a resposta correta baseado no seu print */
+        .item-resposta { background: white; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 15px; color: #444; }
         .correta { border: 2px solid #27ae60 !important; background-color: #eafaf1 !important; color: #27ae60 !important; font-weight: bold; }
         
+        /* Botão Deletar Individual */
+        .btn-deletar-individual {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
         .btn-voltar { 
             width: 100%; padding: 15px; border: none; border-radius: 12px; 
             background-color: #27ae60; color: white; cursor: pointer; 
@@ -51,7 +58,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
@@ -65,29 +72,44 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+  // Função para Deletar com Dupla Confirmação
+  window.deletarPergunta = async (id) => {
+    const confirmacao = confirm("Tem certeza que deseja excluir a questão " + id + "?");
+    
+    if (confirmacao) {
+      try {
+        await deleteDoc(doc(db, "questoes", id));
+        alert("Questão " + id + " removida com sucesso!");
+        carregarPerguntas(); // Recarrega a lista automaticamente
+      } catch (e) {
+        alert("Erro ao deletar: " + e.message);
+      }
+    }
+  };
+
   async function carregarPerguntas() {
     const listaDiv = document.getElementById('lista-perguntas');
+    listaDiv.innerHTML = "<p style='text-align: center;'>Carregando...</p>";
     
     try {
-      // Busca a coleção 'questoes' (conforme seu print do console)
       const querySnapshot = await getDocs(collection(db, "questoes"));
       
       if (querySnapshot.empty) {
-        listaDiv.innerHTML = "<p style='text-align:center;'>Nenhuma pergunta cadastrada ainda.</p>";
+        listaDiv.innerHTML = "<p style='text-align:center;'>Nenhuma pergunta cadastrada.</p>";
         return;
       }
 
-      listaDiv.innerHTML = ""; // Remove a mensagem de carregamento
+      listaDiv.innerHTML = "";
 
       querySnapshot.forEach((doc) => {
         const d = doc.data();
         const id = doc.id;
         
-        // Criando o card visual
         const card = document.createElement('div');
         card.className = 'pergunta-card';
         
         card.innerHTML = `
+          <button class="btn-deletar-individual" onclick="deletarPergunta('${id}')">Excluir</button>
           <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
           <div class="texto-pergunta">${d.pergunta}</div>
           <div class="respostas-lista">
@@ -101,8 +123,7 @@
       });
 
     } catch (e) {
-      console.error(e);
-      listaDiv.innerHTML = `<p style="color:red; text-align:center;">Erro ao carregar dados: ${e.message}</p>`;
+      listaDiv.innerHTML = `<p style="color:red; text-align:center;">Erro: ${e.message}</p>`;
     }
   }
 
