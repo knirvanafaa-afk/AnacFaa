@@ -66,5 +66,39 @@
     }
 </script>
 
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = { /* SEU CONFIG AQUI */ };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Preenche a lista de matérias automaticamente
+  async function carregarMaterias() {
+    const materiasSet = new Set();
+    const querySnapshot = await getDocs(collection(db, "questoes"));
+    querySnapshot.forEach(doc => materiasSet.add(doc.data().materia));
+    
+    const select = document.getElementById('materia_select'); // Crie um <select id="materia_select">
+    materiasSet.forEach(mat => {
+      let opt = document.createElement('option');
+      opt.value = mat;
+      opt.innerHTML = mat;
+      select.appendChild(opt);
+    });
+  }
+
+  window.iniciarProva = () => {
+    const materia = document.getElementById('materia_select').value;
+    const qtd = document.getElementById('qtd_select').value;
+    // Salva a escolha para usar na próxima página
+    sessionStorage.setItem('config_simulado', JSON.stringify({ materia, qtd }));
+    window.location.href = 'prova.html';
+  };
+  
+  carregarMaterias();
+</script>
+
 </body>
 </html>
