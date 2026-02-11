@@ -1,0 +1,34 @@
+let perguntasCarregadas = [];
+let tempoInicio = Date.now();
+
+async function carregarSimulado() {
+    const config = JSON.parse(sessionStorage.getItem('config_simulado'));
+    // 1. Busca questões da matéria X no Firebase
+    // 2. Embaralha o array de perguntas
+    // 3. Corta o array pelo tamanho da 'qtd' selecionada
+    exibirQuestoes();
+}
+
+function finalizarProva() {
+    let acertos = 0;
+    let total = perguntasCarregadas.length;
+    let tempoFim = Date.now();
+    let tempoGasto = calcularTempo(tempoInicio, tempoFim);
+
+    perguntasCarregadas.forEach((q, index) => {
+        const selecionada = document.querySelector(`input[name="q${index}"]:checked`);
+        const card = document.getElementById(`card${index}`);
+        
+        if (selecionada && selecionada.value == q.correta) {
+            acertos++;
+            card.style.border = "2px solid #27ae60"; // Verde se acertou
+            card.innerHTML += " ✅ Correto!";
+        } else {
+            card.style.border = "2px solid #e74c3c"; // Vermelho se errou
+            card.innerHTML += ` ❌ Errou! A correta era: ${q['r' + q.correta]}`;
+        }
+    });
+
+    const percentual = (acertos / total) * 100;
+    alert(`RELATÓRIO FINAL:\nCorretas: ${acertos}\nPercentual: ${percentual.toFixed(1)}%\nTempo: ${tempoGasto}`);
+}
