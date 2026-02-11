@@ -5,27 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulado - Área do Aluno</title>
     <style>
-        /* CSS IDENTICO AO SEU PAINEL */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
         .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #333; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
         
-        /* USANDO SUAS CORES */
         .section-config { border: 2px solid #2ecc71; padding: 20px; border-radius: 15px; background-color: #fafffa; margin-bottom: 20px; }
-        .section-prova { border: 2px solid #3498db; padding: 20px; border-radius: 15px; background-color: #f4faff; }
         
         label { display: block; margin-top: 10px; font-weight: bold; color: #444; }
-        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+        select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
         
-        .btn-iniciar { background-color: #27ae60; color: white; width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 15px; }
-        
-        /* Estilo para as opções da prova */
-        .opcao-box { background: white; border: 1px solid #ccc; padding: 15px; margin-top: 10px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
-        .opcao-box:hover { border-color: #3498db; }
-        
-        /* Simbolos de Correção */
-        .correto { border: 2px solid #2ecc71 !important; background-color: #eafff0 !important; }
-        .errado { border: 2px solid #e74c3c !important; background-color: #fff0f0 !important; }
+        .btn-iniciar { background-color: #27ae60; color: white; width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 20px; }
     </style>
 </head>
 <body>
@@ -33,67 +22,90 @@
 <div class="container">
     <h2>PROVA SIMULADA</h2>
 
-    <div class="section-config" id="config-area">
+    <div class="section-config">
         <label>Escolha a Matéria</label>
-        <input type="text" id="materia_estudo" placeholder="Ex: Célula">
+        <select id="materia_estudo">
+            <option value="">Carregando matérias...</option>
+        </select>
         
         <label>Quantidade de Questões</label>
         <select id="qtd_questoes">
+            <option value="5">5 Perguntas</option>
             <option value="10">10 Perguntas</option>
             <option value="20">20 Perguntas</option>
             <option value="30">30 Perguntas</option>
             <option value="50">50 Perguntas</option>
-            <option value="100">100 Perguntas</option>
         </select>
 
-        <button class="btn-iniciar" onclick="gerarSimulado()">Iniciar Prova</button>
-    </div>
-
-    <div class="section-prova" id="prova-area" style="display:none;">
-        <div id="enunciado" style="font-weight: bold; margin-bottom: 15px;"></div>
-        <div id="opcoes-container"></div>
-        <button class="btn-iniciar" id="btn-proxima" style="background-color: #3498db; display:none;" onclick="proximaQuestao()">Próxima Questão</button>
+        <button class="btn-iniciar" onclick="iniciarProva()">Iniciar Prova</button>
     </div>
 </div>
-
-<script>
-    // Aqui entrará a lógica que busca no Firebase 
-    // Por enquanto, o layout está pronto conforme você pediu.
-    function gerarSimulado() {
-        document.getElementById('config-area').style.display = 'none';
-        document.getElementById('prova-area').style.display = 'block';
-        alert("Simulado Iniciado! Buscando questões...");
-    }
-</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  const firebaseConfig = { /* SEU CONFIG AQUI */ };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
+    authDomain: "simulado-2151c.firebaseapp.com",
+    projectId: "simulado-2151c",
+    storageBucket: "simulado-2151c.firebasestorage.app",
+    messagingSenderId: "11141253917",
+    appId: "1:11141253917:web:0a98cf7b340e460c366ff4"
+  };
+
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // Preenche a lista de matérias automaticamente
+  // Função que busca as matérias no banco e preenche o Select
   async function carregarMaterias() {
-    const materiasSet = new Set();
-    const querySnapshot = await getDocs(collection(db, "questoes"));
-    querySnapshot.forEach(doc => materiasSet.add(doc.data().materia));
-    
-    const select = document.getElementById('materia_select'); // Crie um <select id="materia_select">
-    materiasSet.forEach(mat => {
-      let opt = document.createElement('option');
-      opt.value = mat;
-      opt.innerHTML = mat;
-      select.appendChild(opt);
-    });
+    const select = document.getElementById('materia_estudo');
+    try {
+        const querySnapshot = await getDocs(collection(db, "questoes"));
+        const materiasSet = new Set();
+        
+        querySnapshot.forEach(doc => {
+            const dados = doc.data();
+            if(dados.materia) {
+                materiasSet.add(dados.materia);
+            }
+        });
+
+        select.innerHTML = ""; // Limpa o texto de carregamento
+        
+        if(materiasSet.size === 0) {
+            select.innerHTML = "<option value=''>Nenhuma matéria no banco</option>";
+            return;
+        }
+
+        materiasSet.forEach(mat => {
+            let opt = document.createElement('option');
+            opt.value = mat;
+            opt.innerHTML = mat;
+            select.appendChild(opt);
+        });
+
+    } catch (e) {
+        console.error("Erro ao carregar matérias:", e);
+        select.innerHTML = "<option value=''>Erro ao carregar banco</option>";
+    }
   }
 
+  // Função para salvar a escolha e mudar de página
   window.iniciarProva = () => {
-    const materia = document.getElementById('materia_select').value;
-    const qtd = document.getElementById('qtd_select').value;
-    // Salva a escolha para usar na próxima página
-    sessionStorage.setItem('config_simulado', JSON.stringify({ materia, qtd }));
+    const mat = document.getElementById('materia_estudo').value;
+    const qtd = document.getElementById('qtd_questoes').value;
+    
+    if(!mat || mat === "") {
+        alert("Por favor, selecione uma matéria!");
+        return;
+    }
+
+    // Salva na memória do navegador para a página prova.html ler
+    sessionStorage.setItem('config_materia', mat);
+    sessionStorage.setItem('config_qtd', qtd);
+    
+    // Redireciona para a página da prova
     window.location.href = 'prova.html';
   };
   
