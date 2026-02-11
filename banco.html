@@ -1,77 +1,112 @@
 <!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Banco de Dados - Questões</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; text-transform: uppercase; }
+        
+        .pergunta-card { 
+            border: 2px solid #3498db; 
+            padding: 20px; 
+            border-radius: 15px; 
+            background-color: #f4faff; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .materia-tag { font-weight: bold; color: #2980b9; margin-bottom: 10px; display: block; font-size: 14px; }
+        .texto-pergunta { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; }
+        .respostas-lista { display: grid; gap: 8px; }
+        .item-resposta { 
+            background: white; 
+            padding: 12px; 
+            border: 1px solid #ccc; 
+            border-radius: 10px; 
+            font-size: 15px;
+            color: #444;
+        }
+        /* Estilo para a resposta correta baseado no seu print */
+        .correta { border: 2px solid #27ae60 !important; background-color: #eafaf1 !important; color: #27ae60 !important; font-weight: bold; }
+        
+        .btn-voltar { 
+            width: 100%; padding: 15px; border: none; border-radius: 12px; 
+            background-color: #27ae60; color: white; cursor: pointer; 
+            font-weight: bold; text-transform: uppercase; margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
 
-<html lang="pt-br"> 
-
-<head> <meta charset="UTF-8">
-
- <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-
-<title>Banco de Questões</title> <style> body { 
-font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-background-color: #f0f2f5; 
-display: flex; justify-content: center;
-padding: 20px; }
-
- .container { 
-width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); } h2 { text-align: center; color: #333; margin-bottom: 20px; text-transform: uppercase; }
-
-.pergunta-card { border: 2px solid #3498db; padding: 20px; 
-border-radius: 15px; background-color: #f4faff; margin-bottom: 20px; } 
-.materia-tag { font-weight: bold; 
-color: #2980b9; 
-margin-bottom: 10px; display: block; } 
-.texto-pergunta { 
-font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; } 
-
-.respostas-lista { 
-list-style: none; padding: 0; } 
-.respostas-lista li { 
-background: white; 
-padding: 10px; 
-border: 1px solid #ccc; 
-border-radius: 10px; 
-margin-bottom: 5px; font-size: 14px; } 
-
-.correta { border: 2px solid #27ae60 !important; 
-background-color: #eafaf1 !important; font-weight: bold; } 
-.btn-voltar { 
-width: 100%; padding: 15px; 
-border: none; 
-border-radius: 12px; 
-background-color: #27ae60; 
-color: white; cursor: pointer; 
-font-weight: bold; text-transform: uppercase; 
-margin-bottom: 20px; } 
-</style>
-
-</head> <body>
-
-<div class="container"> <button class="btn-voltar" onclick="window.location.href='index.html'">⬅ Voltar ao Cadastro</button> <h2>Perguntas Cadastradas</h2>
-
-<div id="lista-perguntas"> <p style="text-align: center;">Carregando banco de dados...</p> </div>
-
+<div class="container">
+    <button class="btn-voltar" onclick="window.location.href='index.html'">⬅ Voltar ao Painel</button>
+    <h2>Questões no Banco</h2>
+    
+    <div id="lista-perguntas">
+        <p style="text-align: center; color: #666;">Buscando informações no banco de dados...</p>
+    </div>
 </div>
 
-<script type="module"> import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"; import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = { apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY", authDomain: "simulado-2151c.firebaseapp.com", projectId: "simulado-2151c", storageBucket: "simulado-2151c.firebasestorage.app", messagingSenderId: "11141253917", appId: 
-"1:11141253917:web:0a98cf7b340e460c366ff4" };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
+    authDomain: "simulado-2151c.firebaseapp.com",
+    projectId: "simulado-2151c",
+    storageBucket: "simulado-2151c.firebasestorage.app",
+    messagingSenderId: "11141253917",
+    appId: "1:11141253917:web:0a98cf7b340e460c366ff4"
+  };
 
-const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-async function carregarPerguntas() { const listaDiv = document.getElementById('lista-perguntas'); try { const querySnapshot = await getDocs(collection(db, "questoes")); listaDiv.innerHTML = ""; // Limpa o carregando
+  async function carregarPerguntas() {
+    const listaDiv = document.getElementById('lista-perguntas');
+    
+    try {
+      // Busca a coleção 'questoes' (conforme seu print do console)
+      const querySnapshot = await getDocs(collection(db, "questoes"));
+      
+      if (querySnapshot.empty) {
+        listaDiv.innerHTML = "<p style='text-align:center;'>Nenhuma pergunta cadastrada ainda.</p>";
+        return;
+      }
 
-if (querySnapshot.empty) { listaDiv.innerHTML = &quot;&lt;p&gt;Nenhuma pergunta encontrada.&lt;/p&gt;&quot;; return; } querySnapshot.forEach((doc) =&gt; { const d = doc.data(); const id = doc.id; // Monta o layout do card igual à sua interface const card = ` &lt;div class=&quot;pergunta-card&quot;&gt; &lt;span class=&quot;materia-tag&quot;&gt;#${id} - Matéria: ${d.materia}&lt;/span&gt; &lt;div class=&quot;texto-pergunta&quot;&gt;${d.pergunta}&lt;/div&gt; &lt;ul class=&quot;respostas-lista&quot;&gt; &lt;li class=&quot;${d.correta == &#39;1&#39; ? &#39;correta&#39; : &#39;&#39;}&quot;&gt;1: ${d.r1}&lt;/li&gt; &lt;li class=&quot;${d.correta == &#39;2&#39; ? &#39;correta&#39; : &#39;&#39;}&quot;&gt;2: ${d.r2}&lt;/li&gt; &lt;li class=&quot;${d.correta == &#39;3&#39; ? &#39;correta&#39; : &#39;&#39;}&quot;&gt;3: ${d.r3}&lt;/li&gt; &lt;li class=&quot;${d.correta == &#39;4&#39; ? &#39;correta&#39; : &#39;&#39;}&quot;&gt;4: ${d.r4}&lt;/li&gt; &lt;/ul&gt; &lt;/div&gt; `; listaDiv.innerHTML += card; }); } catch (e) { listaDiv.innerHTML = &quot;Erro ao carregar: &quot; + e.message; }
+      listaDiv.innerHTML = ""; // Remove a mensagem de carregamento
 
-}
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        const id = doc.id;
+        
+        // Criando o card visual
+        const card = document.createElement('div');
+        card.className = 'pergunta-card';
+        
+        card.innerHTML = `
+          <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
+          <div class="texto-pergunta">${d.pergunta}</div>
+          <div class="respostas-lista">
+            <div class="item-resposta ${d.correta == '1' ? 'correta' : ''}">1) ${d.r1}</div>
+            <div class="item-resposta ${d.correta == '2' ? 'correta' : ''}">2) ${d.r2}</div>
+            <div class="item-resposta ${d.correta == '3' ? 'correta' : ''}">3) ${d.r3}</div>
+            <div class="item-resposta ${d.correta == '4' ? 'correta' : ''}">4) ${d.r4}</div>
+          </div>
+        `;
+        listaDiv.appendChild(card);
+      });
 
-carregarPerguntas(); 
+    } catch (e) {
+      console.error(e);
+      listaDiv.innerHTML = `<p style="color:red; text-align:center;">Erro ao carregar dados: ${e.message}</p>`;
+    }
+  }
 
+  carregarPerguntas();
 </script>
-
-</body> 
-
+</body>
 </html>
-
-
-
