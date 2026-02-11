@@ -1,34 +1,198 @@
-let perguntasCarregadas = [];
-let tempoInicio = Date.now();
-
-async function carregarSimulado() {
-    const config = JSON.parse(sessionStorage.getItem('config_simulado'));
-    // 1. Busca questões da matéria X no Firebase
-    // 2. Embaralha o array de perguntas
-    // 3. Corta o array pelo tamanho da 'qtd' selecionada
-    exibirQuestoes();
-}
-
-function finalizarProva() {
-    let acertos = 0;
-    let total = perguntasCarregadas.length;
-    let tempoFim = Date.now();
-    let tempoGasto = calcularTempo(tempoInicio, tempoFim);
-
-    perguntasCarregadas.forEach((q, index) => {
-        const selecionada = document.querySelector(`input[name="q${index}"]:checked`);
-        const card = document.getElementById(`card${index}`);
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado em Andamento</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 700px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; text-transform: uppercase; margin-bottom: 25px; }
         
-        if (selecionada && selecionada.value == q.correta) {
+        .pergunta-card { 
+            border: 2px solid #3498db; 
+            padding: 20px; 
+            border-radius: 15px; 
+            background-color: #f4faff; 
+            margin-bottom: 20px; 
+            transition: 0.3s;
+        }
+
+        .texto-enunciado { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; display: block; }
+
+        .opcao { 
+            display: flex; 
+            align-items: center; 
+            background: white; 
+            border: 1px solid #ccc; 
+            padding: 12px; 
+            margin-top: 8px; 
+            border-radius: 10px; 
+            cursor: pointer; 
+        }
+        .opcao:hover { border-color: #3498db; }
+        .opcao input { margin-right: 12px; transform: scale(1.2); cursor: pointer; }
+
+        /* Cores de correção */
+        .correta { border: 2px solid #2ecc71 !important; background-color: #eafff0 !important; }
+        .errada { border: 2px solid #e74c3c !important; background-color: #fff0f0 !important; }
+
+        .btn-finalizar { 
+            background-color: #27ae60; color: white; width: 100%; padding: 18px; 
+            border: none; border-radius: 12px; cursor: pointer; 
+            font-weight: bold; font-size: 18px; text-transform: uppercase;
+            margin-top: 10px;
+        }
+
+        #resultado-caixa { 
+            display: none; 
+            background: #2c3e50; color: white; 
+            padding: 25px; border-radius: 15px; 
+            margin-top: 30px; text-align: center;
+        }
+        .btn-voltar { background: #95a5a6; color: white; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 id="titulo-prova">Carregando Questões...</h2>
+    
+    <div id="questoes-container">
+        </div>
+
+    <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
+    
+    <div id="resultado-caixa">
+        <h3 style="margin-top:0;">📊 RESULTADO FINAL</h3>
+        <p id="res-acertos" style="font-size: 20px;"></p>
+        <p id="res-porcentagem"></p>
+        <p id="res-tempo"></p>
+        <button class="btn-voltar" onclick="window.location.href='alunos.html'">Fazer Novo Simulado</button>
+    </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
+    authDomain: "simulado-2151c.firebaseapp.com",
+    projectId: "simulado-2151c",
+    storageBucket: "simulado-2151c.firebasestorage.app",
+    messagingSenderId: "11141253917",
+    appId: "1:11141253917:web:0a98cf7b340e460c366ff4"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let perguntasSorteador = [];
+  let tempoInicio = Date.now();
+
+  async function montarSimulado() {
+    // Busca as configurações salvas na página anterior
+    const materiaAlvo = sessionStorage.getItem('config_materia');
+    const qtdAlvo = parseInt(sessionStorage.getItem('config_qtd'));
+    
+    if(!materiaAlvo) {
+        window.location.href = 'alunos.html';
+        return;
+    }
+
+    document.getElementById('titulo-prova').innerText = "Matéria: " + materiaAlvo;
+
+    try {
+        // Busca apenas questões daquela matéria
+        const q = query(collection(db, "questoes"), where("materia", "==", materiaAlvo));
+        const querySnapshot = await getDocs(q);
+        let todasDaMateria = [];
+        
+        querySnapshot.forEach(doc => {
+            todasDaMateria.push({ id: doc.id, ...doc.data() });
+        });
+
+        // 1. EMBARALHAR ALEATORIAMENTE
+        todasDaMateria.sort(() => Math.random() - 0.5);
+        
+        // 2. CORTAR PELA QUANTIDADE ESCOLHIDA
+        perguntasSorteador = todasDaMateria.slice(0, qtdAlvo);
+
+        if(perguntasSorteador.length === 0) {
+            document.getElementById('questoes-container').innerHTML = "Nenhuma questão encontrada para esta matéria.";
+            return;
+        }
+
+        exibirQuestoes();
+    } catch (e) {
+        alert("Erro ao carregar banco: " + e.message);
+    }
+  }
+
+  function exibirQuestoes() {
+    const container = document.getElementById('questoes-container');
+    container.innerHTML = "";
+    
+    perguntasSorteador.forEach((q, index) => {
+        container.innerHTML += `
+            <div class="pergunta-card" id="card-${index}">
+                <span class="texto-enunciado">${index + 1}) ${q.pergunta}</span>
+                
+                <label class="opcao"><input type="radio" name="p${index}" value="1"> ${q.r1}</label>
+                <label class="opcao"><input type="radio" name="p${index}" value="2"> ${q.r2}</label>
+                <label class="opcao"><input type="radio" name="p${index}" value="3"> ${q.r3}</label>
+                <label class="opcao"><input type="radio" name="p${index}" value="4"> ${q.r4}</label>
+                
+                <div id="feedback-${index}" style="margin-top:10px; font-weight:bold; display:none;"></div>
+            </div>
+        `;
+    });
+  }
+
+  window.finalizarProva = () => {
+    let acertos = 0;
+    let tempoFim = Date.now();
+    
+    // Cálculo do tempo gasto
+    let totalSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+    let min = Math.floor(totalSegundos / 60);
+    let seg = totalSegundos % 60;
+    let tempoFormatado = `${min}min ${seg}s`;
+
+    perguntasSorteador.forEach((q, index) => {
+        const selecionado = document.querySelector(`input[name="p${index}"]:checked`);
+        const card = document.getElementById(`card-${index}`);
+        const feedback = document.getElementById(`feedback-${index}`);
+        const valorMarcado = selecionado ? selecionado.value : "nenhum";
+
+        feedback.style.display = "block";
+
+        if(valorMarcado == q.correta) {
             acertos++;
-            card.style.border = "2px solid #27ae60"; // Verde se acertou
-            card.innerHTML += " ✅ Correto!";
+            card.className = "pergunta-card correta";
+            feedback.innerHTML = "✅ Você acertou!";
+            feedback.style.color = "#27ae60";
         } else {
-            card.style.border = "2px solid #e74c3c"; // Vermelho se errou
-            card.innerHTML += ` ❌ Errou! A correta era: ${q['r' + q.correta]}`;
+            card.className = "pergunta-card errada";
+            feedback.innerHTML = `❌ Errou. A resposta correta era a Opção ${q.correta}`;
+            feedback.style.color = "#e74c3c";
         }
     });
 
-    const percentual = (acertos / total) * 100;
-    alert(`RELATÓRIO FINAL:\nCorretas: ${acertos}\nPercentual: ${percentual.toFixed(1)}%\nTempo: ${tempoGasto}`);
-}
+    // Mostra o relatório final
+    document.getElementById('btn-concluir').style.display = "none";
+    const caixaRes = document.getElementById('resultado-caixa');
+    caixaRes.style.display = "block";
+    
+    document.getElementById('res-acertos').innerText = `Acertos: ${acertos} de ${perguntasSorteador.length}`;
+    document.getElementById('res-porcentagem').innerText = `Desempenho: ${((acertos/perguntasSorteador.length)*100).toFixed(1)}%`;
+    document.getElementById('res-tempo').innerText = `Tempo gasto: ${tempoFormatado}`;
+
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  };
+
+  montarSimulado();
+</script>
+</body>
+</html>
