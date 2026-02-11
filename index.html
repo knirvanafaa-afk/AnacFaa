@@ -151,6 +151,8 @@
 
    <button class="btn-cadastrar" onclick="window.location.href='alunos.html'">Simulado</button>
 
+<button class="btn-cadastrar" onclick="window.location.href='alunos.html'">Cadastro de perguntas</button>
+
         </div>
     </div>
 
@@ -164,6 +166,18 @@
         </div>
     </div>
 </div>
+
+<script type="module"> import { initializeApp } from ""; import { getFirestore, doc, setDoc } from "";
+
+const firebaseConfig = { apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY", authDomain: "https://www.google.com/search?q=simulado-2151c.firebaseapp.com", projectId: "simulado-2151c", storageBucket: "simulado-2151c.firebasestorage.app", messagingSenderId: "11141253917", appId: "1:11141253917:web:0a98cf7b340e460c366ff4" };
+
+const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+document.getElementById('btn_salvar').onclick = async () => { const num = document.getElementById('num_pergunta').value; const mat = document.getElementById('materia').value; const per = document.getElementById('pergunta').value; const r1 = document.getElementById('r1').value; const r2 = document.getElementById('r2').value; const r3 = document.getElementById('r3').value; const r4 = document.getElementById('r4').value; const cor = document.getElementById('correta').value;
+
+if (!num || !mat || !per || !r1 || !r2 || !r3 || !r4) { alert("Atencao: Preencha todos os campos!"); return; }
+
+try { await setDoc(doc(db, "questoes", num), { materia: mat, pergunta: per, r1: r1, r2: r2, r3: r3, r4: r4, correta: cor }); alert("Pergunta " + num + " cadastrada com sucesso!"); document.getElementById('num_pergunta').value = ""; document.getElementById('materia').value = ""; document.getElementById('pergunta').value = ""; document.getElementById('r1').value = ""; document.getElementById('r2').value = ""; document.getElementById('r3').value = ""; document.getElementById('r4').value = ""; } catch (e) { alert("Erro ao gravar: " + e.message); } }; </script>
 
 </body>
 </html>
