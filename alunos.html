@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulado - Área do Aluno</title>
+    <style>
+        /* CSS IDENTICO AO SEU PAINEL */
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* USANDO SUAS CORES */
+        .section-config { border: 2px solid #2ecc71; padding: 20px; border-radius: 15px; background-color: #fafffa; margin-bottom: 20px; }
+        .section-prova { border: 2px solid #3498db; padding: 20px; border-radius: 15px; background-color: #f4faff; }
+        
+        label { display: block; margin-top: 10px; font-weight: bold; color: #444; }
+        input, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+        
+        .btn-iniciar { background-color: #27ae60; color: white; width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 15px; }
+        
+        /* Estilo para as opções da prova */
+        .opcao-box { background: white; border: 1px solid #ccc; padding: 15px; margin-top: 10px; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .opcao-box:hover { border-color: #3498db; }
+        
+        /* Simbolos de Correção */
+        .correto { border: 2px solid #2ecc71 !important; background-color: #eafff0 !important; }
+        .errado { border: 2px solid #e74c3c !important; background-color: #fff0f0 !important; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>PROVA SIMULADA</h2>
+
+    <div class="section-config" id="config-area">
+        <label>Escolha a Matéria</label>
+        <input type="text" id="materia_estudo" placeholder="Ex: Célula">
+        
+        <label>Quantidade de Questões</label>
+        <select id="qtd_questoes">
+            <option value="10">10 Perguntas</option>
+            <option value="20">20 Perguntas</option>
+            <option value="30">30 Perguntas</option>
+            <option value="50">50 Perguntas</option>
+            <option value="100">100 Perguntas</option>
+        </select>
+
+        <button class="btn-iniciar" onclick="gerarSimulado()">Iniciar Prova</button>
+    </div>
+
+    <div class="section-prova" id="prova-area" style="display:none;">
+        <div id="enunciado" style="font-weight: bold; margin-bottom: 15px;"></div>
+        <div id="opcoes-container"></div>
+        <button class="btn-iniciar" id="btn-proxima" style="background-color: #3498db; display:none;" onclick="proximaQuestao()">Próxima Questão</button>
+    </div>
+</div>
+
+<script>
+    // Aqui entrará a lógica que busca no Firebase 
+    // Por enquanto, o layout está pronto conforme você pediu.
+    function gerarSimulado() {
+        document.getElementById('config-area').style.display = 'none';
+        document.getElementById('prova-area').style.display = 'block';
+        alert("Simulado Iniciado! Buscando questões...");
+    }
+</script>
+
+</body>
+</html>
