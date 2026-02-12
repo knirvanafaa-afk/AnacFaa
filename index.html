@@ -287,21 +287,15 @@ window.toggleR4 = () => {
 };
 
 window.atualizarNomeArquivo = () => {
-
-const input = document.getElementById('imagem_pergunta');
-
-const status = document.getElementById('status_upload');
-
-if (input.files.length > 0) {
-
-status.innerText = "📸 Foto selecionada: " + input.files[0].name;
-
-} else {
-
-status.innerText = "";
-
-}
-
+    const input = document.getElementById('imagem_pergunta');
+    const status = document.getElementById('status_upload');
+    
+    if (input.files.length > 0) {
+        // Agora ele mostra apenas o nome puro do arquivo (ex: minha_foto.jpg)
+        status.innerText = input.files[0].name;
+    } else {
+        status.innerText = "";
+    }
 };
 
 document.getElementById('btn_salvar').onclick = async () => {
