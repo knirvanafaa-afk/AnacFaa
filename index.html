@@ -239,107 +239,84 @@ input:checked + .slider:before { transform: translateX(20px);
 </div>
 
 <script type="module">
-  // 1. Importações atualizadas com STORAGE
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
+    // Importação do Cliente Supabase
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
-    authDomain: "simulado-2151c.firebaseapp.com",
-    projectId: "simulado-2151c",
-    storageBucket: "simulado-2151c.firebasestorage.app",
-    messagingSenderId: "11141253917",
-    appId: "1:11141253917:web:0a98cf7b340e460c366ff4"
-  };
+    // Configurações que você me passou
+    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const storage = getStorage(app); // Ativa o serviço de fotos
+    // Função para atualizar o nome do arquivo no campo visual (Opcional)
+    window.atualizarNomeArquivo = () => {
+        const input = document.getElementById('imagem_pergunta');
+        const status = document.getElementById('status_upload');
+        if (input.files.length > 0) {
+            status.innerText = "Arquivo selecionado: " + input.files[0].name;
+        }
+    };
 
-// Função para mostrar o nome do arquivo selecionado
-window.atualizarNomeArquivo = () => {
-    const input = document.getElementById('imagem_pergunta');
-    const status = document.getElementById('status_upload');
-    if (input.files.length > 0) {
-        status.innerText = input.files[0].name;
-    } else {
-        status.innerText = "";
-    }
-};
+    document.getElementById('btn_salvar').onclick = async () => {
+        const num = document.getElementById('num_pergunta').value;
+        const mat = document.getElementById('materia').value;
+        const per = document.getElementById('pergunta').value;
+        const r1 = document.getElementById('r1').value;
+        const r2 = document.getElementById('r2').value;
+        const r3 = document.getElementById('r3').value;
+        const r4 = document.getElementById('r4').value;
+        const cor = document.getElementById('correta').value;
+        const arquivo = document.getElementById('imagem_pergunta').files[0];
 
-window.toggleR4 = () => {
-    const campoR4 = document.getElementById('r4');
-    const switchHabilitar = document.getElementById('habilitar_r4');
-    const seletorCorreta = document.getElementById('correta');
-    const opcao4 = seletorCorreta.querySelector('option[value="4"]');
+        if (!num || !mat || !per || !r1 || !r2 || !r3 || !r4) {
+            alert("Por favor, preencha todos os campos obrigatórios!");
+            return;
+        }
 
-    if (switchHabilitar.checked) {
-        campoR4.style.display = "block";
-        campoR4.disabled = false;
-        if (campoR4.value === "N/A") campoR4.value = "";
-        opcao4.style.display = "block";
-        opcao4.disabled = false;
-    } else {
-        campoR4.style.display = "none";
-        campoR4.disabled = true;
-        campoR4.value = "N/A";
-        opcao4.style.display = "none";
-        opcao4.disabled = true;
-        if (seletorCorreta.value === "4") seletorCorreta.value = "1";
-    }
-};
+        try {
+            let urlFinal = "";
 
-document.getElementById('btn_salvar').onclick = async () => {
-    const num = document.getElementById('num_pergunta').value;
-    const mat = document.getElementById('materia').value;
-    const per = document.getElementById('pergunta').value;
-    const r1 = document.getElementById('r1').value;
-    const r2 = document.getElementById('r2').value;
-    const r3 = document.getElementById('r3').value;
-    const r4 = document.getElementById('r4').value;
-    const cor = document.getElementById('correta').value;
-    
-    // Pega o arquivo de imagem
-    const arquivo = document.getElementById('imagem_pergunta').files[0];
-    let urlImagem = ""; 
+            // 1. Upload da Imagem (se houver)
+            if (arquivo) {
+                const nomeArquivo = `${num}_${Date.now()}.jpg`;
+                const { data: uploadData, error: uploadError } = await supabase.storage
+                    .from('fotos')
+                    .upload(nomeArquivo, arquivo);
 
-    if (!num || !mat || !per || !r1 || !r2 || !r3) { alert("Preencha os campos obrigatórios!"); return; } 
+                if (uploadError) throw uploadError;
 
-    try {
-      const docRef = doc(db, "questoes", num);
-      const docSnap = await getDoc(docRef);
+                // Pegar a URL pública da imagem
+                const { data: publicUrlData } = supabase.storage
+                    .from('fotos')
+                    .getPublicUrl(nomeArquivo);
+                
+                urlFinal = publicUrlData.publicUrl;
+            }
 
-      if (docSnap.exists()) {
-        alert("⚠️ ERRO: A questão nº " + num + " já existe!");
-        return;
-      }
+            // 2. Salvar dados na tabela 'questoes'
+            const { error: insertError } = await supabase
+                .from('questoes')
+                .insert([{
+                    num: num,
+                    materia: mat,
+                    pergunta: per,
+                    r1: r1,
+                    r2: r2,
+                    r3: r3,
+                    r4: r4,
+                    correta: cor,
+                    foto: urlFinal
+                }]);
 
-      // --- LÓGICA DE UPLOAD ---
-      if (arquivo) {
-          const storageRef = ref(storage, 'fotos/' + num);
-          await uploadBytes(storageRef, arquivo);
-          urlImagem = await getDownloadURL(storageRef);
-      }
+            if (insertError) throw insertError;
 
-      await setDoc(docRef, {
-        materia: mat,
-        pergunta: per,
-        r1: r1,
-        r2: r2,
-        r3: r3,
-        r4: r4,
-        correta: cor,
-        foto: urlImagem // Salva o link da foto no banco
-      });
+            alert("Questão cadastrada com sucesso no Supabase!");
+            location.reload();
 
-      alert("Pergunta " + num + " cadastrada com sucesso!");
-      location.reload(); // Recarrega para limpar tudo
-
-    } catch (e) {
-      alert("Erro ao gravar: " + e.message);
-    }
-  };
+        } catch (error) {
+            console.error(error);
+            alert("Erro na operação: " + error.message);
+        }
+    };
 </script>
 
 </body>
