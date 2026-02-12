@@ -57,51 +57,77 @@
 </div>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA')
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
+    authDomain: "simulado-2151c.firebasestorage.app",
+    projectId: "simulado-2151c",
+    storageBucket: "simulado-2151c.firebasestorage.app",
+    messagingSenderId: "11141253917",
+    appId: "1:11141253917:web:0a98cf7b340e460c366ff4"
+  };
 
-    async function carregarQuestoes() {
-        const corpoTabela = document.getElementById('corpo_tabela'); // Ajuste o ID conforme seu HTML
-        corpoTabela.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
 
-        const { data: questoes, error } = await supabase
-            .from('questoes')
-            .select('*')
-            .order('num', { ascending: true });
-
-        if (error) {
-            alert("Erro ao carregar: " + error.message);
-            return;
-        }
-
-        corpoTabela.innerHTML = ""; // Limpa o carregando
-
-        questoes.forEach(q => {
-            const linha = `
-                <tr>
-                    <td>${q.num}</td>
-                    <td>${q.materia}</td>
-                    <td>${q.pergunta}</td>
-                    <td>${q.foto ? `<img src="${q.foto}" width="80">` : 'Sem foto'}</td>
-                    <td><button onclick="window.apagarQuestao('${q.num}')">🗑️</button></td>
-                </tr>
-            `;
-            corpoTabela.innerHTML += linha;
-        });
+  // Função para Deletar com Dupla Confirmação
+  window.deletarPergunta = async (id) => {
+    const confirmacao = confirm("Tem certeza que deseja excluir a questão " + id + "?");
+    
+    if (confirmacao) {
+      try {
+        await deleteDoc(doc(db, "questoes", id));
+        alert("Questão " + id + " removida com sucesso!");
+        carregarPerguntas(); // Recarrega a lista automaticamente
+      } catch (e) {
+        alert("Erro ao deletar: " + e.message);
+      }
     }
+  };
 
-    // Função para apagar (Global para o botão funcionar)
-    window.apagarQuestao = async (id) => {
-        if(confirm("Deseja realmente apagar a questão " + id + "?")) {
-            const { error } = await supabase.from('questoes').delete().eq('num', id);
-            if (error) alert("Erro ao apagar");
-            else location.reload();
-        }
-    };
+  async function carregarPerguntas() {
+    const listaDiv = document.getElementById('lista-perguntas');
+    listaDiv.innerHTML = "<p style='text-align: center;'>Carregando...</p>";
+    
+    try {
+      const querySnapshot = await getDocs(collection(db, "questoes"));
+      
+      if (querySnapshot.empty) {
+        listaDiv.innerHTML = "<p style='text-align:center;'>Nenhuma pergunta cadastrada.</p>";
+        return;
+      }
 
-    carregarQuestoes();
+      listaDiv.innerHTML = "";
+
+      querySnapshot.forEach((doc) => {
+        const d = doc.data();
+        const id = doc.id;
+        
+        const card = document.createElement('div');
+        card.className = 'pergunta-card';
+        
+        card.innerHTML = `
+          <button class="btn-deletar-individual" onclick="deletarPergunta('${id}')">Excluir</button>
+          <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
+          <div class="texto-pergunta">${d.pergunta}</div>
+          <div class="respostas-lista">
+            <div class="item-resposta ${d.correta == '1' ? 'correta' : ''}">1) ${d.r1}</div>
+            <div class="item-resposta ${d.correta == '2' ? 'correta' : ''}">2) ${d.r2}</div>
+            <div class="item-resposta ${d.correta == '3' ? 'correta' : ''}">3) ${d.r3}</div>
+            <div class="item-resposta ${d.correta == '4' ? 'correta' : ''}">4) ${d.r4}</div>
+          </div>
+        `;
+        listaDiv.appendChild(card);
+      });
+
+    } catch (e) {
+      listaDiv.innerHTML = `<p style="color:red; text-align:center;">Erro: ${e.message}</p>`;
+    }
+  }
+
+  carregarPerguntas();
 </script>
- 
 </body>
 </html>
