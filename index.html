@@ -107,6 +107,38 @@
             background-color: #fff9c4;
             border: 2px solid #f1c40f;
         }
+/* O visual do botão redondinho */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 20px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 20px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 14px; width: 14px;
+  left: 3px; bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider { background-color: #2ecc71; }
+input:checked + .slider:before { transform: translateX(20px); 
+}
     </style>
 </head>
 <body>
@@ -134,6 +166,13 @@
             <input type="text" id="r1" placeholder="Resposta 1">
             <input type="text" id="r2" placeholder="Resposta 2">
             <input type="text" id="r3" placeholder="Resposta 3">
+<label>
+    Resposta 4 
+    <label class="switch">
+        <input type="checkbox" id="habilitar_r4" checked onchange="toggleR4()">
+        <span class="slider"></span>
+    </label>
+</label>
             <input type="text" id="r4" placeholder="Resposta 4">
         </div>
 
@@ -181,6 +220,22 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
+window.toggleR4 = () => {
+    const campoR4 = document.getElementById('r4');
+    const switchHabilitar = document.getElementById('habilitar_r4');
+    if (switchHabilitar.checked) {
+        // Se estiver ligado: mostra a caixa e permite escrever
+        campoR4.style.display = "block";
+        campoR4.disabled = false;
+        campoR4.placeholder = "Opção 4";
+    } else {
+        // Se estiver desligado: esconde a caixa e limpa o valor
+        campoR4.style.display = "none";
+        campoR4.disabled = true;
+        campoR4.value = "N/A"; // Evita que o campo vá vazio para o banco
+    }
+}
+  
   document.getElementById('btn_salvar').onclick = async () => {
     const num = document.getElementById('num_pergunta').value;
     const mat = document.getElementById('materia').value;
@@ -191,10 +246,13 @@
     const r4 = document.getElementById('r4').value;
     const cor = document.getElementById('correta').value;
 
-    if (!num || !mat || !per || !r1 || !r2 || !r3 || !r4) {
-      alert("Atenção: Preencha todos os campos!");
-      return;
-    }
+    // Verifica se os campos básicos estão cheios 
+
+if (!num || !mat || !per || !r1 || !r2 || !r3) { alert("Atenção: Preencha os campos obrigatórios!"); return; } 
+
+// Se o R4 estiver habilitado, ele também passa a ser obrigatório 
+
+const switchHabilitar = document.getElementById('habilitar_r4'); if (switchHabilitar.checked && !r4) { alert("Você habilitou a Resposta 4, mas não a preencheu!"); return; }
 
     try {
       // --- PASSO DE VERIFICAÇÃO ---
