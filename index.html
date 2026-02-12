@@ -239,8 +239,10 @@ input:checked + .slider:before { transform: translateX(20px);
 </div>
 
 <script type="module">
+  // 1. Importações atualizadas com STORAGE
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
@@ -253,6 +255,18 @@ input:checked + .slider:before { transform: translateX(20px);
 
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+  const storage = getStorage(app); // Ativa o serviço de fotos
+
+// Função para mostrar o nome do arquivo selecionado
+window.atualizarNomeArquivo = () => {
+    const input = document.getElementById('imagem_pergunta');
+    const status = document.getElementById('status_upload');
+    if (input.files.length > 0) {
+        status.innerText = input.files[0].name;
+    } else {
+        status.innerText = "";
+    }
+};
 
 window.toggleR4 = () => {
     const campoR4 = document.getElementById('r4');
@@ -261,40 +275,18 @@ window.toggleR4 = () => {
     const opcao4 = seletorCorreta.querySelector('option[value="4"]');
 
     if (switchHabilitar.checked) {
-        // --- LIGADO ---
         campoR4.style.display = "block";
         campoR4.disabled = false;
         if (campoR4.value === "N/A") campoR4.value = "";
-        
-        // Mostra a opção 4 no menu de seleção
         opcao4.style.display = "block";
         opcao4.disabled = false;
     } else {
-        // --- DESLIGADO ---
         campoR4.style.display = "none";
         campoR4.disabled = true;
         campoR4.value = "N/A";
-        
-        // Esconde a opção 4 no menu de seleção
         opcao4.style.display = "none";
         opcao4.disabled = true;
-
-        // Se a opção 4 estava selecionada, volta para a 1 automaticamente
-        if (seletorCorreta.value === "4") {
-            seletorCorreta.value = "1";
-        }
-    }
-};
-
-window.atualizarNomeArquivo = () => {
-    const input = document.getElementById('imagem_pergunta');
-    const status = document.getElementById('status_upload');
-    
-    if (input.files.length > 0) {
-        // Agora ele mostra apenas o nome puro do arquivo (ex: minha_foto.jpg)
-        status.innerText = input.files[0].name;
-    } else {
-        status.innerText = "";
+        if (seletorCorreta.value === "4") seletorCorreta.value = "1";
     }
 };
 
@@ -307,25 +299,28 @@ document.getElementById('btn_salvar').onclick = async () => {
     const r3 = document.getElementById('r3').value;
     const r4 = document.getElementById('r4').value;
     const cor = document.getElementById('correta').value;
+    
+    // Pega o arquivo de imagem
+    const arquivo = document.getElementById('imagem_pergunta').files[0];
+    let urlImagem = ""; 
 
-    // Verifica se os campos básicos estão cheios 
-
-if (!num || !mat || !per || !r1 || !r2 || !r3) { alert("Atenção: Preencha os campos obrigatórios!"); return; } 
-
-// Se o R4 estiver habilitado, ele também passa a ser obrigatório 
-
-const switchHabilitar = document.getElementById('habilitar_r4'); if (switchHabilitar.checked && !r4) { alert("Você habilitou a Resposta 4, mas não a preencheu!"); return; }
+    if (!num || !mat || !per || !r1 || !r2 || !r3) { alert("Preencha os campos obrigatórios!"); return; } 
 
     try {
-      // --- PASSO DE VERIFICAÇÃO ---
       const docRef = doc(db, "questoes", num);
       const docSnap = await getDoc(docRef);
 
       if (docSnap.exists()) {
-        alert("⚠️ ERRO: A questão nº " + num + " já existe! Use outro número ou delete a existente.");
-        return; // Cancela a operação de salvamento
+        alert("⚠️ ERRO: A questão nº " + num + " já existe!");
+        return;
       }
-      // ----------------------------
+
+      // --- LÓGICA DE UPLOAD ---
+      if (arquivo) {
+          const storageRef = ref(storage, 'fotos/' + num);
+          await uploadBytes(storageRef, arquivo);
+          urlImagem = await getDownloadURL(storageRef);
+      }
 
       await setDoc(docRef, {
         materia: mat,
@@ -334,21 +329,12 @@ const switchHabilitar = document.getElementById('habilitar_r4'); if (switchHabil
         r2: r2,
         r3: r3,
         r4: r4,
-        correta: cor
+        correta: cor,
+        foto: urlImagem // Salva o link da foto no banco
       });
 
       alert("Pergunta " + num + " cadastrada com sucesso!");
-
-      // Limpa os campos
-      document.getElementById('num_pergunta').value = "";
-
-document.getElementById('materia').value = "";
-      document.getElementById('pergunta').value = "";
-      document.getElementById('r1').value = "";
-      document.getElementById('r2').value = "";
-      document.getElementById('r3').value = "";
-      document.getElementById('r4').value = "";
-      document.getElementById('correta').value = "1";
+      location.reload(); // Recarrega para limpar tudo
 
     } catch (e) {
       alert("Erro ao gravar: " + e.message);
