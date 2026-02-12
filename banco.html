@@ -15,7 +15,7 @@
             border-radius: 15px; 
             background-color: #f4faff; 
             margin-bottom: 20px; 
-            position: relative; /* Para posicionar o botão de deletar */
+            position: relative; 
         }
         .materia-tag { font-weight: bold; color: #2980b9; margin-bottom: 10px; display: block; font-size: 14px; }
         .texto-pergunta { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; }
@@ -23,7 +23,6 @@
         .item-resposta { background: white; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 15px; color: #444; }
         .correta { border: 2px solid #27ae60 !important; background-color: #eafaf1 !important; color: #27ae60 !important; font-weight: bold; }
         
-        /* Botão Deletar Individual */
         .btn-deletar-individual {
             position: absolute;
             top: 15px;
@@ -57,30 +56,29 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, getDocs, doc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  // 1. SAINDO FIREBASE, ENTRANDO SUPABASE
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
-    authDomain: "simulado-2151c.firebasestorage.app",
-    projectId: "simulado-2151c",
-    storageBucket: "simulado-2151c.firebasestorage.app",
-    messagingSenderId: "11141253917",
-    appId: "1:11141253917:web:0a98cf7b340e460c366ff4"
-  };
+  const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  // Função para Deletar com Dupla Confirmação
+  // Função para Deletar (Mantendo sua lógica de confirmação)
   window.deletarPergunta = async (id) => {
     const confirmacao = confirm("Tem certeza que deseja excluir a questão " + id + "?");
     
     if (confirmacao) {
       try {
-        await deleteDoc(doc(db, "questoes", id));
+        // Deleta no Supabase onde a coluna 'num' é igual ao ID
+        const { error } = await supabase
+            .from('questoes')
+            .delete()
+            .eq('num', id);
+
+        if (error) throw error;
+
         alert("Questão " + id + " removida com sucesso!");
-        carregarPerguntas(); // Recarrega a lista automaticamente
+        carregarPerguntas(); 
       } catch (e) {
         alert("Erro ao deletar: " + e.message);
       }
@@ -92,18 +90,24 @@
     listaDiv.innerHTML = "<p style='text-align: center;'>Carregando...</p>";
     
     try {
-      const querySnapshot = await getDocs(collection(db, "questoes"));
+      // Busca todas as questões da tabela 'questoes' ordenadas pelo número
+      const { data, error } = await supabase
+        .from('questoes')
+        .select('*')
+        .order('num', { ascending: true });
+
+      if (error) throw error;
       
-      if (querySnapshot.empty) {
+      if (!data || data.length === 0) {
         listaDiv.innerHTML = "<p style='text-align:center;'>Nenhuma pergunta cadastrada.</p>";
         return;
       }
 
       listaDiv.innerHTML = "";
 
-      querySnapshot.forEach((doc) => {
-        const d = doc.data();
-        const id = doc.id;
+      // MANTENDO EXATAMENTE O SEU LAYOUT DE CARD
+      data.forEach((d) => {
+        const id = d.num; // Usamos a coluna 'num' como o ID que você exibe
         
         const card = document.createElement('div');
         card.className = 'pergunta-card';
@@ -111,6 +115,9 @@
         card.innerHTML = `
           <button class="btn-deletar-individual" onclick="deletarPergunta('${id}')">Excluir</button>
           <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
+          
+          ${d.foto ? `<div style="text-align:center; margin-bottom:10px;"><img src="${d.foto}" style="max-width:100px; border-radius:5px;"></div>` : ''}
+          
           <div class="texto-pergunta">${d.pergunta}</div>
           <div class="respostas-lista">
             <div class="item-resposta ${d.correta == '1' ? 'correta' : ''}">1) ${d.r1}</div>
