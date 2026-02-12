@@ -57,7 +57,7 @@
             padding: 12px;
             margin-top: 5px;
             border: 1px solid #ccc;
-            border-radius: 10px; /* Campos arredondados */
+            border-radius: 10px;
             box-sizing: border-box;
             font-size: 16px;
             outline: none;
@@ -107,7 +107,6 @@
             background-color: #fff9c4;
             border: 2px solid #f1c40f;
         }
-
     </style>
 </head>
 <body>
@@ -148,16 +147,12 @@
 
         <div class="btn-group">
             <button class="btn-cadastrar" id="btn_salvar">Cadastrar Pergunta</button>
-
-   <button class="btn-cadastrar" onclick="window.location.href='alunos.html'">Simulado</button>
-
-<button class="btn-cadastrar" onclick="window.location.href='banco.html'">Cadastro de perguntas</button>
-
+            <button class="btn-cadastrar" style="background-color: #8e44ad;" onclick="window.location.href='alunos.html'">Ir para Simulado</button>
         </div>
     </div>
 
     <div class="section-gerenciar">
-        <label>Pesquisar</label>
+        <label>Pesquisar / Deletar</label>
         <input type="number" id="busca_pergunta" placeholder="Digite o número da pergunta">
         
         <div class="btn-group">
@@ -169,7 +164,7 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
@@ -199,7 +194,17 @@
     }
 
     try {
-      await setDoc(doc(db, "questoes", num), {
+      // --- PASSO DE VERIFICAÇÃO ---
+      const docRef = doc(db, "questoes", num);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        alert("⚠️ ERRO: A questão nº " + num + " já existe! Use outro número ou delete a existente.");
+        return; // Cancela a operação de salvamento
+      }
+      // ----------------------------
+
+      await setDoc(docRef, {
         materia: mat,
         pergunta: per,
         r1: r1,
@@ -211,9 +216,8 @@
 
       alert("Pergunta " + num + " cadastrada com sucesso!");
 
-      // limpa os campos
+      // Limpa os campos
       document.getElementById('num_pergunta').value = "";
-      document.getElementById('materia').value = "";
       document.getElementById('pergunta').value = "";
       document.getElementById('r1').value = "";
       document.getElementById('r2').value = "";
@@ -226,7 +230,6 @@
     }
   };
 </script>
-
 
 </body>
 </html>
