@@ -220,21 +220,7 @@ input:checked + .slider:before { transform: translateX(20px);
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-window.toggleR4 = () => {
-    const campoR4 = document.getElementById('r4');
-    const switchHabilitar = document.getElementById('habilitar_r4');
-    if (switchHabilitar.checked) {
-        // Se estiver ligado: mostra a caixa e permite escrever
-        campoR4.style.display = "block";
-        campoR4.disabled = false;
-        campoR4.placeholder = "Opção 4";
-    } else {
-        // Se estiver desligado: esconde a caixa e limpa o valor
-        campoR4.style.display = "none";
-        campoR4.disabled = true;
-        campoR4.value = "N/A"; // Evita que o campo vá vazio para o banco
-    }
-}
+window.toggleR4 = () => { const campoR4 = document.getElementById('r4'); const switchHabilitar = document.getElementById('habilitar_r4'); const opcao4Select = document.querySelector("#correta option[value='4']"); if (switchHabilitar.checked) { campoR4.style.display = "block"; campoR4.disabled = false; opcao4Select.style.display = "block"; // Mostra no select } else { campoR4.style.display = "none"; campoR4.disabled = true; campoR4.value = "N/A"; opcao4Select.style.display = "none"; // Esconde no select if(document.getElementById('correta').value === "4") { document.getElementById('correta').value = "1"; // Reseta para 1 se estava no 4 } } };
   
   document.getElementById('btn_salvar').onclick = async () => {
     const num = document.getElementById('num_pergunta').value;
