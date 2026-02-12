@@ -213,7 +213,7 @@ input:checked + .slider:before { transform: translateX(20px);
         Selecionar Arquivo
     </label>
 
-    <input type="file" id="imagem_pergunta" accept="image/png, image/jpeg, image/jpg" style="display: none;">
+    <input type="file" id="imagem_pergunta" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="window.atualizarNomeArquivo()">
     
     <p id="status_upload" style="font-size: 13px; color: #fff9c4; margin-top: 10px; font-weight: bold;"></p> 
 </div>
