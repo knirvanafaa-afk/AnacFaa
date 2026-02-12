@@ -139,6 +139,24 @@
 input:checked + .slider { background-color: #2ecc71; }
 input:checked + .slider:before { transform: translateX(20px); 
 }
+
+.botao-upload-amarelo {
+    display: inline-block;
+    width: 90%;
+    padding: 10px;
+    background-color: #fff9c4; /* Mesmo amarelo do seletor */
+    border: 2px solid #f1c40f; /* Mesmo contorno */
+    border-radius: 10px;
+    color: #333;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: 0.3s;
+}
+
+.botao-upload-amarelo:hover {
+    background-color: #fef5a0;
+}
     </style>
 </head>
 <body>
@@ -184,6 +202,22 @@ input:checked + .slider:before { transform: translateX(20px);
             <option value="4">Resposta 4</option>
         </select>
 
+<div style="margin-top: 15px; padding: 15px; border: 1px dashed #ccc; border-radius: 10px; background-color: #27ae60; text-align: center;"> 
+    <label style="display: block; margin-bottom: 12px; color: white; font-weight: bold; letter-spacing: 1px;">INCLUIR IMAGEM</label> 
+    
+    <label for="imagem_pergunta" class="botao-upload-amarelo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+            <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="#333"/>
+            <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" fill="#333"/>
+        </svg>
+        Selecionar Arquivo
+    </label>
+
+    <input type="file" id="imagem_pergunta" accept="image/*" style="display: none;" onchange="window.atualizarNomeArquivo()"> 
+    
+    <p id="status_upload" style="font-size: 13px; color: #fff9c4; margin-top: 10px; font-weight: bold;"></p> 
+</div>
+    
         <div class="btn-group">
             <button class="btn-cadastrar" id="btn_salvar">Cadastrar Pergunta</button>
              <button class="btn-cadastrar" onclick="window.location.href='alunos.html'">Simulado</button>
