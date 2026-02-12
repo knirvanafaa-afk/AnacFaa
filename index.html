@@ -220,7 +220,32 @@ input:checked + .slider:before { transform: translateX(20px);
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-window.toggleR4 = () => { const campoR4 = document.getElementById('r4'); const switchHabilitar = document.getElementById('habilitar_r4'); const opcao4Select = document.querySelector("#correta option[value='4']"); if (switchHabilitar.checked) { campoR4.style.display = "block"; campoR4.disabled = false; opcao4Select.style.display = "block"; // Mostra no select } else { campoR4.style.display = "none"; campoR4.disabled = true; campoR4.value = "N/A"; opcao4Select.style.display = "none"; // Esconde no select if(document.getElementById('correta').value === "4") { document.getElementById('correta').value = "1"; // Reseta para 1 se estava no 4 } } };
+window.toggleR4 = () => {
+    const campoR4 = document.getElementById('r4');
+    const switchHabilitar = document.getElementById('habilitar_r4');
+    const opcao4Select = document.querySelector("#correta option[value='4']");
+
+    if (switchHabilitar.checked) {
+        // Se ligar: Mostra, habilita e limpa o "N/A"
+        campoR4.style.display = "block";
+        campoR4.disabled = false;
+        if (campoR4.value === "N/A") {
+            campoR4.value = ""; // Limpa o N/A para você escrever a nova resposta
+        }
+        if (opcao4Select) opcao4Select.style.display = "block";
+    } else {
+        // Se desligar: Esconde, trava e marca como N/A
+        campoR4.style.display = "none";
+        campoR4.disabled = true;
+        campoR4.value = "N/A"; 
+        if (opcao4Select) opcao4Select.style.display = "none";
+        
+        // Se a resposta correta era a 4, volta para a 1
+        if(document.getElementById('correta').value === "4") {
+            document.getElementById('correta').value = "1";
+        }
+    }
+};
   
   document.getElementById('btn_salvar').onclick = async () => {
     const num = document.getElementById('num_pergunta').value;
