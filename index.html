@@ -256,7 +256,28 @@ input:checked + .slider:before { transform: translateX(20px);
         }
     };
 
-    document.getElementById('btn_salvar').onclick = async () => {
+   window.toggleR4 = () => {
+    const campoR4 = document.getElementById('r4');
+    const switchHabilitar = document.getElementById('habilitar_r4');
+    const seletorCorreta = document.getElementById('correta');
+    const opcao4 = seletorCorreta.querySelector('option[value="4"]');
+
+    if (switchHabilitar.checked) {
+        campoR4.style.display = "block";
+        campoR4.disabled = false;
+        if (campoR4.value === "N/A") campoR4.value = "";
+        opcao4.style.display = "block";
+        opcao4.disabled = false;
+    } else {
+        campoR4.style.display = "none";
+        campoR4.disabled = true;
+        campoR4.value = "N/A";
+        opcao4.style.display = "none";
+        opcao4.disabled = true;
+        if (seletorCorreta.value === "4") seletorCorreta.value = "1";
+    }
+};
+ document.getElementById('btn_salvar').onclick = async () => {
         const num = document.getElementById('num_pergunta').value;
         const mat = document.getElementById('materia').value;
         const per = document.getElementById('pergunta').value;
