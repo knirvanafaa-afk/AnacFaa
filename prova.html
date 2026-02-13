@@ -74,26 +74,17 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  // IMPORTAÇÃO SUPABASE
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
-    authDomain: "simulado-2151c.firebaseapp.com",
-    projectId: "simulado-2151c",
-    storageBucket: "simulado-2151c.firebasestorage.app",
-    messagingSenderId: "11141253917",
-    appId: "1:11141253917:web:0a98cf7b340e460c366ff4"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+  const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
+  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+  const supabase = createClient(supabaseUrl, supabaseKey)
 
   let perguntasSorteador = [];
   let tempoInicio = Date.now();
 
   async function montarSimulado() {
-    // Busca as configurações salvas na página anterior
     const materiaAlvo = sessionStorage.getItem('config_materia');
     const qtdAlvo = parseInt(sessionStorage.getItem('config_qtd'));
     
@@ -105,14 +96,15 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
     document.getElementById('titulo-prova').innerText = "Matéria: " + materiaAlvo;
 
     try {
-        // Busca apenas questões daquela matéria
-        const q = query(collection(db, "questoes"), where("materia", "==", materiaAlvo));
-        const querySnapshot = await getDocs(q);
-        let todasDaMateria = [];
-        
-        querySnapshot.forEach(doc => {
-            todasDaMateria.push({ id: doc.id, ...doc.data() });
-        });
+        // BUSCA NO SUPABASE
+        const { data, error } = await supabase
+            .from('questoes')
+            .select('*')
+            .eq('materia', materiaAlvo);
+
+        if (error) throw error;
+
+        let todasDaMateria = data;
 
         // 1. EMBARALHAR ALEATORIAMENTE
         todasDaMateria.sort(() => Math.random() - 0.5);
@@ -136,14 +128,19 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
     container.innerHTML = "";
     
     perguntasSorteador.forEach((q, index) => {
+        // Verifica se a resposta 4 é "N/A" para ocultar a opção no simulado
+        const displayR4 = (q.r4 === "N/A") ? 'none' : 'flex';
+
         container.innerHTML += `
             <div class="pergunta-card" id="card-${index}">
                 <span class="texto-enunciado">${index + 1}) ${q.pergunta}</span>
                 
+                ${q.foto ? `<img src="${q.foto}" style="max-width:100%; border-radius:10px; margin-bottom:15px; display:block;">` : ''}
+
                 <label class="opcao"><input type="radio" name="p${index}" value="1"> ${q.r1}</label>
                 <label class="opcao"><input type="radio" name="p${index}" value="2"> ${q.r2}</label>
                 <label class="opcao"><input type="radio" name="p${index}" value="3"> ${q.r3}</label>
-                <label class="opcao"><input type="radio" name="p${index}" value="4"> ${q.r4}</label>
+                <label class="opcao" style="display: ${displayR4};"><input type="radio" name="p${index}" value="4"> ${q.r4}</label>
                 
                 <div id="feedback-${index}" style="margin-top:10px; font-weight:bold; display:none;"></div>
             </div>
@@ -155,7 +152,6 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
     let acertos = 0;
     let tempoFim = Date.now();
     
-    // Cálculo do tempo gasto
     let totalSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
     let min = Math.floor(totalSegundos / 60);
     let seg = totalSegundos % 60;
@@ -181,7 +177,6 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
         }
     });
 
-    // Mostra o relatório final
     document.getElementById('btn-concluir').style.display = "none";
     const caixaRes = document.getElementById('resultado-caixa');
     caixaRes.style.display = "block";
