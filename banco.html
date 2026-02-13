@@ -42,6 +42,29 @@
             background-color: #27ae60; color: white; cursor: pointer; 
             font-weight: bold; text-transform: uppercase; margin-bottom: 20px;
         }
+
+.input-edicao {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 5px;
+    border: 1px solid #3498db;
+    border-radius: 5px;
+    font-family: inherit;
+}
+.btn-editar-individual {
+    position: absolute;
+    top: 15px;
+    right: 80px; /* Fica ao lado do excluir */
+    background-color: #f1c40f;
+    color: #333;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+}
+
     </style>
 </head>
 <body>
@@ -69,6 +92,57 @@
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
   const supabase = createClient(supabaseUrl, supabaseKey)
 
+// FUNÇÃO PARA ATIVAR MODO EDIÇÃO NO CARD
+window.ativarEdicao = (id) => {
+    const card = document.getElementById(`card-${id}`);
+    const dados = JSON.parse(card.dataset.info);
+
+    card.innerHTML = `
+        <button class="btn-deletar-individual" style="background-color:#27ae60" onclick="salvarEdicao('${id}')">Salvar</button>
+        <button class="btn-editar-individual" style="background-color:#95a5a6; color:white; right:15px" onclick="carregarPerguntas()">Cancelar</button>
+        
+        <span class="materia-tag">Editando ID #${id}</span>
+        <input type="text" id="edit-materia-${id}" class="input-edicao" value="${dados.materia}" placeholder="Matéria">
+        <textarea id="edit-pergunta-${id}" class="input-edicao" rows="3">${dados.pergunta}</textarea>
+        
+        <div class="respostas-lista">
+            <input type="text" id="edit-r1-${id}" class="input-edicao" value="${dados.r1}">
+            <input type="text" id="edit-r2-${id}" class="input-edicao" value="${dados.r2}">
+            <input type="text" id="edit-r3-${id}" class="input-edicao" value="${dados.r3}">
+            <input type="text" id="edit-r4-${id}" class="input-edicao" value="${dados.r4}">
+            <label>Correta (1-4):</label>
+            <input type="number" id="edit-correta-${id}" class="input-edicao" value="${dados.correta}" min="1" max="4">
+        </div>
+    `;
+};
+
+// FUNÇÃO PARA ENVIAR PARA O SUPABASE
+window.salvarEdicao = async (id) => {
+    const novosDados = {
+        materia: document.getElementById(`edit-materia-${id}`).value,
+        pergunta: document.getElementById(`edit-pergunta-${id}`).value,
+        r1: document.getElementById(`edit-r1-${id}`).value,
+        r2: document.getElementById(`edit-r2-${id}`).value,
+        r3: document.getElementById(`edit-r3-${id}`).value,
+        r4: document.getElementById(`edit-r4-${id}`).value,
+        correta: document.getElementById(`edit-correta-${id}`).value
+    };
+
+    try {
+        const { error } = await supabase
+            .from('questoes')
+            .update(novosDados)
+            .eq('num', id);
+
+        if (error) throw error;
+
+        mostrarMensagem("Questão atualizada com sucesso!");
+        carregarPerguntas(); // Recarrega a lista atualizada
+    } catch (e) {
+        mostrarMensagem("Erro ao salvar: " + e.message);
+    }
+};
+
   // Função para Deletar
   window.deletarPergunta = async (id) => {
     // Substituindo confirm por caixa amarela com ação personalizada
@@ -95,7 +169,7 @@
     };
   };
 
-  async function carregarPerguntas() {
+ async function carregarPerguntas() {
     const listaDiv = document.getElementById('lista-perguntas');
     listaDiv.innerHTML = "<p style='text-align: center;'>Carregando...</p>";
     
@@ -116,12 +190,14 @@
 
       data.forEach((d) => {
         const id = d.num;
-        
         const card = document.createElement('div');
         card.className = 'pergunta-card';
-        
+        card.id = `card-${id}`;
+        card.dataset.info = JSON.stringify(d); // Importante para a edição funcionar
+
         card.innerHTML = `
           <button class="btn-deletar-individual" onclick="deletarPergunta('${id}')">Excluir</button>
+          <button class="btn-editar-individual" onclick="ativarEdicao('${id}')">Editar</button>
           <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
           
           ${d.foto ? `<div style="text-align:center; margin-bottom:10px;"><img src="${d.foto}" style="max-width:100px; border-radius:5px;"></div>` : ''}
