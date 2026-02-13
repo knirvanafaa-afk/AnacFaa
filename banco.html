@@ -46,6 +46,13 @@
 </head>
 <body>
 
+<div id="custom-alert" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <p id="alert-message" style="color: #333; font-weight: bold; font-size: 18px; margin-bottom: 20px;"></p>
+        <button id="alert-ok-btn" onclick="fecharAlerta()" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase;">OK</button>
+    </div>
+</div>
+
 <div class="container">
     <button class="btn-voltar" onclick="window.location.href='index.html'">⬅ Voltar ao Painel</button>
     <h2>Questões no Banco</h2>
@@ -56,33 +63,36 @@
 </div>
 
 <script type="module">
-  // 1. SAINDO FIREBASE, ENTRANDO SUPABASE
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
   const supabase = createClient(supabaseUrl, supabaseKey)
 
-  // Função para Deletar (Mantendo sua lógica de confirmação)
+  // Função para Deletar
   window.deletarPergunta = async (id) => {
-    const confirmacao = confirm("Tem certeza que deseja excluir a questão " + id + "?");
+    // Substituindo confirm por caixa amarela com ação personalizada
+    mostrarMensagem("Deseja mesmo excluir a questão " + id + "?");
     
-    if (confirmacao) {
-      try {
-        // Deleta no Supabase onde a coluna 'num' é igual ao ID
-        const { error } = await supabase
-            .from('questoes')
-            .delete()
-            .eq('num', id);
+    const btnOk = document.getElementById('alert-ok-btn');
+    btnOk.onclick = async () => {
+        fecharAlerta();
+        try {
+            const { error } = await supabase
+                .from('questoes')
+                .delete()
+                .eq('num', id);
 
-        if (error) throw error;
+            if (error) throw error;
 
-        alert("Questão " + id + " removida com sucesso!");
-        carregarPerguntas(); 
-      } catch (e) {
-        alert("Erro ao deletar: " + e.message);
-      }
-    }
+            mostrarMensagem("Questão " + id + " removida com sucesso!");
+            // Resetar o botão para fechar apenas na próxima vez
+            document.getElementById('alert-ok-btn').onclick = fecharAlerta;
+            carregarPerguntas(); 
+        } catch (e) {
+            mostrarMensagem("Erro ao deletar: " + e.message);
+        }
+    };
   };
 
   async function carregarPerguntas() {
@@ -90,7 +100,6 @@
     listaDiv.innerHTML = "<p style='text-align: center;'>Carregando...</p>";
     
     try {
-      // Busca todas as questões da tabela 'questoes' ordenadas pelo número
       const { data, error } = await supabase
         .from('questoes')
         .select('*')
@@ -105,9 +114,8 @@
 
       listaDiv.innerHTML = "";
 
-      // MANTENDO EXATAMENTE O SEU LAYOUT DE CARD
       data.forEach((d) => {
-        const id = d.num; // Usamos a coluna 'num' como o ID que você exibe
+        const id = d.num;
         
         const card = document.createElement('div');
         card.className = 'pergunta-card';
@@ -133,6 +141,18 @@
       listaDiv.innerHTML = `<p style="color:red; text-align:center;">Erro: ${e.message}</p>`;
     }
   }
+
+  // FUNÇÕES DA CAIXA AMARELA
+  window.mostrarMensagem = (texto) => {
+      document.getElementById('alert-message').innerText = texto;
+      document.getElementById('custom-alert').style.display = 'flex';
+  };
+
+  window.fecharAlerta = () => {
+      document.getElementById('custom-alert').style.display = 'none';
+      // Garante que o botão volte ao comportamento padrão de apenas fechar
+      document.getElementById('alert-ok-btn').onclick = fecharAlerta;
+  };
 
   carregarPerguntas();
 </script>
