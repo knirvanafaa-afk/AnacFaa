@@ -162,12 +162,19 @@ input:checked + .slider:before { transform: translateX(20px);
 <div class="container">
     <h2>CADASTRO DE PERGUNTAS</h2>
 
-    <div class="section-cadastro">
-        <div style="display: flex; gap: 10px; align-items: flex-end;">
-            <div style="flex: 1;">
-                <label>Nº da Pergunta</label>
-                <input type="number" id="num_pergunta" placeholder="Ex: 8001">
-            </div>
+    <div style="flex: 1; position: relative;">
+    <label>Nº da Pergunta</label>
+    <div style="display: flex; align-items: center;">
+        <input type="number" id="num_pergunta" placeholder="Ex: 8001" style="padding-right: 40px;">
+        <button type="button" onclick="window.buscarQuestao()" style="position: absolute; right: 5px; top: 32px; background: none; border: none; cursor: pointer; padding: 5px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </button>
+    </div>
+</div>
+
             <div style="flex: 2; text-align: center;">
                 <label>Matéria</label>
                 <input type="text" id="materia" placeholder="Ex: Célula">
@@ -342,6 +349,35 @@ window.limparFoto = () => {
         }
     };
 
+// Dentro do seu onclick existente...
+// Altere a parte do "Salvar dados na tabela" para:
+
+const dadosParaSalvar = {
+    num: num,
+    materia: mat,
+    pergunta: per,
+    r1: r1,
+    r2: r2,
+    r3: r3,
+    r4: r4,
+    correta: cor
+};
+
+// Se houver uma nova foto, adicionamos ao objeto
+if (urlFinal) {
+    dadosParaSalvar.foto = urlFinal;
+}
+
+// O comando UPSERT verifica se o 'num' já existe. 
+// Se existir, ele atualiza (Update). Se não existir, ele cria (Insert).
+const { error: saveError } = await supabase
+    .from('questoes')
+    .upsert([dadosParaSalvar], { onConflict: 'num' });
+
+if (saveError) throw saveError;
+
+mostrarMensagem("Questão salva com sucesso!");
+
 // Função para mostrar a mensagem amarela
 window.mostrarMensagem = (texto) => {
     document.getElementById('alert-message').innerText = texto;
@@ -358,6 +394,54 @@ window.fecharAlerta = () => {
     // Se a mensagem for de sucesso, aí sim limpamos a página
     if (msg.includes("sucesso")) {
         window.location.reload();
+    }
+};
+
+window.buscarQuestao = async () => {
+    const num = document.getElementById('num_pergunta').value;
+    if (!num) {
+        mostrarMensagem("Digite um número para buscar!");
+        return;
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('questoes')
+            .select('*')
+            .eq('num', num)
+            .single(); // Tenta pegar um único resultado
+
+        if (error || !data) {
+            mostrarMensagem("ID não encontrado!");
+            return;
+        }
+
+        // Se encontrou, preenche os campos
+        document.getElementById('materia').value = data.materia || "";
+        document.getElementById('pergunta').value = data.pergunta || "";
+        document.getElementById('r1').value = data.r1 || "";
+        document.getElementById('r2').value = data.r2 || "";
+        document.getElementById('r3').value = data.r3 || "";
+        document.getElementById('r4').value = data.r4 || "";
+        document.getElementById('correta').value = data.correta || "1";
+        
+        // Ajusta o switch do R4 caso a resposta seja N/A
+        const habilitarR4 = document.getElementById('habilitar_r4');
+        if (data.r4 === "N/A") {
+            habilitarR4.checked = false;
+        } else {
+            habilitarR4.checked = true;
+        }
+        window.toggleR4();
+
+        // Muda o texto do botão para indicar que estamos editando
+        document.getElementById('btn_salvar').innerText = "Atualizar Questão";
+        document.getElementById('btn_salvar').style.backgroundColor = "#f1c40f"; // Amarelo
+        
+        mostrarMensagem("Questão " + num + " carregada para edição!");
+
+    } catch (e) {
+        mostrarMensagem("Erro ao buscar: " + e.message);
     }
 };
 </script>

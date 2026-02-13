@@ -17,54 +17,47 @@
             margin-bottom: 20px; 
             position: relative; 
         }
-        .materia-tag { font-weight: bold; color: #2980b9; margin-bottom: 10px; display: block; font-size: 14px; }
-        .texto-pergunta { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; }
-        .respostas-lista { display: grid; gap: 8px; }
-        .item-resposta { background: white; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 15px; color: #444; }
-        .correta { border: 2px solid #27ae60 !important; background-color: #eafaf1 !important; color: #27ae60 !important; font-weight: bold; }
+
+        /* Ajuste para os botões não taparem o texto */
+        .header-card {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .materia-tag { font-weight: bold; color: #2980b9; font-size: 14px; flex: 1; padding-right: 10px; }
         
-        .btn-deletar-individual {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background-color: #e74c3c;
-            color: white;
-            border: none;
+        .area-botoes { display: flex; gap: 5px; }
+
+        .btn-acao {
             padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 12px;
             font-weight: bold;
+            border: none;
+            color: white;
+            text-transform: uppercase;
         }
+
+        .btn-excluir { background-color: #e74c3c; }
+        .btn-editar { background-color: #f1c40f; color: #333; }
+        .btn-salvar { background-color: #27ae60; }
+        .btn-cancelar { background-color: #95a5a6; }
+
+        .texto-pergunta { font-size: 18px; font-weight: bold; color: #333; margin-bottom: 15px; }
+        .respostas-lista { display: grid; gap: 8px; }
+        .item-resposta { background: white; padding: 12px; border: 1px solid #ccc; border-radius: 10px; font-size: 15px; color: #444; }
+        .correta { border: 2px solid #27ae60 !important; background-color: #eafaf1 !important; color: #27ae60 !important; font-weight: bold; }
+        
+        .input-edicao { width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #3498db; border-radius: 8px; font-family: inherit; box-sizing: border-box; }
 
         .btn-voltar { 
             width: 100%; padding: 15px; border: none; border-radius: 12px; 
             background-color: #27ae60; color: white; cursor: pointer; 
             font-weight: bold; text-transform: uppercase; margin-bottom: 20px;
         }
-
-.input-edicao {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 5px;
-    border: 1px solid #3498db;
-    border-radius: 5px;
-    font-family: inherit;
-}
-.btn-editar-individual {
-    position: absolute;
-    top: 15px;
-    right: 80px; /* Fica ao lado do excluir */
-    background-color: #f1c40f;
-    color: #333;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: bold;
-}
-
     </style>
 </head>
 <body>
@@ -79,7 +72,6 @@
 <div class="container">
     <button class="btn-voltar" onclick="window.location.href='index.html'">⬅ Voltar ao Painel</button>
     <h2>Questões no Banco</h2>
-    
     <div id="lista-perguntas">
         <p style="text-align: center; color: #666;">Buscando informações no banco de dados...</p>
     </div>
@@ -92,17 +84,21 @@
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
   const supabase = createClient(supabaseUrl, supabaseKey)
 
-// FUNÇÃO PARA ATIVAR MODO EDIÇÃO NO CARD
-window.ativarEdicao = (id) => {
+  // ATIVAR MODO EDIÇÃO
+  window.ativarEdicao = (id) => {
     const card = document.getElementById(`card-${id}`);
     const dados = JSON.parse(card.dataset.info);
 
     card.innerHTML = `
-        <button class="btn-deletar-individual" style="background-color:#27ae60" onclick="salvarEdicao('${id}')">Salvar</button>
-        <button class="btn-editar-individual" style="background-color:#95a5a6; color:white; right:15px" onclick="carregarPerguntas()">Cancelar</button>
+        <div class="header-card">
+            <span class="materia-tag" style="color: #e67e22;">EDITANDO ID #${id}</span>
+            <div class="area-botoes">
+                <button class="btn-acao btn-salvar" onclick="salvarEdicao('${id}')">Salvar</button>
+                <button class="btn-acao btn-cancelar" onclick="carregarPerguntas()">Cancelar</button>
+            </div>
+        </div>
         
-        <span class="materia-tag">Editando ID #${id}</span>
-        <input type="text" id="edit-materia-${id}" class="input-edicao" value="${dados.materia}" placeholder="Matéria">
+        <input type="text" id="edit-materia-${id}" class="input-edicao" value="${dados.materia || ''}" placeholder="Matéria">
         <textarea id="edit-pergunta-${id}" class="input-edicao" rows="3">${dados.pergunta}</textarea>
         
         <div class="respostas-lista">
@@ -110,14 +106,14 @@ window.ativarEdicao = (id) => {
             <input type="text" id="edit-r2-${id}" class="input-edicao" value="${dados.r2}">
             <input type="text" id="edit-r3-${id}" class="input-edicao" value="${dados.r3}">
             <input type="text" id="edit-r4-${id}" class="input-edicao" value="${dados.r4}">
-            <label>Correta (1-4):</label>
+            <div style="font-size: 13px; font-weight: bold; margin-top: 5px;">Resposta Correta (1-4):</div>
             <input type="number" id="edit-correta-${id}" class="input-edicao" value="${dados.correta}" min="1" max="4">
         </div>
     `;
-};
+  };
 
-// FUNÇÃO PARA ENVIAR PARA O SUPABASE
-window.salvarEdicao = async (id) => {
+  // SALVAR EDIÇÃO
+  window.salvarEdicao = async (id) => {
     const novosDados = {
         materia: document.getElementById(`edit-materia-${id}`).value,
         pergunta: document.getElementById(`edit-pergunta-${id}`).value,
@@ -129,38 +125,25 @@ window.salvarEdicao = async (id) => {
     };
 
     try {
-        const { error } = await supabase
-            .from('questoes')
-            .update(novosDados)
-            .eq('num', id);
-
+        const { error } = await supabase.from('questoes').update(novosDados).eq('num', id);
         if (error) throw error;
-
         mostrarMensagem("Questão atualizada com sucesso!");
-        carregarPerguntas(); // Recarrega a lista atualizada
+        carregarPerguntas(); 
     } catch (e) {
         mostrarMensagem("Erro ao salvar: " + e.message);
     }
-};
+  };
 
-  // Função para Deletar
+  // DELETAR PERGUNTA
   window.deletarPergunta = async (id) => {
-    // Substituindo confirm por caixa amarela com ação personalizada
     mostrarMensagem("Deseja mesmo excluir a questão " + id + "?");
-    
     const btnOk = document.getElementById('alert-ok-btn');
     btnOk.onclick = async () => {
         fecharAlerta();
         try {
-            const { error } = await supabase
-                .from('questoes')
-                .delete()
-                .eq('num', id);
-
+            const { error } = await supabase.from('questoes').delete().eq('num', id);
             if (error) throw error;
-
-            mostrarMensagem("Questão " + id + " removida com sucesso!");
-            // Resetar o botão para fechar apenas na próxima vez
+            mostrarMensagem("Questão removida com sucesso!");
             document.getElementById('alert-ok-btn').onclick = fecharAlerta;
             carregarPerguntas(); 
         } catch (e) {
@@ -169,36 +152,35 @@ window.salvarEdicao = async (id) => {
     };
   };
 
- async function carregarPerguntas() {
+  // CARREGAR LISTA
+  async function carregarPerguntas() {
     const listaDiv = document.getElementById('lista-perguntas');
     listaDiv.innerHTML = "<p style='text-align: center;'>Carregando...</p>";
     
     try {
-      const { data, error } = await supabase
-        .from('questoes')
-        .select('*')
-        .order('num', { ascending: true });
-
+      const { data, error } = await supabase.from('questoes').select('*').order('num', { ascending: true });
       if (error) throw error;
-      
       if (!data || data.length === 0) {
         listaDiv.innerHTML = "<p style='text-align:center;'>Nenhuma pergunta cadastrada.</p>";
         return;
       }
 
       listaDiv.innerHTML = "";
-
       data.forEach((d) => {
         const id = d.num;
         const card = document.createElement('div');
         card.className = 'pergunta-card';
         card.id = `card-${id}`;
-        card.dataset.info = JSON.stringify(d); // Importante para a edição funcionar
+        card.dataset.info = JSON.stringify(d);
 
         card.innerHTML = `
-          <button class="btn-deletar-individual" onclick="deletarPergunta('${id}')">Excluir</button>
-          <button class="btn-editar-individual" onclick="ativarEdicao('${id}')">Editar</button>
-          <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
+          <div class="header-card">
+              <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
+              <div class="area-botoes">
+                  <button class="btn-acao btn-editar" onclick="ativarEdicao('${id}')">Editar</button>
+                  <button class="btn-acao btn-excluir" onclick="deletarPergunta('${id}')">Excluir</button>
+              </div>
+          </div>
           
           ${d.foto ? `<div style="text-align:center; margin-bottom:10px;"><img src="${d.foto}" style="max-width:100px; border-radius:5px;"></div>` : ''}
           
@@ -212,13 +194,11 @@ window.salvarEdicao = async (id) => {
         `;
         listaDiv.appendChild(card);
       });
-
     } catch (e) {
       listaDiv.innerHTML = `<p style="color:red; text-align:center;">Erro: ${e.message}</p>`;
     }
   }
 
-  // FUNÇÕES DA CAIXA AMARELA
   window.mostrarMensagem = (texto) => {
       document.getElementById('alert-message').innerText = texto;
       document.getElementById('custom-alert').style.display = 'flex';
@@ -226,7 +206,6 @@ window.salvarEdicao = async (id) => {
 
   window.fecharAlerta = () => {
       document.getElementById('custom-alert').style.display = 'none';
-      // Garante que o botão volte ao comportamento padrão de apenas fechar
       document.getElementById('alert-ok-btn').onclick = fecharAlerta;
   };
 
