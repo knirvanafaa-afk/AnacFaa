@@ -161,6 +161,13 @@ input:checked + .slider:before { transform: translateX(20px);
 </head>
 <body>
 
+<div id="custom-alert" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <p id="alert-message" style="color: #333; font-weight: bold; font-size: 18px; margin-bottom: 20px;"></p>
+        <button onclick="fecharAlerta()" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase;">OK</button>
+    </div>
+</div>
+
 <div class="container">
     <h2>CADASTRO DE PERGUNTAS</h2>
 
@@ -289,7 +296,7 @@ input:checked + .slider:before { transform: translateX(20px);
         const arquivo = document.getElementById('imagem_pergunta').files[0];
 
         if (!num || !mat || !per || !r1 || !r2 || !r3 || !r4) {
-            alert("Por favor, preencha todos os campos obrigatórios!");
+            mostrarMensagem("Por favor, preencha todos os campos obrigatórios!");
             return;
         }
 
@@ -330,14 +337,26 @@ input:checked + .slider:before { transform: translateX(20px);
 
             if (insertError) throw insertError;
 
-            alert("Questão cadastrada com sucesso no Supabase!");
+         mostrarMensagem("Questão cadastrada com sucesso no Supabase!");
             location.reload();
 
         } catch (error) {
             console.error(error);
-            alert("Erro na operação: " + error.message);
+         mostrarMensagem("Erro na operação: " + error.message);
         }
     };
+
+// Função para mostrar a mensagem amarela
+window.mostrarMensagem = (texto) => {
+    document.getElementById('alert-message').innerText = texto;
+    document.getElementById('custom-alert').style.display = 'flex';
+};
+
+// Função para fechar a mensagem
+window.fecharAlerta = () => {
+    document.getElementById('custom-alert').style.display = 'none';
+};
+
 </script>
 
 </body>
