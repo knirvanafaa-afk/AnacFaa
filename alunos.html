@@ -19,6 +19,13 @@
 </head>
 <body>
 
+<div id="custom-alert" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <p id="alert-message" style="color: #333; font-weight: bold; font-size: 18px; margin-bottom: 20px;"></p>
+        <button onclick="fecharAlerta()" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase;">OK</button>
+    </div>
+</div>
+
 <div class="container">
     <h2>PROVA SIMULADA</h2>
 
@@ -54,7 +61,6 @@
     async function carregarMaterias() {
         const select = document.getElementById('materia_estudo');
         try {
-            // Busca apenas a coluna 'materia' da tabela 'questoes'
             const { data, error } = await supabase
                 .from('questoes')
                 .select('materia');
@@ -68,14 +74,13 @@
                 }
             });
 
-            select.innerHTML = ""; // Limpa o texto de carregamento
+            select.innerHTML = ""; 
             
             if(materiasSet.size === 0) {
                 select.innerHTML = "<option value=''>Nenhuma matéria no banco</option>";
                 return;
             }
 
-            // Adiciona uma opção vazia inicial
             let optPadrao = document.createElement('option');
             optPadrao.value = "";
             optPadrao.innerHTML = "Selecione uma matéria";
@@ -94,25 +99,33 @@
         }
     }
 
+    // 2. FUNÇÕES DO ALERTA PADRONIZADAS
+    window.mostrarMensagem = (texto) => {
+        document.getElementById('alert-message').innerText = texto;
+        document.getElementById('custom-alert').style.display = 'flex';
+    };
+
+    window.fecharAlerta = () => {
+        document.getElementById('custom-alert').style.display = 'none';
+    };
+
     // Função para salvar a escolha e mudar de página
     window.iniciarProva = () => {
         const mat = document.getElementById('materia_estudo').value;
         const qtd = document.getElementById('qtd_questoes').value;
         
         if(!mat || mat === "") {
-            alert("Por favor, selecione uma matéria!");
+            // 3. TROCADO O ALERT PELO MOSTRARMENSAGEM
+            window.mostrarMensagem("Por favor, selecione uma matéria!");
             return;
         }
 
-        // Salva na memória do navegador para a página prova.html ler
         sessionStorage.setItem('config_materia', mat);
         sessionStorage.setItem('config_qtd', qtd);
         
-        // Redireciona para a página da prova
         window.location.href = 'prova.html';
     };
     
-    // Inicia a carga das matérias ao abrir a página
     carregarMaterias();
 </script>
 
