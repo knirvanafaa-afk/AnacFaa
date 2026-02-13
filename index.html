@@ -337,9 +337,7 @@ input:checked + .slider:before { transform: translateX(20px);
 
             if (insertError) throw insertError;
 
-         mostrarMensagem("Questão cadastrada com sucesso no Supabase!");
-            location.reload();
-
+         mostrarMensagem("Questão cadastrada com sucesso!");
         } catch (error) {
             console.error(error);
          mostrarMensagem("Erro na operação: " + error.message);
@@ -354,9 +352,16 @@ window.mostrarMensagem = (texto) => {
 
 // Função para fechar a mensagem
 window.fecharAlerta = () => {
-    document.getElementById('custom-alert').style.display = 'none';
-};
+    const alerta = document.getElementById('custom-alert');
+    const msg = document.getElementById('alert-message').innerText;
 
+    alerta.style.display = 'none';
+
+    // Se a mensagem for de sucesso, aí sim limpamos a página
+    if (msg.includes("sucesso")) {
+        window.location.reload();
+    }
+};
 </script>
 
 </body>
