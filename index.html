@@ -221,10 +221,12 @@ input:checked + .slider:before { transform: translateX(20px);
     </label>
 
     <input type="file" id="imagem_pergunta" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="window.atualizarNomeArquivo()">
-    
-    <p id="status_upload" style="font-size: 13px; color: #fff9c4; margin-top: 10px; font-weight: bold;"></p> 
+     
+<p id="status_upload" style="font-size: 13px; color: #fff9c4; margin-top: 10px; font-weight: bold;"></p> 
+
+<button type="button" id="btn_remover_foto" onclick="window.limparFoto()" style="display: none; background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold;">✖ REMOVER FOTO</button>
 </div>
-    
+
         <div class="btn-group">
             <button class="btn-cadastrar" id="btn_salvar">Cadastrar Pergunta</button>
              <button class="btn-cadastrar" onclick="window.location.href='alunos.html'">Simulado</button>
@@ -255,14 +257,30 @@ input:checked + .slider:before { transform: translateX(20px);
     const supabase = createClient(supabaseUrl, supabaseKey)
 
     // Função para atualizar o nome do arquivo no campo visual (Opcional)
-    window.atualizarNomeArquivo = () => {
-        const input = document.getElementById('imagem_pergunta');
-        const status = document.getElementById('status_upload');
-        if (input.files.length > 0) {
-            status.innerText = "Arquivo selecionado: " + input.files[0].name;
-        }
-    };
+  
+  window.atualizarNomeArquivo = () => {
+    const input = document.getElementById('imagem_pergunta');
+    const status = document.getElementById('status_upload');
+    const btnRemover = document.getElementById('btn_remover_foto');
 
+    if (input.files.length > 0) {
+        status.innerText = "Arquivo selecionado: " + input.files[0].name;
+        btnRemover.style.display = "inline-block"; // Mostra o botão de remover
+    }
+};
+
+window.limparFoto = () => {
+    const input = document.getElementById('imagem_pergunta');
+    const status = document.getElementById('status_upload');
+    const btnRemover = document.getElementById('btn_remover_foto');
+
+    input.value = ""; // Limpa o arquivo selecionado
+    status.innerText = ""; // Limpa o texto
+    btnRemover.style.display = "none"; // Esconde o botão
+    
+    mostrarMensagem("Foto removida com sucesso!");
+};
+   
    window.toggleR4 = () => {
     const campoR4 = document.getElementById('r4');
     const switchHabilitar = document.getElementById('habilitar_r4');
