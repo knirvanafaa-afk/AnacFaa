@@ -18,7 +18,6 @@
             position: relative; 
         }
 
-        /* Ajuste para os botões não taparem o texto */
         .header-card {
             display: flex;
             justify-content: space-between;
@@ -84,7 +83,30 @@
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
   const supabase = createClient(supabaseUrl, supabaseKey)
 
-  // ATIVAR MODO EDIÇÃO
+  // --- NOVA FUNÇÃO: CANCELAR/RESTAURAR CARD ---
+  window.cancelarEdicao = (id) => {
+    const card = document.getElementById(`card-${id}`);
+    const d = JSON.parse(card.dataset.info);
+
+    card.innerHTML = `
+        <div class="header-card">
+            <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
+            <div class="area-botoes">
+                <button class="btn-acao btn-editar" onclick="ativarEdicao('${id}')">Editar</button>
+                <button class="btn-acao btn-excluir" onclick="deletarPergunta('${id}')">Excluir</button>
+            </div>
+        </div>
+        ${d.foto ? `<div style="text-align:center; margin-bottom:10px;"><img src="${d.foto}" style="max-width:100px; border-radius:5px;"></div>` : ''}
+        <div class="texto-pergunta">${d.pergunta}</div>
+        <div class="respostas-lista">
+            <div class="item-resposta ${d.correta == '1' ? 'correta' : ''}">1) ${d.r1}</div>
+            <div class="item-resposta ${d.correta == '2' ? 'correta' : ''}">2) ${d.r2}</div>
+            <div class="item-resposta ${d.correta == '3' ? 'correta' : ''}">3) ${d.r3}</div>
+            <div class="item-resposta ${d.correta == '4' ? 'correta' : ''}">4) ${d.r4}</div>
+        </div>
+    `;
+  };
+
   window.ativarEdicao = (id) => {
     const card = document.getElementById(`card-${id}`);
     const dados = JSON.parse(card.dataset.info);
@@ -94,7 +116,7 @@
             <span class="materia-tag" style="color: #e67e22;">EDITANDO ID #${id}</span>
             <div class="area-botoes">
                 <button class="btn-acao btn-salvar" onclick="salvarEdicao('${id}')">Salvar</button>
-                <button class="btn-acao btn-cancelar" onclick="carregarPerguntas()">Cancelar</button>
+                <button class="btn-acao btn-cancelar" onclick="window.cancelarEdicao('${id}')">Cancelar</button>
             </div>
         </div>
         
@@ -106,13 +128,18 @@
             <input type="text" id="edit-r2-${id}" class="input-edicao" value="${dados.r2}">
             <input type="text" id="edit-r3-${id}" class="input-edicao" value="${dados.r3}">
             <input type="text" id="edit-r4-${id}" class="input-edicao" value="${dados.r4}">
-            <div style="font-size: 13px; font-weight: bold; margin-top: 5px;">Resposta Correta (1-4):</div>
-            <input type="number" id="edit-correta-${id}" class="input-edicao" value="${dados.correta}" min="1" max="4">
+            
+            <div style="font-size: 13px; font-weight: bold; margin-top: 5px;">Resposta Correta:</div>
+            <select id="edit-correta-${id}" class="input-edicao">
+                <option value="1" ${dados.correta == '1' ? 'selected' : ''}>1</option>
+                <option value="2" ${dados.correta == '2' ? 'selected' : ''}>2</option>
+                <option value="3" ${dados.correta == '3' ? 'selected' : ''}>3</option>
+                <option value="4" ${dados.correta == '4' ? 'selected' : ''}>4</option>
+            </select>
         </div>
     `;
   };
 
-  // SALVAR EDIÇÃO
   window.salvarEdicao = async (id) => {
     const novosDados = {
         materia: document.getElementById(`edit-materia-${id}`).value,
@@ -134,7 +161,6 @@
     }
   };
 
-  // DELETAR PERGUNTA
   window.deletarPergunta = async (id) => {
     mostrarMensagem("Deseja mesmo excluir a questão " + id + "?");
     const btnOk = document.getElementById('alert-ok-btn');
@@ -152,7 +178,6 @@
     };
   };
 
-  // CARREGAR LISTA
   async function carregarPerguntas() {
     const listaDiv = document.getElementById('lista-perguntas');
     listaDiv.innerHTML = "<p style='text-align: center;'>Carregando...</p>";
@@ -160,6 +185,7 @@
     try {
       const { data, error } = await supabase.from('questoes').select('*').order('num', { ascending: true });
       if (error) throw error;
+      
       if (!data || data.length === 0) {
         listaDiv.innerHTML = "<p style='text-align:center;'>Nenhuma pergunta cadastrada.</p>";
         return;
@@ -181,9 +207,7 @@
                   <button class="btn-acao btn-excluir" onclick="deletarPergunta('${id}')">Excluir</button>
               </div>
           </div>
-          
           ${d.foto ? `<div style="text-align:center; margin-bottom:10px;"><img src="${d.foto}" style="max-width:100px; border-radius:5px;"></div>` : ''}
-          
           <div class="texto-pergunta">${d.pergunta}</div>
           <div class="respostas-lista">
             <div class="item-resposta ${d.correta == '1' ? 'correta' : ''}">1) ${d.r1}</div>
