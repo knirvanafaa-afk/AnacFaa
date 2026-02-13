@@ -42,74 +42,78 @@
 </div>
 
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // Importação do Cliente Supabase
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFtDGnaKxvzHGH9n6t4DoP8Cp4qKMfooY",
-    authDomain: "simulado-2151c.firebaseapp.com",
-    projectId: "simulado-2151c",
-    storageBucket: "simulado-2151c.firebasestorage.app",
-    messagingSenderId: "11141253917",
-    appId: "1:11141253917:web:0a98cf7b340e460c366ff4"
-  };
+    // Configurações do seu novo banco
+    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+    const supabase = createClient(supabaseUrl, supabaseKey)
 
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+    // Função que busca as matérias no Supabase e preenche o Select
+    async function carregarMaterias() {
+        const select = document.getElementById('materia_estudo');
+        try {
+            // Busca apenas a coluna 'materia' da tabela 'questoes'
+            const { data, error } = await supabase
+                .from('questoes')
+                .select('materia');
 
-  // Função que busca as matérias no banco e preenche o Select
-  async function carregarMaterias() {
-    const select = document.getElementById('materia_estudo');
-    try {
-        const querySnapshot = await getDocs(collection(db, "questoes"));
-        const materiasSet = new Set();
-        
-        querySnapshot.forEach(doc => {
-            const dados = doc.data();
-            if(dados.materia) {
-                materiasSet.add(dados.materia);
+            if (error) throw error;
+
+            const materiasSet = new Set();
+            data.forEach(item => {
+                if(item.materia) {
+                    materiasSet.add(item.materia);
+                }
+            });
+
+            select.innerHTML = ""; // Limpa o texto de carregamento
+            
+            if(materiasSet.size === 0) {
+                select.innerHTML = "<option value=''>Nenhuma matéria no banco</option>";
+                return;
             }
-        });
 
-        select.innerHTML = ""; // Limpa o texto de carregamento
+            // Adiciona uma opção vazia inicial
+            let optPadrao = document.createElement('option');
+            optPadrao.value = "";
+            optPadrao.innerHTML = "Selecione uma matéria";
+            select.appendChild(optPadrao);
+
+            materiasSet.forEach(mat => {
+                let opt = document.createElement('option');
+                opt.value = mat;
+                opt.innerHTML = mat;
+                select.appendChild(opt);
+            });
+
+        } catch (e) {
+            console.error("Erro ao carregar matérias:", e);
+            select.innerHTML = "<option value=''>Erro ao carregar banco</option>";
+        }
+    }
+
+    // Função para salvar a escolha e mudar de página
+    window.iniciarProva = () => {
+        const mat = document.getElementById('materia_estudo').value;
+        const qtd = document.getElementById('qtd_questoes').value;
         
-        if(materiasSet.size === 0) {
-            select.innerHTML = "<option value=''>Nenhuma matéria no banco</option>";
+        if(!mat || mat === "") {
+            alert("Por favor, selecione uma matéria!");
             return;
         }
 
-        materiasSet.forEach(mat => {
-            let opt = document.createElement('option');
-            opt.value = mat;
-            opt.innerHTML = mat;
-            select.appendChild(opt);
-        });
-
-    } catch (e) {
-        console.error("Erro ao carregar matérias:", e);
-        select.innerHTML = "<option value=''>Erro ao carregar banco</option>";
-    }
-  }
-
-  // Função para salvar a escolha e mudar de página
-  window.iniciarProva = () => {
-    const mat = document.getElementById('materia_estudo').value;
-    const qtd = document.getElementById('qtd_questoes').value;
+        // Salva na memória do navegador para a página prova.html ler
+        sessionStorage.setItem('config_materia', mat);
+        sessionStorage.setItem('config_qtd', qtd);
+        
+        // Redireciona para a página da prova
+        window.location.href = 'prova.html';
+    };
     
-    if(!mat || mat === "") {
-        alert("Por favor, selecione uma matéria!");
-        return;
-    }
-
-    // Salva na memória do navegador para a página prova.html ler
-    sessionStorage.setItem('config_materia', mat);
-    sessionStorage.setItem('config_qtd', qtd);
-    
-    // Redireciona para a página da prova
-    window.location.href = 'prova.html';
-  };
-  
-  carregarMaterias();
+    // Inicia a carga das matérias ao abrir a página
+    carregarMaterias();
 </script>
 
 </body>
