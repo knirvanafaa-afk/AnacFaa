@@ -164,18 +164,17 @@ input:checked + .slider:before { transform: translateX(20px);
 
     <div class="section-cadastro">
         <div style="display: flex; gap: 10px; align-items: flex-end;">
-            <div style="flex: 1; position: relative;">
-    <label>Nº da Pergunta</label>
-    <div style="position: relative; display: flex; align-items: center;">
-        <input type="number" id="num_pergunta" placeholder="Ex: 8001" style="padding-right: 45px;">
-        
-        <button type="button" onclick="window.buscarQuestao()" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center;">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <div style="flex: 1;">
+    <div style="display: flex; align-items: center; gap: 5px;">
+        <label style="margin-top: 0;">Nº da Pergunta</label>
+        <button type="button" onclick="window.buscarQuestao()" style="background: none; border: none; cursor: pointer; padding: 0; display: flex;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"></circle>
                 <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
             </svg>
         </button>
     </div>
+    <input type="number" id="num_pergunta" placeholder="Ex: 8001">
 </div>
             <div style="flex: 2; text-align: center;">
                 <label>Matéria</label>
@@ -319,45 +318,66 @@ input:checked + .slider:before { transform: translateX(20px);
     };
 
     // Botão Salvar com UPSERT (mantém a lógica original mas permite atualização)
-    document.getElementById('btn_salvar').onclick = async () => {
-        const num = document.getElementById('num_pergunta').value;
-        const mat = document.getElementById('materia').value;
-        const per = document.getElementById('pergunta').value;
-        const r1 = document.getElementById('r1').value;
-        const r2 = document.getElementById('r2').value;
-        const r3 = document.getElementById('r3').value;
-        const r4 = document.getElementById('r4').value;
-        const cor = document.getElementById('correta').value;
-        const arquivo = document.getElementById('imagem_pergunta').files[0];
+    
+document.getElementById('btn_salvar').onclick = async () => {
+    const num = document.getElementById('num_pergunta').value;
+    const mat = document.getElementById('materia').value;
+    const per = document.getElementById('pergunta').value;
+    const r1 = document.getElementById('r1').value;
+    const r2 = document.getElementById('r2').value;
+    const r3 = document.getElementById('r3').value;
+    const r4 = document.getElementById('r4').value;
+    const cor = document.getElementById('correta').value;
+    const arquivo = document.getElementById('imagem_pergunta').files[0];
 
-        if (!num || !mat || !per || !r1 || !r2 || !r3 || !r4) {
-            mostrarMensagem("Por favor, preencha todos os campos obrigatórios!");
-            return;
+    if (!num || !mat || !per || !r1 || !r2 || !r3 || !r4) {
+        mostrarMensagem("Por favor, preencha todos os campos obrigatórios!");
+        return;
+    }
+
+    try {
+        let urlFinal = null;
+        if (arquivo) {
+            const nomeArquivo = `${num}_${Date.now()}.jpg`;
+            await supabase.storage.from('fotos').upload(nomeArquivo, arquivo);
+            const { data } = supabase.storage.from('fotos').getPublicUrl(nomeArquivo);
+            urlFinal = data.publicUrl;
         }
 
-        try {
-            let urlFinal = "";
-            if (arquivo) {
-                const nomeArquivo = `${num}_${Date.now()}.jpg`;
-                const { error: uploadError } = await supabase.storage.from('fotos').upload(nomeArquivo, arquivo);
-                if (uploadError) throw uploadError;
-                const { data: publicUrlData } = supabase.storage.from('fotos').getPublicUrl(nomeArquivo);
-                urlFinal = publicUrlData.publicUrl;
-            }
+        const dadosParaSalvar = { num, materia: mat, pergunta: per, r1, r2, r3, r4, correta: cor };
+        if (urlFinal) dadosParaSalvar.foto = urlFinal;
 
-            const dadosParaSalvar = { num, materia: mat, pergunta: per, r1, r2, r3, r4, correta: cor };
-            if (urlFinal) dadosParaSalvar.foto = urlFinal;
+        // Primeiro, verificamos se esse 'num' já existe
+        const { data: existente } = await supabase
+            .from('questoes')
+            .select('num')
+            .eq('num', num)
+            .maybeSingle();
 
-            // Uso do UPSERT para permitir a edição (onConflict: 'num')
-            const { error: saveError } = await supabase.from('questoes').upsert([dadosParaSalvar], { onConflict: 'num' });
-            if (saveError) throw saveError;
+        let erroOperacao;
 
-            mostrarMensagem("Questão salva com sucesso!");
-        } catch (error) {
-            mostrarMensagem("Erro na operação: " + error.message);
+        if (existente) {
+            // Se já existe, usamos UPDATE filtrando pelo num
+            const { error } = await supabase
+                .from('questoes')
+                .update(dadosParaSalvar)
+                .eq('num', num);
+            erroOperacao = error;
+        } else {
+            // Se não existe, usamos INSERT normal
+            const { error } = await supabase
+                .from('questoes')
+                .insert([dadosParaSalvar]);
+            erroOperacao = error;
         }
-    };
 
+        if (erroOperacao) throw erroOperacao;
+
+        mostrarMensagem("Questão salva com sucesso!");
+    } catch (error) {
+        mostrarMensagem("Erro na operação: " + error.message);
+    }
+};
     window.mostrarMensagem = (texto) => {
         document.getElementById('alert-message').innerText = texto;
         document.getElementById('custom-alert').style.display = 'flex';
