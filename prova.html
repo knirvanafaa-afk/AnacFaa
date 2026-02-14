@@ -5,63 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Simulado em Andamento</title>
     <style>
+        /* CSS ORIGINAL PRESERVADO INTEGRALMENTE */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 700px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #333; text-transform: uppercase; margin-bottom: 25px; }
-        
-        .pergunta-card { 
-            border: 2px solid #3498db; 
-            padding: 20px; 
-            border-radius: 15px; 
-            background-color: #f4faff; 
-            margin-bottom: 20px; 
-            transition: 0.3s;
-        }
-
+        .pergunta-card { border: 2px solid #3498db; padding: 20px; border-radius: 15px; background-color: #f4faff; margin-bottom: 20px; transition: 0.3s; }
         .texto-enunciado { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; display: block; }
-
-        .opcao { 
-            display: flex; 
-            align-items: center; 
-            background: white; 
-            border: 1px solid #ccc; 
-            padding: 12px; 
-            margin-top: 8px; 
-            border-radius: 10px; 
-            cursor: pointer; 
-        }
+        .opcao { display: flex; align-items: center; background: white; border: 1px solid #ccc; padding: 12px; margin-top: 8px; border-radius: 10px; cursor: pointer; }
         .opcao:hover { border-color: #3498db; }
         .opcao input { margin-right: 12px; transform: scale(1.2); cursor: pointer; }
-
-        /* Cores de correção */
         .correta { border: 2px solid #2ecc71 !important; background-color: #eafff0 !important; }
         .errada { border: 2px solid #e74c3c !important; background-color: #fff0f0 !important; }
-
-        .btn-finalizar { 
-            background-color: #27ae60; color: white; width: 100%; padding: 18px; 
-            border: none; border-radius: 12px; cursor: pointer; 
-            font-weight: bold; font-size: 18px; text-transform: uppercase;
-            margin-top: 10px;
-        }
-
-        #resultado-caixa { 
-            display: none; 
-            background: #27ae60; color: white; 
-            padding: 25px; border-radius: 15px; 
-            margin-top: 30px; text-align: center;
-        }
-        .btn-voltar { background: #fff9c4; padding: 10px 20px; border: 2px solid #f1c40f; color: #000000;
-border-radius: 8px; cursor: pointer; margin-top: 15px; }
+        .btn-finalizar { background-color: #27ae60; color: white; width: 100%; padding: 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; margin-top: 10px; }
+        #resultado-caixa { display: none; background: #27ae60; color: white; padding: 25px; border-radius: 15px; margin-top: 30px; text-align: center; }
+        .btn-voltar { background: #fff9c4; padding: 10px 20px; border: 2px solid #f1c40f; color: #000000; border-radius: 8px; cursor: pointer; margin-top: 15px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2 id="titulo-prova">Carregando Questões...</h2>
-    
-    <div id="questoes-container">
-        </div>
-
+    <div id="questoes-container"></div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
     
     <div id="resultado-caixa">
@@ -74,7 +38,6 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
 </div>
 
 <script type="module">
-  // IMPORTAÇÃO SUPABASE
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
@@ -86,6 +49,7 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
 
   async function montarSimulado() {
     const materiaAlvo = sessionStorage.getItem('config_materia');
+    const capituloAlvo = sessionStorage.getItem('config_capitulo'); // NOVO: Capítulo recuperado
     const qtdAlvo = parseInt(sessionStorage.getItem('config_qtd'));
     
     if(!materiaAlvo) {
@@ -93,27 +57,33 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
         return;
     }
 
-    document.getElementById('titulo-prova').innerText = "Matéria: " + materiaAlvo;
+    // Atualiza o título. Se houver capítulo, mostra o nome dele.
+    const tituloTexto = (capituloAlvo && capituloAlvo !== "todos") ? capituloAlvo : materiaAlvo;
+    document.getElementById('titulo-prova').innerText = "Simulado: " + tituloTexto;
 
     try {
-        // BUSCA NO SUPABASE
-        const { data, error } = await supabase
-            .from('questoes')
-            .select('*')
-            .eq('materia', materiaAlvo);
+        // BUSCA BASEADA NA MATÉRIA
+        let query = supabase.from('questoes').select('*').eq('materia', materiaAlvo);
+
+        // APLICA FILTRO DE CAPÍTULO APENAS SE NÃO FOR "TODOS"
+        if (capituloAlvo && capituloAlvo !== "todos") {
+            query = query.eq('capitulo', capituloAlvo);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
 
-        let todasDaMateria = data;
+        let todasDaSelecao = data;
 
-        // 1. EMBARALHAR ALEATORIAMENTE
-        todasDaMateria.sort(() => Math.random() - 0.5);
+        // EMBARALHAR ALEATORIAMENTE (Lógica original preservada)
+        todasDaSelecao.sort(() => Math.random() - 0.5);
         
-        // 2. CORTAR PELA QUANTIDADE ESCOLHIDA
-        perguntasSorteador = todasDaMateria.slice(0, qtdAlvo);
+        // CORTAR PELA QUANTIDADE ESCOLHIDA
+        perguntasSorteador = todasDaSelecao.slice(0, qtdAlvo);
 
         if(perguntasSorteador.length === 0) {
-            document.getElementById('questoes-container').innerHTML = "Nenhuma questão encontrada para esta matéria.";
+            document.getElementById('questoes-container').innerHTML = "Nenhuma questão encontrada para esta seleção.";
             return;
         }
 
@@ -123,35 +93,32 @@ border-radius: 8px; cursor: pointer; margin-top: 15px; }
     }
   }
 
+  // FUNÇÃO EXIBIR QUESTÕES: INTEGRALMENTE PRESERVADA (FOTOS E R4)
   function exibirQuestoes() {
     const container = document.getElementById('questoes-container');
     container.innerHTML = "";
     
     perguntasSorteador.forEach((q, index) => {
-        // Verifica se a resposta 4 é "N/A" para ocultar a opção no simulado
         const displayR4 = (q.r4 === "N/A") ? 'none' : 'flex';
 
         container.innerHTML += `
             <div class="pergunta-card" id="card-${index}">
                 <span class="texto-enunciado">${index + 1}) ${q.pergunta}</span>
-                
                 ${q.foto ? `<img src="${q.foto}" style="max-width:100%; border-radius:10px; margin-bottom:15px; display:block;">` : ''}
-
                 <label class="opcao"><input type="radio" name="p${index}" value="1"> ${q.r1}</label>
                 <label class="opcao"><input type="radio" name="p${index}" value="2"> ${q.r2}</label>
                 <label class="opcao"><input type="radio" name="p${index}" value="3"> ${q.r3}</label>
                 <label class="opcao" style="display: ${displayR4};"><input type="radio" name="p${index}" value="4"> ${q.r4}</label>
-                
                 <div id="feedback-${index}" style="margin-top:10px; font-weight:bold; display:none;"></div>
             </div>
         `;
     });
   }
 
+  // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
   window.finalizarProva = () => {
     let acertos = 0;
     let tempoFim = Date.now();
-    
     let totalSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
     let min = Math.floor(totalSegundos / 60);
     let seg = totalSegundos % 60;
