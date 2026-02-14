@@ -5,16 +5,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel de Cadastro de Questões</title>
     <style>
-        /* SEU CSS PRESERVADO INTEGRALMENTE */
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
         .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #333; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
         .section-cadastro { border: 2px solid #2ecc71; padding: 20px; border-radius: 15px; background-color: #fafffa; margin-bottom: 20px; }
         label { display: block; margin-top: 10px; font-weight: bold; color: #444; }
         input, textarea, select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; transition: 0.3s; }
+        input:focus, textarea:focus { border-color: #2ecc71; box-shadow: 0 0 8px rgba(46, 204, 113, 0.3); }
         .grid-respostas { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 10px; }
         .btn-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
         button { flex: 1; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; transition: transform 0.2s, opacity 0.2s; }
+        button:active { transform: scale(0.95); }
         .btn-cadastrar { background-color: #27ae60; color: white; }
         .correta-select { background-color: #fff9c4; border: 2px solid #f1c40f; }
         .switch { position: relative; display: inline-block; width: 40px; height: 20px; }
@@ -24,6 +25,7 @@
         input:checked + .slider { background-color: #2ecc71; }
         input:checked + .slider:before { transform: translateX(20px); }
         .botao-upload-amarelo { display: inline-block; width: 90%; padding: 10px; background-color: #fff9c4; border: 2px solid #f1c40f; border-radius: 10px; color: #333; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.3s; text-align: center; }
+        .botao-upload-amarelo:hover { background-color: #fef5a0; }
     </style>
 </head>
 <body>
@@ -41,20 +43,19 @@
     <div class="section-cadastro">
         <div style="display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px;">
             <div style="display: flex; gap: 15px; align-items: flex-end;">
-                <div style="flex: 0 0 120px;">
+                <div style="flex: 0 0 120px;"> 
                     <div style="display: flex; align-items: center; gap: 5px; margin-bottom: 5px;">
                         <label style="margin: 0; white-space: nowrap;">Nº Pergunta</label>
                         <button type="button" onclick="window.buscarQuestao()" style="background: none; border: none; cursor: pointer; padding: 0; display: flex;">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                                 <circle cx="11" cy="11" r="8"></circle>
-                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                <line x1="21" i1="21" x2="16.65" y2="16.65"></line>
                             </svg>
                         </button>
                     </div>
                     <input type="text" id="num_pergunta" placeholder="Ex: G8001" style="margin-top: 0;">
                 </div>
-
-                <div style="flex: 1;">
+                <div style="flex: 1;"> 
                     <label style="margin-bottom: 5px;">Matéria</label>
                     <select id="materia" style="margin-top: 0;">
                         <option value="General">General</option>
@@ -63,7 +64,6 @@
                     </select>
                 </div>
             </div>
-
             <div style="width: 100%;">
                 <label style="margin-bottom: 5px;">Capítulo</label>
                 <input type="text" id="capitulo" placeholder="Ex: Basic Electricity" style="margin-top: 0;">
@@ -98,15 +98,22 @@
 
         <div style="margin-top: 15px; padding: 15px; border: 1px dashed #ccc; border-radius: 10px; background-color: #27ae60; text-align: center;"> 
             <label style="display: block; margin-bottom: 12px; color: white; font-weight: bold; letter-spacing: 1px;">INCLUIR IMAGEM</label> 
-            <label for="imagem_pergunta" class="botao-upload-amarelo">Selecionar Arquivo</label>
+            <label for="imagem_pergunta" class="botao-upload-amarelo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+                    <path d="M9 2L7.17 4H4C2.9 4 2 4.9 2 6V18C2 19.1 2.9 20 4 20H20C21.1 20 22 19.1 22 18V6C22 4.9 21.1 4 20 4H16.83L15 2H9ZM12 17C9.24 17 7 14.76 7 12C7 9.24 9.24 7 12 7C14.76 7 17 9.24 17 12C17 14.76 14.76 17 12 17Z" fill="#333"/>
+                    <path d="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z" fill="#333"/>
+                </svg>
+                Selecionar Arquivo
+            </label>
             <input type="file" id="imagem_pergunta" accept="image/png, image/jpeg, image/jpg" style="display: none;" onchange="window.atualizarNomeArquivo()">
             <p id="status_upload" style="font-size: 13px; color: #fff9c4; margin-top: 10px; font-weight: bold;"></p> 
             <button type="button" id="btn_remover_foto" onclick="window.limparFoto()" style="display: none; background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold;">✖ REMOVER FOTO</button>
         </div>
 
         <div class="btn-group">
-            <button class="btn-cadastrar" id="btn_salvar">Salvar Pergunta</button>
-            <button class="btn-cadastrar" onclick="window.location.href='alunos.html'">Área Aluno</button>
+            <button class="btn-cadastrar" id="btn_salvar">Cadastrar Pergunta</button>
+            <button class="btn-cadastrar" onclick="window.location.href='alunos.html'">Simulado</button>
+            <button class="btn-cadastrar" onclick="window.location.href='banco.html'">Cadastro de perguntas</button>
         </div>
     </div>
 </div>
@@ -118,7 +125,7 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // VARIÁVEIS GLOBAIS PARA CONTROLE DE EDIÇÃO
+    // VARIÁVEIS GLOBAIS DE CONTROLE
     let idOriginal = null;
     let urlFotoExistente = null;
 
@@ -136,7 +143,8 @@
         document.getElementById('imagem_pergunta').value = "";
         document.getElementById('status_upload').innerText = "";
         document.getElementById('btn_remover_foto').style.display = "none";
-        urlFotoExistente = null; // Remove a referência da foto antiga ao clicar em remover
+        urlFotoExistente = null; 
+        window.mostrarMensagem("Foto removida!");
     };
    
     window.toggleR4 = () => {
@@ -163,17 +171,13 @@
     window.buscarQuestao = async () => {
         const num = document.getElementById('num_pergunta').value;
         if (!num) { mostrarMensagem("Digite um número para buscar!"); return; }
-
         try {
             const { data, error } = await supabase.from('questoes').select('*').eq('num', num).maybeSingle();
-            
             if (error || !data) { mostrarMensagem("Pergunta não encontrada!"); return; }
 
-            // PREENCHE DADOS E GUARDA O ID ORIGINAL
-            idOriginal = data.num;
-            urlFotoExistente = data.foto || null;
+            idOriginal = data.num; // SALVA ID ORIGINAL
+            urlFotoExistente = data.foto || null; // SALVA FOTO ATUAL
 
-            document.getElementById('num_pergunta').value = data.num;
             document.getElementById('materia').value = data.materia || "";
             document.getElementById('capitulo').value = data.capitulo || "";
             document.getElementById('pergunta').value = data.pergunta || "";
@@ -183,22 +187,19 @@
             document.getElementById('r4').value = data.r4 || "";
             document.getElementById('correta').value = data.correta || "1";
             
-            // Gerencia Foto
             if (urlFotoExistente) {
-                document.getElementById('status_upload').innerText = "Esta questão já possui uma imagem.";
+                document.getElementById('status_upload').innerText = "Questão com foto cadastrada.";
                 document.getElementById('btn_remover_foto').style.display = "inline-block";
             } else {
-                window.limparFoto();
+                document.getElementById('status_upload').innerText = "";
+                document.getElementById('btn_remover_foto').style.display = "none";
             }
 
-            // Ajusta o switch do R4
-            document.getElementById('habilitar_r4').checked = (data.r4 !== "N/A");
+            const habR4 = document.getElementById('habilitar_r4');
+            habR4.checked = (data.r4 !== "N/A");
             window.toggleR4();
-
             mostrarMensagem("Questão " + num + " carregada para edição!");
-        } catch (e) {
-            mostrarMensagem("Erro ao buscar: " + e.message);
-        }
+        } catch (e) { mostrarMensagem("Erro ao buscar: " + e.message); }
     };
 
     document.getElementById('btn_salvar').onclick = async () => {
@@ -219,13 +220,13 @@
         }
 
         try {
-            // LÓGICA DE DUPLICAÇÃO: Se mudou o número, apaga o antigo antes de salvar o novo
+            // RESOLVE BUG 1: Se o nome mudou, deleta o registro com o nome antigo
             if (idOriginal && idOriginal !== num) {
                 await supabase.from('questoes').delete().eq('num', idOriginal);
             }
 
-            // LÓGICA DE FOTO: Mantém a antiga se não subir uma nova
-            let urlFinal = urlFotoExistente; 
+            // RESOLVE BUG 2: Mantém a foto anterior se não houver upload novo
+            let urlFinal = urlFotoExistente;
             if (arquivo) {
                 const nomeArquivo = `${num}_${Date.now()}.jpg`;
                 await supabase.storage.from('fotos').upload(nomeArquivo, arquivo);
@@ -238,11 +239,8 @@
             const { error } = await supabase.from('questoes').upsert([dadosParaSalvar], { onConflict: 'num' });
 
             if (error) throw error;
-
             mostrarMensagem("Questão " + num + " salva com sucesso!");
-        } catch (error) {
-            mostrarMensagem("Erro na operação: " + error.message);
-        }
+        } catch (error) { mostrarMensagem("Erro na operação: " + error.message); }
     };
 
     window.mostrarMensagem = (texto) => {
@@ -251,10 +249,10 @@
     };
 
     window.fecharAlerta = () => {
-        const alerta = document.getElementById('custom-alert');
-        const msg = document.getElementById('alert-message').innerText;
-        alerta.style.display = 'none';
-        if (msg.includes("sucesso")) { window.location.reload(); }
+        document.getElementById('custom-alert').style.display = 'none';
+        if (document.getElementById('alert-message').innerText.includes("sucesso")) {
+            window.location.reload();
+        }
     };
 </script>
 </body>
