@@ -30,10 +30,7 @@
     <h2>PROVA SIMULADA</h2>
 
     <div class="section-config">
-        <label>Escolha a Matéria</label>
-        <select id="materia_estudo">
-            <option value="">Carregando matérias...</option>
-        </select>
+     <label>Selecione a Matéria:</label> <select id="materia_simulado" onchange="window.carregarCapitulos()"> <option value="">-- Selecione --</option> <option value="General">General</option> <option value="Airframe">Airframe</option> <option value="Powerplant">Powerplant</option> </select> <label>Selecione o Capítulo:</label> <select id="capitulo_simulado" disabled> <option value="todos">Todos os Capítulos</option> </select> 
         
         <label>Quantidade de Questões</label>
         <select id="qtd_questoes">
@@ -49,57 +46,70 @@
 </div>
 
 <script type="module">
-    // Importação do Cliente Supabase
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-    // Configurações do seu novo banco
     const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Função que busca as matérias no Supabase e preenche o Select
-    async function carregarMaterias() {
-        const select = document.getElementById('materia_estudo');
+    // 1. BUSCA DINÂMICA DE CAPÍTULOS (Baseada na matéria selecionada)
+    window.carregarCapitulos = async () => {
+        const mat = document.getElementById('materia_simulado').value;
+        const selectCap = document.getElementById('capitulo_simulado');
+        
+        selectCap.innerHTML = '<option value="todos">Todos os Capítulos</option>';
+        
+        if (!mat) {
+            selectCap.disabled = true;
+            return;
+        }
+
         try {
+            // Busca capítulos únicos daquela matéria no banco
             const { data, error } = await supabase
                 .from('questoes')
-                .select('materia');
+                .select('capitulo')
+                .eq('materia', mat)
+                .not('capitulo', 'is', null);
 
             if (error) throw error;
 
-            const materiasSet = new Set();
-            data.forEach(item => {
-                if(item.materia) {
-                    materiasSet.add(item.materia);
-                }
+            // Remove duplicados e limpa campos vazios
+            const capsUnicos = [...new Set(data.map(item => item.capitulo))].filter(c => c && c.trim() !== "");
+
+            capsUnicos.forEach(cap => {
+                const opt = document.createElement('option');
+                opt.value = cap;
+                opt.innerText = cap;
+                selectCap.appendChild(opt);
             });
 
-            select.innerHTML = ""; 
-            
-            if(materiasSet.size === 0) {
-                select.innerHTML = "<option value=''>Nenhuma matéria no banco</option>";
-                return;
-            }
-
-            let optPadrao = document.createElement('option');
-            optPadrao.value = "";
-            optPadrao.innerHTML = "Selecione uma matéria";
-            select.appendChild(optPadrao);
-
-            materiasSet.forEach(mat => {
-                let opt = document.createElement('option');
-                opt.value = mat;
-                opt.innerHTML = mat;
-                select.appendChild(opt);
-            });
-
+            selectCap.disabled = false;
         } catch (e) {
-            console.error("Erro ao carregar matérias:", e);
-            select.innerHTML = "<option value=''>Erro ao carregar banco</option>";
+            console.error("Erro ao carregar capítulos:", e);
         }
-    }
+    };
 
-    // 2. FUNÇÕES DO ALERTA PADRONIZADAS
+    // 2. INICIAR A PROVA (Salvando as configurações na sessão)
+    window.iniciarProva = () => {
+        const mat = document.getElementById('materia_simulado').value;
+        const cap = document.getElementById('capitulo_simulado').value;
+        const qtd = document.getElementById('qtd_questoes').value;
+        
+        if(!mat || mat === "") {
+            window.mostrarMensagem("Por favor, selecione uma matéria!");
+            return;
+        }
+
+        // Guardamos a Matéria, o Capítulo e a Quantidade para a página prova.html usar
+        sessionStorage.setItem('config_materia', mat);
+        sessionStorage.setItem('config_capitulo', cap); // NOVO: Agora salvamos o capítulo também
+        sessionStorage.setItem('config_qtd', qtd);
+        
+        window.location.href = 'prova.html';
+    };
+
+    // 3. ALERTAS PERSONALIZADOS
     window.mostrarMensagem = (texto) => {
         document.getElementById('alert-message').innerText = texto;
         document.getElementById('custom-alert').style.display = 'flex';
@@ -108,26 +118,8 @@
     window.fecharAlerta = () => {
         document.getElementById('custom-alert').style.display = 'none';
     };
-
-    // Função para salvar a escolha e mudar de página
-    window.iniciarProva = () => {
-        const mat = document.getElementById('materia_estudo').value;
-        const qtd = document.getElementById('qtd_questoes').value;
-        
-        if(!mat || mat === "") {
-            // 3. TROCADO O ALERT PELO MOSTRARMENSAGEM
-            window.mostrarMensagem("Por favor, selecione uma matéria!");
-            return;
-        }
-
-        sessionStorage.setItem('config_materia', mat);
-        sessionStorage.setItem('config_qtd', qtd);
-        
-        window.location.href = 'prova.html';
-    };
-    
-    carregarMaterias();
 </script>
 
 </body>
 </html>
+
