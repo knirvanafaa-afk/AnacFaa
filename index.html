@@ -165,17 +165,18 @@ input:checked + .slider:before { transform: translateX(20px);
     <div class="section-cadastro">
         <div style="display: flex; gap: 10px; align-items: flex-end;">
             <div style="flex: 1; position: relative;">
-                <label>Nº da Pergunta</label>
-                <div style="display: flex; align-items: center;">
-                    <input type="number" id="num_pergunta" placeholder="Ex: 8001" style="padding-right: 40px;">
-                    <button type="button" onclick="window.buscarQuestao()" style="position: absolute; right: 5px; top: 32px; background: none; border: none; cursor: pointer; padding: 5px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                            <circle cx="11" cy="11" r="8"></circle>
-                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                        </svg>
-                    </button>
-                </div>
-            </div>
+    <label>Nº da Pergunta</label>
+    <div style="position: relative; display: flex; align-items: center;">
+        <input type="number" id="num_pergunta" placeholder="Ex: 8001" style="padding-right: 45px;">
+        
+        <button type="button" onclick="window.buscarQuestao()" style="position: absolute; right: 8px; background: none; border: none; cursor: pointer; padding: 5px; display: flex; align-items: center;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#27ae60" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+        </button>
+    </div>
+</div>
             <div style="flex: 2; text-align: center;">
                 <label>Matéria</label>
                 <input type="text" id="materia" placeholder="Ex: Célula">
