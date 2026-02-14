@@ -203,46 +203,66 @@
         } catch (e) { mostrarMensagem("Erro ao buscar: " + e.message); }
     };
 
-    document.getElementById('btn_salvar').onclick = async () => {
-        const num = document.getElementById('num_pergunta').value;
-        const mat = document.getElementById('materia').value;
-        const cap = document.getElementById('capitulo').value;
-        const per = document.getElementById('pergunta').value;
-        const r1 = document.getElementById('r1').value;
-        const r2 = document.getElementById('r2').value;
-        const r3 = document.getElementById('r3').value;
-        const r4 = document.getElementById('r4').value;
-        const cor = document.getElementById('correta').value;
-        const arquivo = document.getElementById('imagem_pergunta').files[0];
+ document.getElementById('btn_salvar').onclick = async () => {
+    const num = document.getElementById('num_pergunta').value.trim(); // .trim() evita espaços vazios
+    const mat = document.getElementById('materia').value;
+    const cap = document.getElementById('capitulo').value;
+    const per = document.getElementById('pergunta').value;
+    const r1 = document.getElementById('r1').value;
+    const r2 = document.getElementById('r2').value;
+    const r3 = document.getElementById('r3').value;
+    const r4 = document.getElementById('r4').value;
+    const cor = document.getElementById('correta').value;
+    const arquivo = document.getElementById('imagem_pergunta').files[0];
 
-        if (!num || !mat || !cap || !per || !r1 || !r2 || !r3 || !r4) {
-            mostrarMensagem("Por favor, preencha todos os campos obrigatórios!");
-            return;
+    if (!num || !mat || !cap || !per || !r1 || !r2 || !r3 || !r4) {
+        mostrarMensagem("Por favor, preencha todos os campos obrigatórios!");
+        return;
+    }
+
+    try {
+        // 1. Lógica de Foto: Mantém a anterior se não houver nova
+        let urlFinal = urlFotoExistente;
+        if (arquivo) {
+            const nomeArquivo = `${num}_${Date.now()}.jpg`;
+            await supabase.storage.from('fotos').upload(nomeArquivo, arquivo);
+            const { data } = supabase.storage.from('fotos').getPublicUrl(nomeArquivo);
+            urlFinal = data.publicUrl;
         }
 
-        try {
-            // RESOLVE BUG 1: Se o nome mudou, deleta o registro com o nome antigo
-            if (idOriginal && idOriginal !== num) {
-                await supabase.from('questoes').delete().eq('num', idOriginal);
-            }
+        const dadosParaSalvar = { 
+            num: num, 
+            materia: mat, 
+            capitulo: cap, 
+            pergunta: per, 
+            r1: r1, 
+            r2: r2, 
+            r3: r3, 
+            r4: r4, 
+            correta: cor, 
+            foto: urlFinal 
+        };
 
-            // RESOLVE BUG 2: Mantém a foto anterior se não houver upload novo
-            let urlFinal = urlFotoExistente;
-            if (arquivo) {
-                const nomeArquivo = `${num}_${Date.now()}.jpg`;
-                await supabase.storage.from('fotos').upload(nomeArquivo, arquivo);
-                const { data } = supabase.storage.from('fotos').getPublicUrl(nomeArquivo);
-                urlFinal = data.publicUrl;
-            }
+        // 2. Limpeza de duplicados: 
+        // Se estamos editando e o número mudou (ex: de 8001 para G8001), apagamos o antigo.
+        if (idOriginal && idOriginal !== num) {
+            await supabase.from('questoes').delete().eq('num', idOriginal);
+        }
 
-            const dadosParaSalvar = { num, materia: mat, capitulo: cap, pergunta: per, r1, r2, r3, r4, correta: cor, foto: urlFinal };
+        // 3. Evitar o erro de "ON CONFLICT":
+        // Em vez de usar upsert, vamos garantir que o 'num' atual não exista antes de inserir.
+        await supabase.from('questoes').delete().eq('num', num);
 
-            const { error } = await supabase.from('questoes').upsert([dadosParaSalvar], { onConflict: 'num' });
+        // 4. Inserção limpa
+        const { error } = await supabase.from('questoes').insert([dadosParaSalvar]);
 
-            if (error) throw error;
-            mostrarMensagem("Questão " + num + " salva com sucesso!");
-        } catch (error) { mostrarMensagem("Erro na operação: " + error.message); }
-    };
+        if (error) throw error;
+
+        mostrarMensagem("Questão " + num + " salva com sucesso!");
+    } catch (error) {
+        mostrarMensagem("Erro na operação: " + error.message);
+    }
+}; 
 
     window.mostrarMensagem = (texto) => {
         document.getElementById('alert-message').innerText = texto;

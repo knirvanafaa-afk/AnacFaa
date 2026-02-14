@@ -164,19 +164,23 @@
   window.deletarPergunta = async (id) => {
     mostrarMensagem("Deseja mesmo excluir a questão " + id + "?");
     const btnOk = document.getElementById('alert-ok-btn');
-    btnOk.onclick = async () => {
-        fecharAlerta();
-        try {
-            const { error } = await supabase.from('questoes').delete().eq('num', id);
-            if (error) throw error;
-            mostrarMensagem("Questão removida com sucesso!");
-            document.getElementById('alert-ok-btn').onclick = fecharAlerta;
-            carregarPerguntas(); 
-        } catch (e) {
-            mostrarMensagem("Erro ao deletar: " + e.message);
-        }
-    };
-  };
+   
+btnOk.onclick = async () => {
+    fecharAlerta();
+    try {
+        // Usamos String() para garantir que o banco busque o texto exato
+        // Assim, '8002' não será confundido com 'G8002'
+        const { error } = await supabase
+            .from('questoes')
+            .delete()
+            .eq('num', String(id)); 
+
+        if (error) throw error;
+        mostrarMensagem("Questão removida com sucesso!");
+    } catch (error) {
+        mostrarMensagem("Erro ao remover: " + error.message);
+    }
+};
 
   async function carregarPerguntas() {
     const listaDiv = document.getElementById('lista-perguntas');
