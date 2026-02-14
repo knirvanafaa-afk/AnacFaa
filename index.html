@@ -345,7 +345,8 @@ document.getElementById('btn_salvar').onclick = async () => {
     const cor = document.getElementById('correta').value;
     const arquivo = document.getElementById('imagem_pergunta').files[0];
 
-    if (!num || !mat || !per || !r1 || !r2 || !r3 || !r4) {
+    if (!num || !mat || !cap || !per || !r1 || !r2 || !r3 || !r4) {
+
         mostrarMensagem("Por favor, preencha todos os campos obrigatórios!");
         return;
     }
@@ -388,7 +389,7 @@ document.getElementById('btn_salvar').onclick = async () => {
 
         if (erroOperacao) throw erroOperacao;
 
-        mostrarMensagem("Questão salva com sucesso!");
+        mostrarMensagem("Questão " + num + " salva com sucesso!");
     } catch (error) {
         mostrarMensagem("Erro na operação: " + error.message);
     }
