@@ -115,7 +115,10 @@
             <button class="btn-cadastrar" id="btn_salvar">Cadastrar Pergunta</button>
             <button class="btn-cadastrar" onclick="window.location.href='alunos.html'">Simulado</button>
             <button class="btn-cadastrar" onclick="window.location.href='banco.html'">Cadastro de perguntas</button>
-        </div>
+    
+<button class="btn-cadastrar" onclick="fazerLogout()" style="background-color: #e74c3c; flex: 1 1 100%;">Sair do Sistema</button>
+
+    </div>
     </div>
 </div>
 
@@ -271,6 +274,16 @@
             window.location.reload();
         }
     };
+
+window.fazerLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        alert("Erro ao sair: " + error.message);
+    } else {
+        window.location.href = 'index.html'; // Volta para o login
+    }
+};
+
 </script>
 </body>
 </html>
