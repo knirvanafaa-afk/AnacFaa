@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLA - Criar Conta de Trainee</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --verde-sucesso: #2ecc71;
+            --verde-escuro: #1b5e20;
+            --verde-claro-fundo: #fafffa;
+            --cinza-fundo: #f0f2f5;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--cinza-fundo); 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .logo-texto {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            color: var(--verde-escuro);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        .container { 
+            width: 100%; 
+            max-width: 500px; 
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.1); 
+            box-sizing: border-box;
+        }
+
+        h2 { 
+            text-align: center; 
+            color: #333; 
+            margin-bottom: 20px; 
+            text-transform: uppercase; 
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        .section-interna { 
+            border: 2px solid var(--verde-sucesso); 
+            padding: 25px; 
+            border-radius: 15px; 
+            background-color: var(--verde-claro-fundo); 
+            margin-bottom: 10px;
+        }
+
+        label { 
+            display: block; 
+            margin-top: 15px; 
+            font-weight: bold; 
+            color: #444; 
+            font-size: 13px;
+        }
+
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 1px solid #ccc; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            outline: none; 
+            transition: 0.3s; 
+            background-color: white; 
+        }
+
+        input:focus { 
+            border-color: var(--verde-sucesso); 
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.3); 
+        }
+
+        .area-botoes {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            transition: 0.2s; 
+        }
+
+        .btn-principal { 
+            background-color: var(--verde-escuro); 
+            color: white; 
+        }
+
+        .btn-principal:hover {
+            background-color: #219150;
+            transform: translateY(-2px);
+        }
+
+        .link-alternativo {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .link-alternativo span {
+            color: var(--verde-escuro);
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-texto">SKYLicense ACADEMY</div>
+
+    <div class="container">
+        <div id="secao-cadastro">
+            <h2>Nova Matrícula (Trainee)</h2>
+            <div class="section-interna">
+                <label>Nome Completo</label>
+                <input type="text" id="nome" placeholder="Nome do Técnico">
+
+                <label>E-mail Corporativo</label>
+                <input type="email" id="email" placeholder="seu@email.com">
+
+                <label>Senha de Acesso</label>
+                <input type="password" id="senha" placeholder="Mínimo 6 caracteres">
+                
+                <div class="area-botoes">
+                    <button class="btn-principal" onclick="cadastrarUsuario()">Finalizar Cadastro</button>
+                </div>
+            </div>
+            <div class="link-alternativo">
+                Já é da equipe? <span onclick="window.location.href='login.html'">Voltar ao Login</span>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+
+        // Chaves extraídas do seu index.html
+        const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+        const supabase = createClient(supabaseUrl, supabaseKey)
+
+        async function cadastrarUsuario() {
+            const nome = document.getElementById('nome').value;
+            const email = document.getElementById('email').value;
+            const senha = document.getElementById('senha').value;
+
+            if (!nome || !email || !senha) {
+                alert("Pela ordem, Novinho! Preencha tudo corretamente.");
+                return;
+            }
+
+            try {
+                // 1. Cria o usuário no Auth do Supabase
+                const { data, error } = await supabase.auth.signUp({
+                    email: email,
+                    password: senha,
+                    options: {
+                        data: {
+                            full_name: nome,
+                            role: 'admin' // Definido como admin conforme sua solicitação para teste
+                        }
+                    }
+                });
+
+                if (error) throw error;
+
+                alert("Check de E-mail! Enviamos um link de confirmação para " + email + ". Clique nele para ativar sua conta.");
+                window.location.href = 'login.html';
+
+            } catch (error) {
+                alert("Falha na ignição: " + error.message);
+            }
+        }
+
+        // Garante que a função está disponível para o botão
+        window.cadastrarUsuario = cadastrarUsuario;
+    </script>
+</body>
+</html>
