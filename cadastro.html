@@ -61,18 +61,26 @@
     };
 
     window.cadastrarUsuario = async () => {
-        const nome = document.getElementById('cad-nome').value;
-        const email = document.getElementById('cad-email').value;
-        const senha = document.getElementById('cad-senha').value;
+    const nome = document.getElementById('cad-nome').value;
+    const email = document.getElementById('cad-email').value;
+    const senha = document.getElementById('cad-senha').value;
 
-        try {
-            const { error } = await supabase.auth.signUp({
-                email, password: senha, options: { data: { full_name: nome, role: 'admin' } }
-            });
-            if (error) throw error;
-            mostrarMensagem("Cadastro com sucesso! Verifique seu e-mail.");
-        } catch (e) { mostrarMensagem("Erro: " + e.message); }
-    };
+    try {
+        const { data, error } = await supabase.auth.signUp({
+            email, 
+            password: senha, 
+            options: { data: { full_name: nome } }
+        });
+        
+        if (error) throw error;
+
+        // Se o usuário já existe mas não confirmou, o Supabase não envia novo e-mail imediatamente (por segurança)
+        mostrarMensagem("Solicitação enviada! Acesse seu e-mail corporativo e clique no link de confirmação para validar seu acesso.");
+    } catch (e) { 
+        mostrarMensagem("Erro: " + e.message); 
+    }
+};
+
 </script>
 </body>
 </html>
