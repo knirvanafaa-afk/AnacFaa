@@ -75,7 +75,7 @@
         if (error) throw error;
 
         // Se o usuário já existe mas não confirmou, o Supabase não envia novo e-mail imediatamente (por segurança)
-        mostrarMensagem("Solicitação enviada! Acesse seu e-mail corporativo e clique no link de confirmação para validar seu acesso.");
+        mostrarMensagem("Cadastro efetuado! Acesse o e-mail cadastrado e clique no link de confirmação para validar seu acesso.");
     } catch (e) { 
         mostrarMensagem("Erro: " + e.message); 
     }
