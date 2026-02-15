@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLA - Login e Cadastro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --verde-sucesso: #2ecc71;
+            --verde-escuro: #1b5e20;
+            --verde-claro-fundo: #fafffa;
+            --cinza-fundo: #f0f2f5;
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: var(--cinza-fundo); 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .logo-texto {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            color: var(--verde-escuro);
+            margin-bottom: 20px;
+            text-align: center;
+            letter-spacing: 2px;
+        }
+
+        /* Container Branco - Igual ao index.html */
+        .container { 
+            width: 100%; 
+            max-width: 500px; /* Largura controlada */
+            background: white; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.1); 
+            box-sizing: border-box;
+        }
+
+        h2 { 
+            text-align: center; 
+            color: #333; 
+            margin-bottom: 20px; 
+            text-transform: uppercase; 
+            font-size: 18px;
+            letter-spacing: 1px;
+        }
+
+        /* Seção Verde Claro dentro da Caixa Branca - Igual ao index.html */
+        .section-interna { 
+            border: 2px solid var(--verde-sucesso); 
+            padding: 25px; 
+            border-radius: 15px; 
+            background-color: var(--verde-claro-fundo); 
+            margin-bottom: 10px;
+        }
+
+        label { 
+            display: block; 
+            margin-top: 15px; 
+            font-weight: bold; 
+            color: #444; 
+            font-size: 13px;
+        }
+
+        /* Caixas de Texto Brancas sobre o fundo Verde Claro */
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 1px solid #ccc; 
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            outline: none; 
+            transition: 0.3s; 
+            background-color: white; /* Brancas conforme solicitado */
+        }
+
+        input:focus { 
+            border-color: var(--verde-sucesso); 
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.3); 
+        }
+
+        .area-botoes {
+            margin-top: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        button { 
+            width: 100%; 
+            padding: 16px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 14px; 
+            text-transform: uppercase; 
+            transition: 0.2s; 
+        }
+
+        .btn-principal { 
+            background-color: var(--verde-escuro); 
+            color: white; 
+        }
+
+        .btn-principal:hover {
+            background-color: #219150;
+            transform: translateY(-2px);
+        }
+
+        .link-alternativo {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .link-alternativo span {
+            color: var(--verde-escuro);
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        #secao-cadastro { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="logo-texto">SKYLicense ACADEMY</div>
+
+    <div class="container">
+        
+        <div id="secao-login">
+            <h2>Acesso ao Hangar</h2>
+            <div class="section-interna">
+                <label>E-mail ou Usuário</label>
+                <input type="text" id="login-usuario" placeholder="Digite seu e-mail">
+                
+                <label>Senha</label>
+                <input type="password" id="login-senha" placeholder="••••••••">
+                
+                <div class="area-botoes">
+                    <button class="btn-principal" onclick="tentarLogin()">Entrar no Sistema</button>
+                </div>
+            </div>
+            <div class="link-alternativo">
+                Novinho na área? <span onclick="alternarTelas()">Criar Conta de Trainee</span>
+            </div>
+        </div>
+
+        <div id="secao-cadastro">
+            <h2>Nova Matrícula</h2>
+            <div class="section-interna">
+                <label>Nome Completo</label>
+                <input type="text" id="cad-nome" placeholder="Nome do Técnico">
+
+                <label>E-mail Corporativo</label>
+                <input type="email" id="cad-email" placeholder="exemplo@manutencao.com">
+
+                <label>Telefone / WhatsApp</label>
+                <input type="text" id="cad-tel" placeholder="(00) 00000-0000">
+
+                <label>Senha de Acesso</label>
+                <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres">
+                
+                <div class="area-botoes">
+                    <button class="btn-principal" onclick="finalizarCadastro()">Solicitar Acesso</button>
+                </div>
+            </div>
+            <div class="link-alternativo">
+                Já é da equipe? <span onclick="alternarTelas()">Voltar ao Login</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        function alternarTelas() {
+            const login = document.getElementById('secao-login');
+            const cadastro = document.getElementById('secao-cadastro');
+            
+            if (login.style.display === "none") {
+                login.style.display = "block";
+                cadastro.style.display = "none";
+            } else {
+                login.style.display = "none";
+                cadastro.style.display = "block";
+            }
+        }
+
+        function tentarLogin() {
+            // Próximo passo: Integração Supabase
+            alert("Preparando motores de autenticação...");
+        }
+
+        function finalizarCadastro() {
+            // Próximo passo: Integração Supabase
+            alert("Enviando dados para a base...");
+        }
+    </script>
+</body>
+</html>
