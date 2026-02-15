@@ -44,37 +44,40 @@
 </div>
 
 <script type="module">
-    // Lógica de Login (será integrada com MFA no próximo passo)
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+
     window.fecharAlerta = () => document.getElementById('custom-alert').style.display = 'none';
+    
     window.mostrarMensagem = (msg) => {
         document.getElementById('alert-message').innerText = msg;
         document.getElementById('custom-alert').style.display = 'flex';
     };
-    window.tentarLogin = () => mostrarMensagem("Aguarde integração de segurança.");
 
-window.realizarLogin = async () => {
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-senha').value;
+    window.realizarLogin = async () => {
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-senha').value;
 
-    try {
-        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-
-        // Se logou com sucesso, vamos checar se ele já tem MFA (6 dígitos) ativo
-        const { data: factors, error: mfaError } = await supabase.auth.mfa.listFactors();
-        
-        if (factors && factors.totp && factors.totp.length > 0) {
-            // Se já tem a trava, manda para a página de digitar os 6 números
-            window.location.href = 'verificar-mfa.html'; 
-        } else {
-            // Se é o primeiro login do ADM, manda configurar a trava
-            window.location.href = 'setup-mfa.html';
+        if(!email || !password) {
+            mostrarMensagem("Preencha e-mail e senha.");
+            return;
         }
-    } catch (e) {
-        mostrarMensagem("Erro de Acesso: " + e.message);
-    }
-};
 
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+
+            const { data: factors } = await supabase.auth.mfa.listFactors();
+            
+            if (factors && factors.totp && factors.totp.length > 0) {
+                window.location.href = 'verificar-mfa.html'; 
+            } else {
+                window.location.href = 'setup-mfa.html';
+            }
+        } catch (e) {
+            mostrarMensagem("Erro de Acesso: " + e.message);
+        }
+    };
 </script>
 </body>
 </html>
