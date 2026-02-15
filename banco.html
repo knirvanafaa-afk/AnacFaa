@@ -77,11 +77,26 @@
 </div>
 
 <script type="module">
+
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
   const supabase = createClient(supabaseUrl, supabaseKey)
+
+async function verificarAcesso() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+        window.location.href = 'index.html'; // Expulsa se não estiver logado
+        return;
+    }
+
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (data.currentLevel !== 'aal2') {
+        window.location.href = 'verificar-mfa.html'; // Expulsa se não usou os 6 dígitos
+    }
+}
+verificarAcesso();
 
   // --- NOVA FUNÇÃO: CANCELAR/RESTAURAR CARD ---
   window.cancelarEdicao = (id) => {
@@ -242,3 +257,4 @@ btnOk.onclick = async () => {
 </script>
 </body>
 </html>
+
