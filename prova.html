@@ -82,7 +82,7 @@ input[type="radio"]:disabled {
   let perguntasSorteador = [];
   let intervaloTimer;
   let tempoRestante;
-  let tempoInicio = Date.now();
+  let tempoInicio;
 
   async function montarSimulado() {
     const materiaAlvo = sessionStorage.getItem('config_materia');
@@ -125,6 +125,7 @@ input[type="radio"]:disabled {
         }
 
         exibirQuestoes();
+tempoInicio = Date.now();
 iniciarTimer(qtdAlvo);
     } catch (e) {
         alert("Erro ao carregar banco: " + e.message);
@@ -158,13 +159,13 @@ function iniciarTimer(qtdQuestoes) {
         display.innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
 
         // Alerta de tempo esgotando (abaixo de 5 min)
-        if (tempoRestante <= 300) {
-            containerTimer.classList.add('tempo-critico');
-            // Mantém a estrutura do texto sem quebrar o layout
-            if(!containerTimer.innerHTML.includes("ESGOTANDO")) {
-                 containerTimer.insertAdjacentHTML('beforeend', '<br><small id="aviso-msg">TEMPO ESGOTANDO!</small>');
-            }
-        }
+      
+if (tempoRestante <= 300) {
+    containerTimer.classList.add('tempo-critico');
+    if (!document.getElementById('aviso-msg')) { 
+        containerTimer.insertAdjacentHTML('beforeend', '<br><small id="aviso-msg">TEMPO ESGOTANDO!</small>'); 
+    }
+}
     }, 1000);
 }
 
@@ -191,7 +192,7 @@ function iniciarTimer(qtdQuestoes) {
   }
 
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
-  window.finalizarProva = () => {
+  window.finalizarProva = function() {
 clearInterval(intervaloTimer);
     let acertos = 0;
     let tempoFim = Date.now();
