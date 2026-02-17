@@ -22,15 +22,24 @@
 
 /* Estilo do Timer */
 #timer-display {
-    text-align: center;
-    font-size: 22px;
-    font-weight: bold;
+    width: 100%;
+    padding: 12px;
     margin-bottom: 20px;
-    color: #2c3e50;
-    background: #ecf0f1;
-    padding: 10px;
+    border: 2px solid #f1c40f; /* Borda amarela igual ao seletor da correta */
     border-radius: 10px;
-    border: 2px solid #bdc3c7;
+    box-sizing: border-box;
+    font-size: 16px; /* Mesma fonte dos inputs */
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fff9c4; /* Mesmo background amarelo claro */
+    color: #444; /* Cor de texto padrão */
+    text-align: center; /* Centralizado conforme solicitado */
+    font-weight: bold;
+    outline: none;
+}
+
+/* Ajuste no texto interno do timer para não ficar desproporcional */
+#timer-display span {
+    font-size: 16px;
 }
 
 /* Alerta de tempo esgotando */
