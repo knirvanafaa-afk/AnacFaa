@@ -124,7 +124,7 @@
     let seg = totalSegundos % 60;
     let tempoFormatado = `${min}min ${seg}s`;
 
-    perguntasSorteador.forEach((q, index) => {
+perguntasSorteador.forEach((q, index) => {
         const selecionado = document.querySelector(`input[name="p${index}"]:checked`);
         const card = document.getElementById(`card-${index}`);
         const feedback = document.getElementById(`feedback-${index}`);
@@ -142,13 +142,16 @@
             feedback.innerHTML = `❌ Errou. A resposta correta era a Opção ${q.correta}`;
             feedback.style.color = "#e74c3c";
         }
-    });
+    }); // <--- Aqui termina o loop de checagem
 
+    // AGORA SIM: Trava todos de uma vez, independente de acerto ou erro
+    document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+
+    // E continua o código...
     document.getElementById('btn-concluir').style.display = "none";
     const caixaRes = document.getElementById('resultado-caixa');
     caixaRes.style.display = "block";
-    
-    document.getElementById('res-acertos').innerText = `Acertos: ${acertos} de ${perguntasSorteador.length}`;
+     document.getElementById('res-acertos').innerText = `Acertos: ${acertos} de ${perguntasSorteador.length}`;
     document.getElementById('res-porcentagem').innerText = `Desempenho: ${((acertos/perguntasSorteador.length)*100).toFixed(1)}%`;
     document.getElementById('res-tempo').innerText = `Tempo gasto: ${tempoFormatado}`;
 
