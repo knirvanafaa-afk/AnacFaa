@@ -19,12 +19,47 @@
         .btn-finalizar { background-color: #27ae60; color: white; width: 100%; padding: 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; margin-top: 10px; }
         #resultado-caixa { display: none; background: #27ae60; color: white; padding: 25px; border-radius: 15px; margin-top: 30px; text-align: center; }
         .btn-voltar { background: #fff9c4; padding: 10px 20px; border: 2px solid #f1c40f; color: #000000; border-radius: 8px; cursor: pointer; margin-top: 15px; }
+
+/* Estilo do Timer */
+#timer-display {
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    background: #ecf0f1;
+    padding: 10px;
+    border-radius: 10px;
+    border: 2px solid #bdc3c7;
+}
+
+/* Alerta de tempo esgotando */
+.tempo-critico {
+    color: #e74c3c !important;
+    border-color: #e74c3c !important;
+    animation: piscar 1s infinite;
+}
+
+@keyframes piscar {
+    50% { opacity: 0.6; }
+}
+
+/* Trava visual do cursor */
+input[type="radio"]:disabled {
+    cursor: not-allowed;
+}
+
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2 id="titulo-prova">Carregando Questões...</h2>
+
+<div id="timer-display">
+    TEMPO: <span id="contagem">--:--</span> MIN
+</div>
+
     <div id="questoes-container"></div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
     
@@ -45,6 +80,8 @@
   const supabase = createClient(supabaseUrl, supabaseKey)
 
   let perguntasSorteador = [];
+  let intervaloTimer;
+  let tempoRestante;
   let tempoInicio = Date.now();
 
   async function montarSimulado() {
@@ -88,10 +125,48 @@
         }
 
         exibirQuestoes();
+iniciarTimer(qtdAlvo);
     } catch (e) {
         alert("Erro ao carregar banco: " + e.message);
     }
   }
+
+function iniciarTimer(qtdQuestoes) {
+    let minutos = (qtdQuestoes <= 30) ? 40 : (qtdQuestoes <= 50) ? 60 : 120;
+    
+    // Guardamos o MOMENTO EXATO em que a prova deve terminar
+    const momentoTermino = Date.now() + (minutos * 60 * 1000);
+
+    intervaloTimer = setInterval(() => {
+        const agora = Date.now();
+        const milissegundosRestantes = momentoTermino - agora;
+        tempoRestante = Math.floor(milissegundosRestantes / 1000);
+
+        if (tempoRestante <= 0) {
+            clearInterval(intervaloTimer);
+            document.getElementById('contagem').innerText = "00:00";
+            alert("O tempo acabou! Sua prova será finalizada agora.");
+            window.finalizarProva();
+            return;
+        }
+
+        let m = Math.floor(tempoRestante / 60);
+        let s = tempoRestante % 60;
+        const display = document.getElementById('contagem');
+        const containerTimer = document.getElementById('timer-display');
+
+        display.innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+
+        // Alerta de tempo esgotando (abaixo de 5 min)
+        if (tempoRestante <= 300) {
+            containerTimer.classList.add('tempo-critico');
+            // Mantém a estrutura do texto sem quebrar o layout
+            if(!containerTimer.innerHTML.includes("ESGOTANDO")) {
+                 containerTimer.insertAdjacentHTML('beforeend', '<br><small id="aviso-msg">TEMPO ESGOTANDO!</small>');
+            }
+        }
+    }, 1000);
+}
 
   // FUNÇÃO EXIBIR QUESTÕES: INTEGRALMENTE PRESERVADA (FOTOS E R4)
   function exibirQuestoes() {
@@ -117,6 +192,7 @@
 
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
   window.finalizarProva = () => {
+clearInterval(intervaloTimer);
     let acertos = 0;
     let tempoFim = Date.now();
     let totalSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
