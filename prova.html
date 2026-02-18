@@ -9,18 +9,8 @@
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 700px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
       
-h2 { 
-    background-color: #27ae60; 
-    color: white; 
-    text-align: center; 
-    padding: 18px; 
-    border-radius: 12px; 
-    font-weight: bold; 
-    font-size: 18px; 
-    text-transform: uppercase; 
-    margin-bottom: 25px; 
-    box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-}
+h2 { background-color: #27ae60; color: white; text-align: center; padding: 15px; border-radius: 12px; font-weight: bold; font-size: 18px; text-transform: uppercase; margin-top: 0; margin-bottom: 10px !important; box-shadow: 0px 4px 10px rgba(0,0,0,0.1); }
+
         .pergunta-card { border: 2px solid #3498db; padding: 20px; border-radius: 15px; background-color: #f4faff; margin-bottom: 20px; transition: 0.3s; }
         .texto-enunciado { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; display: block; }
         .opcao { display: flex; align-items: center; background: white; border: 1px solid #ccc; padding: 12px; margin-top: 8px; border-radius: 10px; cursor: pointer; }
@@ -70,17 +60,27 @@ input[type="radio"]:disabled {
     cursor: not-allowed;
 }
 
+.topo-fixo { position: -webkit-sticky; /* Suporte para Safari/iOS */ position: sticky; top: 0; z-index: 1000; background-color: #f0f2f5; padding-top: 5px; padding-bottom: 5px; margin-left: -30px; /* Compensa o padding do container para cobrir de ponta a ponta */ margin-right: -30px; padding-left: 30px; padding-right: 30px; box-shadow: 0px 10px 15px -10px rgba(0,0,0,0.1); }
+
     </style>
 </head>
 <body>
 
+<div id="custom-alert" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <p id="alert-message" style="color: #333; font-weight: bold; font-size: 18px; margin-bottom: 20px;"></p>
+        <button onclick="fecharAlerta()" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase;">OK</button>
+    </div>
+</div>
+
 <div class="container">
+<div class="topo-fixo">
     <h2 id="titulo-prova">Carregando Questões...</h2>
 
 <div id="timer-display">
     TEMPO: <span id="contagem">--:--</span> MIN
+   </div>
 </div>
-
     <div id="questoes-container"></div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
     
@@ -149,7 +149,7 @@ input[type="radio"]:disabled {
 tempoInicio = Date.now();
 iniciarTimer(qtdAlvo);
     } catch (e) {
-        alert("Erro ao carregar banco: " + e.message);
+        window.mostrarMensagem("Erro ao carregar banco: " + e.message);
     }
   }
 
@@ -167,8 +167,8 @@ function iniciarTimer(qtdQuestoes) {
         if (tempoRestante <= 0) {
             clearInterval(intervaloTimer);
             document.getElementById('contagem').innerText = "00:00";
-            alert("O tempo acabou! Sua prova será finalizada agora.");
-            window.finalizarProva();
+            window.mostrarMensagem("O tempo acabou! Sua prova será finalizada agora.");
+window.finalizarProva();
             return;
         }
 
@@ -257,6 +257,18 @@ perguntasSorteador.forEach((q, index) => {
   };
 
   montarSimulado();
+
+// Funções de Alerta Padronizadas
+window.mostrarMensagem = (texto) => {
+    document.getElementById('alert-message').innerText = texto;
+    document.getElementById('custom-alert').style.display = 'flex';
+};
+
+window.fecharAlerta = () => {
+    document.getElementById('custom-alert').style.display = 'none';
+};
+
+
 </script>
 </body>
 </html>
