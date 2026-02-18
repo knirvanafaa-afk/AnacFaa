@@ -177,11 +177,23 @@ function iniciarTimer(qtdQuestoes) {
         const milissegundosRestantes = momentoTermino - agora;
         tempoRestante = Math.floor(milissegundosRestantes / 1000);
 
-        if (tempoRestante <= 0) {
+       if (tempoRestante <= 0) {
             clearInterval(intervaloTimer);
-            document.getElementById('contagem').innerText = "00:00";
+            
+            // 1. Ajuste visual do Timer
+            const display = document.getElementById('contagem');
+            const containerTimer = document.getElementById('timer-display');
+            
+            display.innerText = "00:00";
+            containerTimer.classList.remove('tempo-critico'); // Para de piscar
+            
+            // Muda o texto de "Tempo: 00:00 Min" para "TEMPO ESGOTADO"
+            containerTimer.innerHTML = "<strong>TEMPO ESGOTADO</strong>"; 
+            
             window.mostrarMensagem("O tempo acabou! Sua prova será finalizada agora.");
-window.finalizarProva();
+            
+            // 2. Força o encerramento passando um sinal de que o tempo esgotou
+            window.finalizarProva(true); 
             return;
         }
 
@@ -226,11 +238,21 @@ if (tempoRestante <= 300) {
   }
 
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
-  window.finalizarProva = function() {
+
+window.finalizarProva = function(foiPorTempo = false) {
 clearInterval(intervaloTimer);
     let acertos = 0;
     let tempoFim = Date.now();
-    let totalSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+    let totalSegundos;
+
+    if (foiPorTempo) {
+        const qtdAlvo = parseInt(sessionStorage.getItem('config_qtd'));
+        const limiteMinutos = (qtdAlvo <= 30) ? 40 : (qtdAlvo <= 50) ? 60 : 120;
+        totalSegundos = limiteMinutos * 60;
+    } else {
+        totalSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+    }
+
     let min = Math.floor(totalSegundos / 60);
     let seg = totalSegundos % 60;
     let tempoFormatado = `${min}min ${seg}s`;
