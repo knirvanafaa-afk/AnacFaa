@@ -60,7 +60,18 @@ input[type="radio"]:disabled {
     cursor: not-allowed;
 }
 
-.topo-fixo { position: -webkit-sticky; /* Suporte para Safari/iOS */ position: sticky; top: 0; z-index: 1000; background-color: #f0f2f5; padding-top: 5px; padding-bottom: 5px; margin-left: -30px; /* Compensa o padding do container para cobrir de ponta a ponta */ margin-right: -30px; padding-left: 30px; padding-right: 30px; box-shadow: 0px 10px 15px -10px rgba(0,0,0,0.1); }
+.topo-fixo { 
+    position: -webkit-sticky; 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+    background-color: white; /* Cor exata do seu container */
+    padding-top: 10px; 
+    padding-bottom: 5px;
+    /* Removemos as margens negativas para não vazar para o cinza */
+    border-radius: 15px 15px 0 0; /* Mantém o topo arredondado igual ao box */
+    box-shadow: 0px 8px 10px -10px rgba(0,0,0,0.1); /* Sombra suave para separar das questões */
+}
 
     </style>
 </head>
@@ -84,8 +95,12 @@ input[type="radio"]:disabled {
     <div id="questoes-container"></div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
     
-    <div id="resultado-caixa">
-        <h3 style="margin-top:0;">📊 RESULTADO FINAL</h3>
+<div id="resultado-caixa">
+    <h3 style="margin-top:0; display: flex; align-items: center; justify-content: center; gap: 10px;">
+        <img src="Prancheta.jpg" alt="Ícone" style="height: 35px; width: auto; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+        RESULTADO FINAL
+    </h3>
+    </div>
         <p id="res-acertos" style="font-size: 20px;"></p>
         <p id="res-porcentagem"></p>
         <p id="res-tempo"></p>
