@@ -12,7 +12,29 @@
         .section-config { border: 2px solid #2ecc71; padding: 20px; border-radius: 15px; background-color: #fafffa; margin-bottom: 20px; }
         
         label { display: block; margin-top: 10px; font-weight: bold; color: #444; }
-        select { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+        select { 
+            width: 100%; 
+            padding: 12px; 
+            margin-top: 5px; 
+            border: 2px solid #f1c40f; /* Borda amarela do alerta */
+            border-radius: 10px; 
+            box-sizing: border-box; 
+            font-size: 16px; 
+            outline: none; 
+            background-color: #fff9c4; /* Fundo amarelo claro do alerta */
+            color: #333; /* Cor do texto */
+            font-family: 'Segoe UI', sans-serif;
+            font-weight: bold; /* Deixa o texto mais visível no fundo amarelo */
+            cursor: pointer;
+        }
+
+        /* Ajuste para quando o seletor estiver desativado (Capítulo) */
+        select:disabled {
+            background-color: #eeeeee;
+            border-color: #ccc;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
         
         .btn-iniciar { background-color: #27ae60; color: white; width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 20px; }
     </style>
