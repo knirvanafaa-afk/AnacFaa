@@ -141,13 +141,15 @@
         document.getElementById('custom-alert').style.display = 'none';
     };
 
-// Garante que, se a página recarregar com uma matéria já selecionada, os capítulos carreguem
-document.addEventListener('DOMContentLoaded', () => {
+// Este evento dispara sempre, inclusive quando você volta pelo botão do navegador
+window.addEventListener('pageshow', (event) => {
     const materiaSelect = document.getElementById('materia_simulado');
-    if (materiaSelect.value !== "") {
+    // Se houver uma matéria selecionada (mesmo vindo do cache), carrega os capítulos
+    if (materiaSelect && materiaSelect.value !== "") {
         window.carregarCapitulos();
     }
 });
+
 </script>
 
 </body>
