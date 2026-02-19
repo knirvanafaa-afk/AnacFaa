@@ -140,6 +140,14 @@
     window.fecharAlerta = () => {
         document.getElementById('custom-alert').style.display = 'none';
     };
+
+// Garante que, se a página recarregar com uma matéria já selecionada, os capítulos carreguem
+document.addEventListener('DOMContentLoaded', () => {
+    const materiaSelect = document.getElementById('materia_simulado');
+    if (materiaSelect.value !== "") {
+        window.carregarCapitulos();
+    }
+});
 </script>
 
 </body>
