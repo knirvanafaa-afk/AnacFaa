@@ -75,7 +75,13 @@
     <button class="btn-voltar" onclick="window.location.href='index.html'">⬅ Voltar ao Painel</button>
     <h2>Questões no Banco</h2>
     
-    <input type="text" id="busca-id" class="search-box" placeholder="🔍 Buscar por ID (ex: 8001)..." oninput="filtrarQuestoes()">
+<div style="position: relative; width: 100%;">
+        <svg style="position: absolute; left: 12px; top: 12px;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+        <input type="text" id="busca-id" class="search-box" style="padding-left: 45px;" placeholder="Buscar por ID..." oninput="filtrarQuestoes()">
+    </div>
 
     <div id="lista-perguntas">
         <p style="text-align: center; color: #666;">Buscando informações no banco de dados...</p>
@@ -105,12 +111,17 @@
     renderizarCardNormal(card, d);
   };
 
-  // Função auxiliar para não repetir código
-  function renderizarCardNormal(card, d) {
+  // Função auxiliar para não repetir cards gravados
+
+function renderizarCardNormal(card, d) {
     const id = d.num;
     card.innerHTML = `
         <div class="header-card">
-           <span class="materia-tag">ID #${id} | ${d.materia || 'Geral'} | Cap: ${d.capitulo || 'Geral'}</span>
+           <div class="materia-tag">
+               <div style="font-size: 16px; color: #333;">ID #${id}</div>
+               <div style="text-transform: uppercase; color: #2980b9;">${d.materia || 'GENERAL'}</div>
+               <div style="text-transform: lowercase; font-weight: normal; color: #7f8c8d;">${d.capitulo || 'básico'}</div>
+           </div>
             <div class="area-botoes">
                 <button class="btn-acao btn-editar" onclick="ativarEdicao('${id}')">Editar</button>
                 <button class="btn-acao btn-excluir" onclick="deletarPergunta('${id}')">Excluir</button>
@@ -118,6 +129,8 @@
         </div>
         ${d.foto ? `<div style="text-align:center; margin-bottom:10px;"><img src="${d.foto}" style="max-width:100px; border-radius:5px;"></div>` : ''}
         <div class="texto-pergunta">${d.pergunta}</div>
+        `;
+  }
         <div class="respostas-lista">
             <div class="item-resposta ${d.correta == '1' ? 'correta' : ''}">1) ${d.r1}</div>
             <div class="item-resposta ${d.correta == '2' ? 'correta' : ''}">2) ${d.r2}</div>
