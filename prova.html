@@ -303,6 +303,14 @@ window.fecharAlerta = () => {
     document.getElementById('custom-alert').style.display = 'none';
 };
 
+// Ativa o alerta de "Deseja sair?" do navegador
+window.addEventListener('beforeunload', (event) => {
+    // Só mostra o alerta se a prova NÃO tiver sido finalizada ainda
+    if (document.getElementById('btn-concluir').style.display !== "none") {
+        event.preventDefault();
+        event.returnValue = ''; // Padrão para navegadores modernos
+    }
+});
 
 </script>
 </body>
