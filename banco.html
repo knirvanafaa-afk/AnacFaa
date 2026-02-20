@@ -9,6 +9,9 @@
         .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
         h2 { text-align: center; color: #333; margin-bottom: 20px; text-transform: uppercase; }
         
+        /* Campo de Busca */
+        .search-box { width: 100%; padding: 12px; margin-bottom: 20px; border: 2px solid #3498db; border-radius: 12px; font-size: 16px; outline: none; box-sizing: border-box; }
+
         .pergunta-card { 
             border: 2px solid #3498db; 
             padding: 20px; 
@@ -71,41 +74,43 @@
 <div class="container">
     <button class="btn-voltar" onclick="window.location.href='index.html'">⬅ Voltar ao Painel</button>
     <h2>Questões no Banco</h2>
+    
+    <input type="text" id="busca-id" class="search-box" placeholder="🔍 Buscar por ID (ex: 8001)..." oninput="filtrarQuestoes()">
+
     <div id="lista-perguntas">
         <p style="text-align: center; color: #666;">Buscando informações no banco de dados...</p>
     </div>
 </div>
 
 <script type="module">
-
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
   const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
   const supabase = createClient(supabaseUrl, supabaseKey)
 
-async function verificarAcesso() {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-        window.location.href = 'index.html'; // Expulsa se não estiver logado
-        return;
-    }
+  // Filtro de busca em tempo real
+  window.filtrarQuestoes = () => {
+    const termo = document.getElementById('busca-id').value.toLowerCase();
+    const cards = document.querySelectorAll('.pergunta-card');
+    cards.forEach(card => {
+        const id = card.id.replace('card-', '').toLowerCase();
+        card.style.display = id.includes(termo) ? 'block' : 'none';
+    });
+  };
 
-    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (data.currentLevel !== 'aal2') {
-        window.location.href = 'verificar-mfa.html'; // Expulsa se não usou os 6 dígitos
-    }
-}
-verificarAcesso();
-
-  // --- NOVA FUNÇÃO: CANCELAR/RESTAURAR CARD ---
   window.cancelarEdicao = (id) => {
     const card = document.getElementById(`card-${id}`);
     const d = JSON.parse(card.dataset.info);
+    renderizarCardNormal(card, d);
+  };
 
+  // Função auxiliar para não repetir código
+  function renderizarCardNormal(card, d) {
+    const id = d.num;
     card.innerHTML = `
         <div class="header-card">
-            <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
+           <span class="materia-tag">ID #${id} | ${d.materia || 'Geral'} | Cap: ${d.capitulo || 'Geral'}</span>
             <div class="area-botoes">
                 <button class="btn-acao btn-editar" onclick="ativarEdicao('${id}')">Editar</button>
                 <button class="btn-acao btn-excluir" onclick="deletarPergunta('${id}')">Excluir</button>
@@ -120,7 +125,7 @@ verificarAcesso();
             <div class="item-resposta ${d.correta == '4' ? 'correta' : ''}">4) ${d.r4}</div>
         </div>
     `;
-  };
+  }
 
   window.ativarEdicao = (id) => {
     const card = document.getElementById(`card-${id}`);
@@ -134,16 +139,14 @@ verificarAcesso();
                 <button class="btn-acao btn-cancelar" onclick="window.cancelarEdicao('${id}')">Cancelar</button>
             </div>
         </div>
-        
         <input type="text" id="edit-materia-${id}" class="input-edicao" value="${dados.materia || ''}" placeholder="Matéria">
+        <input type="text" id="edit-capitulo-${id}" class="input-edicao" value="${dados.capitulo || ''}" placeholder="Capítulo">
         <textarea id="edit-pergunta-${id}" class="input-edicao" rows="3">${dados.pergunta}</textarea>
-        
         <div class="respostas-lista">
             <input type="text" id="edit-r1-${id}" class="input-edicao" value="${dados.r1}">
             <input type="text" id="edit-r2-${id}" class="input-edicao" value="${dados.r2}">
             <input type="text" id="edit-r3-${id}" class="input-edicao" value="${dados.r3}">
             <input type="text" id="edit-r4-${id}" class="input-edicao" value="${dados.r4}">
-            
             <div style="font-size: 13px; font-weight: bold; margin-top: 5px;">Resposta Correta:</div>
             <select id="edit-correta-${id}" class="input-edicao">
                 <option value="1" ${dados.correta == '1' ? 'selected' : ''}>1</option>
@@ -158,6 +161,7 @@ verificarAcesso();
   window.salvarEdicao = async (id) => {
     const novosDados = {
         materia: document.getElementById(`edit-materia-${id}`).value,
+        capitulo: document.getElementById(`edit-capitulo-${id}`).value,
         pergunta: document.getElementById(`edit-pergunta-${id}`).value,
         r1: document.getElementById(`edit-r1-${id}`).value,
         r2: document.getElementById(`edit-r2-${id}`).value,
@@ -179,24 +183,18 @@ verificarAcesso();
   window.deletarPergunta = async (id) => {
     mostrarMensagem("Deseja mesmo excluir a questão " + id + "?");
     const btnOk = document.getElementById('alert-ok-btn');
-   
-btnOk.onclick = async () => {
-    fecharAlerta();
-    try {
-        // Usamos String() para garantir que o banco busque o texto exato
-        // Assim, '8002' não será confundido com 'G8002'
-        const { error } = await supabase
-            .from('questoes')
-            .delete()
-            .eq('num', String(id)); 
-
-        if (error) throw error;
-        mostrarMensagem("Questão removida com sucesso!");
-    } catch (error) {
-        mostrarMensagem("Erro ao remover: " + error.message);
-    }
-};
-};
+    btnOk.onclick = async () => {
+        fecharAlerta();
+        try {
+            const { error } = await supabase.from('questoes').delete().eq('num', String(id)); 
+            if (error) throw error;
+            mostrarMensagem("Questão removida com sucesso!");
+            carregarPerguntas();
+        } catch (error) {
+            mostrarMensagem("Erro ao remover: " + error.message);
+        }
+    };
+  };
 
   async function carregarPerguntas() {
     const listaDiv = document.getElementById('lista-perguntas');
@@ -206,36 +204,13 @@ btnOk.onclick = async () => {
       const { data, error } = await supabase.from('questoes').select('*').order('num', { ascending: true });
       if (error) throw error;
       
-      if (!data || data.length === 0) {
-        listaDiv.innerHTML = "<p style='text-align:center;'>Nenhuma pergunta cadastrada.</p>";
-        return;
-      }
-
       listaDiv.innerHTML = "";
       data.forEach((d) => {
-        const id = d.num;
         const card = document.createElement('div');
         card.className = 'pergunta-card';
-        card.id = `card-${id}`;
+        card.id = `card-${d.num}`;
         card.dataset.info = JSON.stringify(d);
-
-        card.innerHTML = `
-          <div class="header-card">
-              <span class="materia-tag">ID #${id} | Matéria: ${d.materia || 'Geral'}</span>
-              <div class="area-botoes">
-                  <button class="btn-acao btn-editar" onclick="ativarEdicao('${id}')">Editar</button>
-                  <button class="btn-acao btn-excluir" onclick="deletarPergunta('${id}')">Excluir</button>
-              </div>
-          </div>
-          ${d.foto ? `<div style="text-align:center; margin-bottom:10px;"><img src="${d.foto}" style="max-width:100px; border-radius:5px;"></div>` : ''}
-          <div class="texto-pergunta">${d.pergunta}</div>
-          <div class="respostas-lista">
-            <div class="item-resposta ${d.correta == '1' ? 'correta' : ''}">1) ${d.r1}</div>
-            <div class="item-resposta ${d.correta == '2' ? 'correta' : ''}">2) ${d.r2}</div>
-            <div class="item-resposta ${d.correta == '3' ? 'correta' : ''}">3) ${d.r3}</div>
-            <div class="item-resposta ${d.correta == '4' ? 'correta' : ''}">4) ${d.r4}</div>
-          </div>
-        `;
+        renderizarCardNormal(card, d);
         listaDiv.appendChild(card);
       });
     } catch (e) {
@@ -257,4 +232,3 @@ btnOk.onclick = async () => {
 </script>
 </body>
 </html>
-
