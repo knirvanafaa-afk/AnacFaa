@@ -111,7 +111,7 @@
     renderizarCardNormal(card, d);
   };
 
-  // Função auxiliar para não repetir cards gravados
+  // Função auxiliar para não repetir cards criados
 
 function renderizarCardNormal(card, d) {
     const id = d.num;
@@ -129,16 +129,14 @@ function renderizarCardNormal(card, d) {
         </div>
         ${d.foto ? `<div style="text-align:center; margin-bottom:10px;"><img src="${d.foto}" style="max-width:100px; border-radius:5px;"></div>` : ''}
         <div class="texto-pergunta">${d.pergunta}</div>
-        `;
-
         <div class="respostas-lista">
             <div class="item-resposta ${d.correta == '1' ? 'correta' : ''}">1) ${d.r1}</div>
             <div class="item-resposta ${d.correta == '2' ? 'correta' : ''}">2) ${d.r2}</div>
             <div class="item-resposta ${d.correta == '3' ? 'correta' : ''}">3) ${d.r3}</div>
             <div class="item-resposta ${d.correta == '4' ? 'correta' : ''}">4) ${d.r4}</div>
         </div>
-    `;
-  }
+    `; // A crase termina aqui
+} // A chave da função termina aqui
 
   window.ativarEdicao = (id) => {
     const card = document.getElementById(`card-${id}`);
