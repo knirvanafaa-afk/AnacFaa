@@ -167,7 +167,7 @@ iniciarTimer(qtdAlvo);
   }
 
 function iniciarTimer(qtdQuestoes) {
-    let minutos =  (qtdQuestoes <= 10) ? 20 : (qtdQuestoes <= 30) ? 40 : (qtdQuestoes <= 50) ? 60 : 120;
+    let minutos =  (qtdQuestoes <= 10) ? 15 : (qtdQuestoes <= 20) ? 25 : (qtdQuestoes <= 30) ? 35 : (qtdQuestoes <= 50) ? 60 : 120;
     
     // Guardamos o MOMENTO EXATO em que a prova deve terminar
     const momentoTermino = Date.now() + (minutos * 60 * 1000);
@@ -247,7 +247,7 @@ clearInterval(intervaloTimer);
 
     if (foiPorTempo) {
         const qtdAlvo = parseInt(sessionStorage.getItem('config_qtd'));
-        const limiteMinutos = (qtdAlvo <= 10) ? 20 : (qtdAlvo <= 30) ? 40 : (qtdAlvo <= 50) ? 60 : 120;
+        const limiteMinutos = (qtdAlvo <= 10) ? 15 : (qtdAlvo <= 20) ? 25 : (qtdAlvo <= 30) ? 35 : (qtdAlvo <= 50) ? 60 : 120;
         totalSegundos = limiteMinutos * 60;
     } else {
         totalSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
