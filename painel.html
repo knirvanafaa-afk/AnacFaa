@@ -239,6 +239,9 @@
         }
 
         try {
+if (!idOriginal) { const { data: existe, error: erroBusca } = await supabase .from('questoes') .select('num') .eq('num', num) .maybeSingle(); if (existe) { mostrarMensagem(`A questão ${num} já foi inserida anteriormente!`); return;
+    } 
+}
             let urlFinal = urlFotoExistente;
             if (arquivo) {
                 const nomeArquivo = `${num}_${Date.now()}.jpg`;
@@ -249,20 +252,22 @@
 
             const dadosParaSalvar = { num, materia: mat, capitulo: cap, pergunta: per, r1, r2, r3, r4, correta: cor, foto: urlFinal };
 
+// Correção da sintaxe das chaves:
             if (idOriginal && idOriginal !== num) {
                 await supabase.from('questoes').delete().eq('num', idOriginal);
             }
 
             await supabase.from('questoes').delete().eq('num', num);
-            const { error } = await supabase.from('questoes').insert([dadosParaSalvar]);
+            
+            const { error } = await supabase.from('questoes').upsert([dadosParaSalvar], { onConflict: 'num' });
 
             if (error) throw error;
             mostrarMensagem("Questão " + num + " salva com sucesso!");
+
         } catch (error) {
             mostrarMensagem("Erro: " + error.message);
         }
-    }; 
-
+    };
     window.mostrarMensagem = (texto) => {
         document.getElementById('alert-message').innerText = texto;
         document.getElementById('custom-alert').style.display = 'flex';
