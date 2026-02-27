@@ -69,7 +69,7 @@
         const { data, error } = await supabase.auth.signUp({
             email, 
             password: senha, 
-            options: { data: { full_name: nome } }
+            options: { data: { full_name: nome }, emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  }
         });
         
         if (error) throw error;
