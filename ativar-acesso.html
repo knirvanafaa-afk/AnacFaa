@@ -78,47 +78,44 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // 1. Configuração Única
+    // 1. Configuração Única (Use a sua original)
     const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let currentFactorId = "";
 
-    // 2. Validação do Token (O "handshake" que faltava)
+    // 2. Validação (Corrigida e Única)
     async function validarAcesso() {
         const hash = window.location.hash.substring(1); 
         const params = new URLSearchParams(hash);
-        const accessToken = params.get('access_token');
+        const tokenHash = params.get('access_token'); 
 
-        if (accessToken) {
-            console.log("Token detectado. Autenticando...");
-            const { error } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: params.get('refresh_token')
+        if (tokenHash) {
+            console.log("Validando token com Supabase...");
+            const { data, error } = await supabase.auth.verifyOtp({
+                token_hash: tokenHash,
+                type: 'signup' 
             });
 
             if (error) {
                 console.error("Erro na validação:", error.message);
-                window.mostrarMensagem("Sessão expirada ou inválida. Faça login novamente.");
+                window.mostrarMensagem("Erro: " + error.message);
             } else {
-                console.log("Sessão validada com sucesso!");
+                console.log("E-mail validado! Usuário pronto para o MFA.");
+                // NÃO redirecione para index.html aqui, senão o usuário pula o MFA.
             }
         }
     }
-
-    // Executa a validação assim que carregar
     validarAcesso();
 
-    // 3. Funções Globais (conectadas ao DOM)
+    // 3. Funções do Sistema
     window.mostrarMensagem = (t) => { 
         document.getElementById('alert-message').innerText = t; 
         document.getElementById('custom-alert').style.display = 'flex'; 
     };
     
-    window.fecharAlerta = () => { 
-        document.getElementById('custom-alert').style.display = 'none'; 
-    };
+    window.fecharAlerta = () => { document.getElementById('custom-alert').style.display = 'none'; };
 
     window.irParaSeguranca = async () => {
         document.getElementById('passo1').classList.remove('ativo');
@@ -133,7 +130,6 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
-            
             QRCode.toCanvas(data.totp.qr_code, { width: 200 }, (err, canvas) => {
                 qrContainer.innerHTML = "";
                 qrContainer.appendChild(canvas);
