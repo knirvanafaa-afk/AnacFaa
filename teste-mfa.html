@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Teste MFA</title>
+</head>
+<body>
+
+<h2>Teste QR Supabase</h2>
+<div id="qr"></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import QRCode from 'https://cdn.jsdelivr.net/npm/qrcode/+esm';
+
+const supabase = createClient(
+  'https://ymyxikhlhkkvcufgwufe.supabase.co',
+  'SUA_ANON_KEY_AQUI'
+);
+
+async function testar() {
+  console.log("Iniciando enroll...");
+
+  const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+
+  console.log("Resposta:", data);
+  if (error) {
+    console.error(error);
+    return;
+  }
+
+  console.log("TOTP:", data.totp);
+
+  try {
+    const url = await QRCode.toDataURL(data.totp.uri);
+    const img = document.createElement("img");
+    img.src = url;
+    document.getElementById("qr").appendChild(img);
+    console.log("QR gerado com sucesso");
+  } catch (e) {
+    console.error("Erro ao gerar QR:", e);
+  }
+}
+
+testar();
+</script>
+
+</body>
+</html>
