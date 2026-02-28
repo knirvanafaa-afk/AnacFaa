@@ -7,7 +7,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
     <style>
-        /* CSS IDENTICO AOS SEUS ARQUIVOS ORIGINAIS */
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
         
@@ -15,17 +14,20 @@
         
         .section-box { border: 2px solid #3498db; padding: 20px; border-radius: 15px; background-color: #f4faff; margin-bottom: 20px; }
         
-        textarea { width: 100%; height: 150px; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: none; margin-bottom: 10px; font-family: inherit; }
+        /* CORREÇÃO DO TEXTAREA AQUI */
+        textarea { width: 100%; box-sizing: border-box; height: 150px; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: none; margin-bottom: 10px; font-family: inherit; }
         
         .btn-acao { background-color: #27ae60; color: white; width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 10px; }
         .btn-acao:disabled { background-color: #ccc; cursor: not-allowed; }
 
-        #qr-container { display: flex; justify-content: center; margin: 20px 0; background: white; padding: 15px; border-radius: 10px; border: 1px solid #3498db; }
+        #qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin: 20px 0; background: white; padding: 15px; border-radius: 10px; border: 1px solid #3498db; }
         
-        input[type="text"] { width: 100%; padding: 12px; margin-top: 10px; border: 2px solid #f1c40f; border-radius: 10px; box-sizing: border-box; text-align: center; font-size: 20px; font-weight: bold; background-color: #fff9c4; }
+        input[type="text"] { width: 100%; box-sizing: border-box; padding: 12px; margin-top: 10px; border: 2px solid #f1c40f; border-radius: 10px; text-align: center; font-size: 20px; font-weight: bold; background-color: #fff9c4; }
 
         .passo { display: none; }
         .passo.ativo { display: block; }
+        
+        .chave-manual { font-size: 12px; color: #555; margin-top: 10px; word-break: break-all; background: #eee; padding: 5px; border-radius: 5px; text-align: center; }
     </style>
 </head>
 <body>
@@ -48,7 +50,6 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 1. O acesso é individual e intransferível.
 2. É proibido o compartilhamento de senhas.
 3. O conteúdo é protegido por direitos autorais.
-(Insira aqui o restante do seu texto de contrato...)
             </textarea>
             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                 <input type="checkbox" id="check-contrato" onchange="document.getElementById('btn-p1').disabled = !this.checked">
@@ -61,7 +62,7 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
     <div id="passo2" class="passo">
         <div class="section-box" style="text-align: center;">
             <p><b>🔐 ÚLTIMA BARREIRA DE SEGURANÇA</b></p>
-            <p style="font-size: 14px;">Escaneie o código abaixo no seu app autenticador (Google Authenticator ou similar):</p>
+            <p style="font-size: 14px;">Escaneie o QR Code abaixo no seu app autenticador:</p>
             
             <div id="qr-container">
                 Aguarde...
@@ -78,30 +79,22 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // 1. Configuração Única
     const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let currentFactorId = "";
 
-    // 2. Verificação consolidada (Sem repetições)
     supabase.auth.getSession().then(({ data }) => {
-        if (data.session) {
-            // Aqui o alerta que você queria:
-            window.mostrarMensagem("Seu E-mail foi validado com sucesso!");
-        } else {
-            // Caso ele acesse direto sem link
+        if (!data.session) {
             window.mostrarMensagem("Atenção: Acesso não identificado. Por favor, utilize o link enviado ao seu e-mail.");
         }
     });
 
-    // 3. Funções do Sistema (Mantidas exatamente como você tinha)
     window.mostrarMensagem = (t) => { 
         document.getElementById('alert-message').innerText = t; 
         document.getElementById('custom-alert').style.display = 'flex'; 
     };
-    
     window.fecharAlerta = () => { document.getElementById('custom-alert').style.display = 'none'; };
 
     window.irParaSeguranca = async () => {
@@ -117,9 +110,16 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
+            
             QRCode.toCanvas(data.totp.qr_code, { width: 200 }, (err, canvas) => {
                 qrContainer.innerHTML = "";
                 qrContainer.appendChild(canvas);
+                
+                // AS 3 LINHAS MÁGICAS
+                const secretKey = document.createElement('p');
+                secretKey.className = 'chave-manual';
+                secretKey.innerText = "Ou copie a chave manualmente: " + data.totp.secret;
+                qrContainer.appendChild(secretKey);
             });
         } catch (e) {
             window.mostrarMensagem("Erro ao gerar segurança: " + e.message);
