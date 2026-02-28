@@ -78,48 +78,25 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    // 1. Configuração Única (Use a sua original)
+    // 1. Configuração Única
     const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let currentFactorId = "";
 
-    // 2. Validação (Corrigida e Única)
-    
-supabase.auth.getSession().then(({ data }) => {
-    if (data.session) {
-        console.log("Usuário já autenticado automaticamente pelo Supabase.");
-    } else {
-        console.log("Aguardando autenticação...");
-    }
-});
+    // 2. Verificação consolidada (Sem repetições)
+    supabase.auth.getSession().then(({ data }) => {
+        if (data.session) {
+            // Aqui o alerta que você queria:
+            window.mostrarMensagem("Seu E-mail foi validado com sucesso!");
+        } else {
+            // Caso ele acesse direto sem link
+            window.mostrarMensagem("Atenção: Acesso não identificado. Por favor, utilize o link enviado ao seu e-mail.");
+        }
+    });
 
-// Acompanhe a mudança de estado
-supabase.auth.onAuthStateChange((event, session) => {
-    if (event === 'SIGNED_IN' || session) {
-        console.log("Sessão capturada!");
-    }
-});
-
-// Acompanhe a mudança de estado
-supabase.auth.onAuthStateChange((event, session) => {
-    if (session) {
-        console.log("Seu E-mail foi validado com sucesso!");
-        // Opcional: mostrar um aviso pequeno para o usuário saber que ele está autenticado
-        // Isso ajuda a confirmar que o link de e-mail funcionou.
-    }
-});
-
-// Verificação inicial
-supabase.auth.getSession().then(({ data }) => {
-    if (!data.session) {
-        // Se não houver sessão, o usuário tentou acessar direto sem clicar no e-mail
-        window.mostrarMensagem("Atenção: Acesso não identificado. Por favor, utilize o link enviado ao seu e-mail.");
-    }
-});
-
-    // 3. Funções do Sistema
+    // 3. Funções do Sistema (Mantidas exatamente como você tinha)
     window.mostrarMensagem = (t) => { 
         document.getElementById('alert-message').innerText = t; 
         document.getElementById('custom-alert').style.display = 'flex'; 
@@ -162,7 +139,6 @@ supabase.auth.getSession().then(({ data }) => {
             });
 
             if (confError) throw confError;
-
             window.mostrarMensagem("Acesso ativado com sucesso!");
             setTimeout(() => { window.location.href = 'alunos.html'; }, 2000);
         } catch (e) {
