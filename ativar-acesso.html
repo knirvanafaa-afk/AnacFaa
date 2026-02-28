@@ -77,32 +77,33 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 </div>
 
 <script type="module">
+    // 1. IMPORT (Sempre no topo)
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // 2. CONFIGURAÇÃO
     const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let currentFactorId = "";
 
-    supabase.auth.getSession().then(({ data }) => {
-        if (!data.session) {
-            window.mostrarMensagem("Atenção: Acesso não identificado. Por favor, utilize o link enviado ao seu e-mail.");
-        }
-    });
-
+    // 3. FUNÇÕES AUXILIARES
     window.mostrarMensagem = (t) => { 
         document.getElementById('alert-message').innerText = t; 
         document.getElementById('custom-alert').style.display = 'flex'; 
     };
     window.fecharAlerta = () => { document.getElementById('custom-alert').style.display = 'none'; };
 
-    window.irParaSeguranca = async () => {
-        document.getElementById('passo1').classList.remove('ativo');
-        document.getElementById('passo2').classList.add('ativo');
-        await gerarMFA();
-    };
+    // Função que garante que o usuário está logado
+    async function garantirSessao() {
+        const { data } = await supabase.auth.getSession();
+        if (!data.session) {
+            await supabase.auth.refreshSession();
+        }
+    }
+    garantirSessao();
 
+    // 4. LÓGICA DE SEGURANÇA (MFA)
     async function gerarMFA() {
         try {
             const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
@@ -111,17 +112,14 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
             
-            // Melhoria incluída (verificação de erro) preservando o resto da função
-            QRCode.toCanvas(data.totp.qr_code, { width: 200,  errorCorrectionLevel: 'L'  }, (err, canvas) => {
+            QRCode.toCanvas(data.totp.qr_code, { width: 200, errorCorrectionLevel: 'L' }, (err, canvas) => {
                 if (err) {
                     window.mostrarMensagem("Erro ao gerar QR Code: " + err.message);
                     return;
                 }
-                
                 qrContainer.innerHTML = "";
                 qrContainer.appendChild(canvas);
                 
-                // AS 3 LINHAS MÁGICAS (Mantidas do original)
                 const secretKey = document.createElement('p');
                 secretKey.className = 'chave-manual';
                 secretKey.innerText = "Ou copie a chave manualmente: " + data.totp.secret;
@@ -131,6 +129,19 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
             window.mostrarMensagem("Erro ao gerar segurança: " + e.message);
         }
     }
+
+    // 5. EVENTOS DO USUÁRIO
+    window.irParaSeguranca = async () => {
+        // Verifica sessão antes de prosseguir
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.mostrarMensagem("Acesso não identificado. Faça login no e-mail.");
+            return;
+        }
+        document.getElementById('passo1').classList.remove('ativo');
+        document.getElementById('passo2').classList.add('ativo');
+        await gerarMFA();
+    };
 
     window.confirmarMFA = async () => {
         const code = document.getElementById('mfa-token').value;
