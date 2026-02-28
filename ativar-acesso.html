@@ -78,26 +78,48 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
+    // 1. Configuração Única (Use a sua original)
     const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     let currentFactorId = "";
 
-    // Unifiquei aqui para não ter função repetida
-    supabase.auth.onAuthStateChange((event, session) => {
-        if (session) {
-            console.log("Sessão validada e E-mail confirmado!");
-        }
-    });
+    // 2. Validação (Corrigida e Única)
+    
+supabase.auth.getSession().then(({ data }) => {
+    if (data.session) {
+        console.log("Usuário já autenticado automaticamente pelo Supabase.");
+    } else {
+        console.log("Aguardando autenticação...");
+    }
+});
 
-    supabase.auth.getSession().then(({ data }) => {
-        if (!data.session) {
-            window.mostrarMensagem("Atenção: Acesso não identificado. Por favor, utilize o link enviado ao seu e-mail.");
-        }
-    });
+// Acompanhe a mudança de estado
+supabase.auth.onAuthStateChange((event, session) => {
+    if (event === 'SIGNED_IN' || session) {
+        console.log("Sessão capturada!");
+    }
+});
 
-    // 3. Funções do Sistema (mantidas iguais)
+// Acompanhe a mudança de estado
+supabase.auth.onAuthStateChange((event, session) => {
+    if (session) {
+        console.log("Seu E-mail foi validado com sucesso!");
+        // Opcional: mostrar um aviso pequeno para o usuário saber que ele está autenticado
+        // Isso ajuda a confirmar que o link de e-mail funcionou.
+    }
+});
+
+// Verificação inicial
+supabase.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+        // Se não houver sessão, o usuário tentou acessar direto sem clicar no e-mail
+        window.mostrarMensagem("Atenção: Acesso não identificado. Por favor, utilize o link enviado ao seu e-mail.");
+    }
+});
+
+    // 3. Funções do Sistema
     window.mostrarMensagem = (t) => { 
         document.getElementById('alert-message').innerText = t; 
         document.getElementById('custom-alert').style.display = 'flex'; 
@@ -115,6 +137,7 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
         try {
             const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
             if (error) throw error;
+
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
             QRCode.toCanvas(data.totp.qr_code, { width: 200 }, (err, canvas) => {
@@ -131,12 +154,15 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
         try {
             const { data, error } = await supabase.auth.mfa.challenge({ factorId: currentFactorId });
             if (error) throw error;
+
             const { error: confError } = await supabase.auth.mfa.verify({
                 factorId: currentFactorId,
                 challengeId: data.id,
                 code: code
             });
+
             if (confError) throw confError;
+
             window.mostrarMensagem("Acesso ativado com sucesso!");
             setTimeout(() => { window.location.href = 'alunos.html'; }, 2000);
         } catch (e) {
