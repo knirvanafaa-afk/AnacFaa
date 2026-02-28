@@ -112,19 +112,22 @@ async function gerarMFA() {
 
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
+            
+            // Limpa o conteúdo antes de tentar gerar
+            qrContainer.innerHTML = ""; 
 
+            // Geramos o QR Code com a versão forçada para 15
             QRCode.toDataURL(data.totp.qr_code, { 
                 width: 250, 
                 errorCorrectionLevel: 'L', 
                 version: 15,
                 margin: 2
             }, (err, url) => {
-                qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
                 
                 if (err) {
-                    console.error("Erro no QR:", err);
+                    console.error("Erro ao gerar QR:", err);
                     const erroMsg = document.createElement('p');
-                    erroMsg.innerHTML = "QR Code indisponível.<br>Use a chave manual abaixo:";
+                    erroMsg.innerText = "QR Code indisponível.";
                     qrContainer.appendChild(erroMsg);
                 } else {
                     const img = document.createElement('img');
@@ -134,8 +137,7 @@ async function gerarMFA() {
                     qrContainer.appendChild(img);
                 }
 
-                // A chave manual agora é adicionada aqui, dentro do callback,
-                // garantindo que apareça apenas uma vez e no momento certo.
+                // Chave manual como plano B (sempre aparece)
                 const secretKey = document.createElement('p');
                 secretKey.className = 'chave-manual';
                 secretKey.style.marginTop = "10px";
@@ -144,6 +146,7 @@ async function gerarMFA() {
             });
 
         } catch (e) {
+            console.error(e);
             window.mostrarMensagem("Erro ao gerar segurança: " + e.message);
         }
     }
