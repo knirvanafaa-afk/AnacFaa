@@ -112,7 +112,7 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
             const qrContainer = document.getElementById('qr-container');
             
             // Melhoria incluída (verificação de erro) preservando o resto da função
-            QRCode.toCanvas(data.totp.qr_code, { width: 200 }, (err, canvas) => {
+            QRCode.toCanvas(data.totp.qr_code, { width: 200,  errorCorrectionLevel: 'L'  }, (err, canvas) => {
                 if (err) {
                     window.mostrarMensagem("Erro ao gerar QR Code: " + err.message);
                     return;
