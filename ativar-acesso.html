@@ -112,19 +112,27 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
             
-            QRCode.toCanvas(data.totp.qr_code, { width: 200, errorCorrectionLevel: 'L' }, (err, canvas) => {
-                if (err) {
-                    window.mostrarMensagem("Erro ao gerar QR Code: " + err.message);
-                    return;
-                }
-                qrContainer.innerHTML = "";
-                qrContainer.appendChild(canvas);
-                
-                const secretKey = document.createElement('p');
-                secretKey.className = 'chave-manual';
-                secretKey.innerText = "Ou copie a chave manualmente: " + data.totp.secret;
-                qrContainer.appendChild(secretKey);
-            });
+QRCode.toCanvas(data.totp.qr_code, { 
+    width: 250, 
+    errorCorrectionLevel: 'L', 
+    version: 10 
+}, (err, canvas) => {
+    if (err) {
+        console.error("Erro fatal do QR:", err);
+        // Se ainda falhar (muito raro), exibimos a chave manual como fallback profissional
+        qrContainer.innerHTML = "<p>Erro de exibição. Use a chave abaixo:</p>";
+    } else {
+        qrContainer.innerHTML = "";
+        qrContainer.appendChild(canvas);
+    }
+
+    // A chave manual deve aparecer SEMPRE, pois é a redundância profissional
+    const secretKey = document.createElement('p');
+    secretKey.className = 'chave-manual';
+    secretKey.innerText = "Chave: " + data.totp.secret;
+    qrContainer.appendChild(secretKey);
+});
+
         } catch (e) {
             window.mostrarMensagem("Erro ao gerar segurança: " + e.message);
         }
