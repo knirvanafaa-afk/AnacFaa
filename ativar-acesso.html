@@ -14,7 +14,7 @@
         
         .section-box { border: 2px solid #3498db; padding: 20px; border-radius: 15px; background-color: #f4faff; margin-bottom: 20px; }
         
-        /* CORREÇÃO DO TEXTAREA AQUI */
+        /* Mantendo o seu CSS original */
         textarea { width: 100%; box-sizing: border-box; height: 150px; border-radius: 10px; border: 1px solid #ccc; padding: 10px; font-size: 14px; resize: none; margin-bottom: 10px; font-family: inherit; }
         
         .btn-acao { background-color: #27ae60; color: white; width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 10px; }
@@ -111,11 +111,17 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
             
+            // Melhoria incluída (verificação de erro) preservando o resto da função
             QRCode.toCanvas(data.totp.qr_code, { width: 200 }, (err, canvas) => {
+                if (err) {
+                    window.mostrarMensagem("Erro ao gerar QR Code: " + err.message);
+                    return;
+                }
+                
                 qrContainer.innerHTML = "";
                 qrContainer.appendChild(canvas);
                 
-                // AS 3 LINHAS MÁGICAS
+                // AS 3 LINHAS MÁGICAS (Mantidas do original)
                 const secretKey = document.createElement('p');
                 secretKey.className = 'chave-manual';
                 secretKey.innerText = "Ou copie a chave manualmente: " + data.totp.secret;
