@@ -104,7 +104,8 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
     garantirSessao();
 
     // 4. LÓGICA DE SEGURANÇA (MFA)
-    async function gerarMFA() {
+
+async function gerarMFA() {
         try {
             const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
             if (error) throw error;
@@ -112,30 +113,35 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
 
-QRCode.toDataURL(data.totp.qr_code, { width: 250, errorCorrectionLevel: 'L' }, (err, url) => {
-    qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
-    
-    if (err) {
-        console.error("Erro no QR:", err);
-        const erroMsg = document.createElement('p');
-        erroMsg.innerText = "QR Code indisponível.";
-        qrContainer.appendChild(erroMsg);
-    } else {
-        // Criamos uma imagem simples, é muito mais compatível!
-        const img = document.createElement('img');
-        img.src = url;
-        img.style.width = "100%"; // Garante que caiba na tela
-        img.style.maxWidth = "250px";
-        qrContainer.appendChild(img);
-    }
+            QRCode.toDataURL(data.totp.qr_code, { 
+                width: 250, 
+                errorCorrectionLevel: 'L', 
+                version: 15,
+                margin: 2
+            }, (err, url) => {
+                qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
+                
+                if (err) {
+                    console.error("Erro no QR:", err);
+                    const erroMsg = document.createElement('p');
+                    erroMsg.innerHTML = "QR Code indisponível.<br>Use a chave manual abaixo:";
+                    qrContainer.appendChild(erroMsg);
+                } else {
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.style.width = "100%";
+                    img.style.maxWidth = "250px";
+                    qrContainer.appendChild(img);
+                }
 
-    // A chave manual continua como seu plano B de luxo
-    const secretKey = document.createElement('p');
-    secretKey.className = 'chave-manual';
-    secretKey.style.marginTop = "10px";
-    secretKey.innerText = "Chave manual: " + data.totp.secret;
-    qrContainer.appendChild(secretKey);
-});
+                // A chave manual agora é adicionada aqui, dentro do callback,
+                // garantindo que apareça apenas uma vez e no momento certo.
+                const secretKey = document.createElement('p');
+                secretKey.className = 'chave-manual';
+                secretKey.style.marginTop = "10px";
+                secretKey.innerText = "Chave manual: " + data.totp.secret;
+                qrContainer.appendChild(secretKey);
+            });
 
         } catch (e) {
             window.mostrarMensagem("Erro ao gerar segurança: " + e.message);
