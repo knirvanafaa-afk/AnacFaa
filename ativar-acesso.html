@@ -111,25 +111,29 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
-            
-QRCode.toCanvas(data.totp.qr_code, { 
-    width: 250, 
-    errorCorrectionLevel: 'L', 
-    version: 10 
-}, (err, canvas) => {
+
+QRCode.toDataURL(data.totp.qr_code, { width: 250, errorCorrectionLevel: 'L' }, (err, url) => {
+    qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
+    
     if (err) {
-        console.error("Erro fatal do QR:", err);
-        // Se ainda falhar (muito raro), exibimos a chave manual como fallback profissional
-        qrContainer.innerHTML = "<p>Erro de exibição. Use a chave abaixo:</p>";
+        console.error("Erro no QR:", err);
+        const erroMsg = document.createElement('p');
+        erroMsg.innerText = "QR Code indisponível.";
+        qrContainer.appendChild(erroMsg);
     } else {
-        qrContainer.innerHTML = "";
-        qrContainer.appendChild(canvas);
+        // Criamos uma imagem simples, é muito mais compatível!
+        const img = document.createElement('img');
+        img.src = url;
+        img.style.width = "100%"; // Garante que caiba na tela
+        img.style.maxWidth = "250px";
+        qrContainer.appendChild(img);
     }
 
-    // A chave manual deve aparecer SEMPRE, pois é a redundância profissional
+    // A chave manual continua como seu plano B de luxo
     const secretKey = document.createElement('p');
     secretKey.className = 'chave-manual';
-    secretKey.innerText = "Chave: " + data.totp.secret;
+    secretKey.style.marginTop = "10px";
+    secretKey.innerText = "Chave manual: " + data.totp.secret;
     qrContainer.appendChild(secretKey);
 });
 
