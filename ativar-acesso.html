@@ -77,7 +77,7 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 </div>
 
 <script type="module">
-    // 1. IMPORT (Sempre no topo)
+// 1. IMPORT
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
     // 2. CONFIGURAÇÃO
@@ -94,7 +94,6 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
     };
     window.fecharAlerta = () => { document.getElementById('custom-alert').style.display = 'none'; };
 
-    // Função que garante que o usuário está logado
     async function garantirSessao() {
         const { data } = await supabase.auth.getSession();
         if (!data.session) {
@@ -111,27 +110,45 @@ CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
 
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
-            
-QRCode.toCanvas(data.totp.qr_code, { 
-    width: 250, 
-    errorCorrectionLevel: 'L', 
-    version: 10 
-}, (err, canvas) => {
-    if (err) {
-        console.error("Erro fatal do QR:", err);
-        // Se ainda falhar (muito raro), exibimos a chave manual como fallback profissional
-        qrContainer.innerHTML = "<p>Erro de exibição. Use a chave abaixo:</p>";
-    } else {
-        qrContainer.innerHTML = "";
-        qrContainer.appendChild(canvas);
-    }
+            qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
 
-    // A chave manual deve aparecer SEMPRE, pois é a redundância profissional
-    const secretKey = document.createElement('p');
-    secretKey.className = 'chave-manual';
-    secretKey.innerText = "Chave: " + data.totp.secret;
-    qrContainer.appendChild(secretKey);
-});
+            // Gerar QR Code
+            try {
+                const url = await QRCode.toDataURL(data.totp.uri, { 
+                    width: 250, 
+                    errorCorrectionLevel: 'L'
+                });
+                
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.width = "100%";
+                img.style.maxWidth = "250px";
+                qrContainer.appendChild(img);
+            } catch (err) {
+                const erroMsg = document.createElement('p');
+                erroMsg.innerText = "QR Code indisponível.";
+                qrContainer.appendChild(erroMsg);
+            }
+
+            // Botão para mostrar chave manual (Segurança)
+            const btnToggle = document.createElement('button');
+            btnToggle.innerText = "Mostrar chave manual";
+            btnToggle.style.marginTop = "10px";
+            btnToggle.style.padding = "8px";
+            btnToggle.style.cursor = "pointer";
+            
+            const secretKey = document.createElement('p');
+            secretKey.className = 'chave-manual';
+            secretKey.style.display = "none"; // Oculto por padrão
+            secretKey.innerText = "Chave: " + data.totp.secret;
+
+            btnToggle.onclick = () => {
+                secretKey.style.display = "block";
+                btnToggle.style.display = "none";
+            };
+
+            qrContainer.appendChild(btnToggle);
+            qrContainer.appendChild(secretKey);
 
         } catch (e) {
             window.mostrarMensagem("Erro ao gerar segurança: " + e.message);
@@ -140,7 +157,6 @@ QRCode.toCanvas(data.totp.qr_code, {
 
     // 5. EVENTOS DO USUÁRIO
     window.irParaSeguranca = async () => {
-        // Verifica sessão antes de prosseguir
         const { data: { session } } = await supabase.auth.getSession();
         if (!session) {
             window.mostrarMensagem("Acesso não identificado. Faça login no e-mail.");
