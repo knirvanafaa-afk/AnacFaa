@@ -125,39 +125,24 @@
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
 
-import { validarAcessoTotal } from './seguranca.js';
-
     const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // TRAVA DE SEGURANÇA INTEGRADA (Admin + Login + MFA)
-async function verificarAcessoAdmin() {
-    const { data: { session } } = await supabase.auth.getSession();
-    
-    // 1. Verifica se está logado
-    if (!session) {
-        window.location.href = 'index.html';
-        return;
-    }
+    // 1. TRAVA DE SEGURANÇA (Executa assim que a página carrega)
+    async function verificarAcesso() {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+            window.location.href = 'index.html';
+            return;
+        }
 
-    // 2. Verifica se é o ADMIN (seu e-mail)
-    const MEU_EMAIL = "knirvana@hotmail.com"; // <--- COLOQUE SEU E-MAIL AQUI
-    if (session.user.email !== MEU_EMAIL) {
-        window.location.href = 'index.html';
-        return;
+        const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        if (data.currentLevel !== 'aal2') {
+            window.location.href = 'verificar-mfa.html'; 
+        }
     }
-
-    // 3. Verifica se tem MFA (AAL2)
-    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    if (data.currentLevel !== 'aal2') {
-        window.location.href = 'verificar-mfa.html';
-        return;
-    }
-}
-
-// Executa a trava
-verificarAcessoAdmin();
+    verificarAcesso();
 
     // 2. VARIÁVEIS GLOBAIS E FUNÇÕES DO PAINEL
     let idOriginal = null;
