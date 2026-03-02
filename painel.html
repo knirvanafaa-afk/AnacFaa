@@ -147,6 +147,13 @@ async function verificarAcessoAdmin() {
         window.location.href = 'index.html';
         return;
     }
+
+    // 3. Verifica se tem MFA (AAL2)
+    const { data } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (data.currentLevel !== 'aal2') {
+        window.location.href = 'verificar-mfa.html';
+        return;
+    }
 }
 
 // Executa a trava
