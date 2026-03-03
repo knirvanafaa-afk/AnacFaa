@@ -20,66 +20,71 @@
 </div>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    window.validarAcesso = async () => {
-        const codigo = document.getElementById('codigo-mfa').value;
-        const { data: factors } = await supabase.auth.mfa.listFactors();
-        const factorId = factors.totp[0].id;
+// Configuração única
+const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-        const { error } = await supabase.auth.mfa.challengeAndVerify({
-            factorId: factorId,
-            code: codigo
+window.validarAcesso = async () => {
+    const codigoInput = document.getElementById('codigo-mfa').value;
+    
+    if (!codigoInput || codigoInput.length < 6) {
+        alert("Por favor, digite os 6 números do seu autenticador.");
+        return;
+    }
+
+    try {
+        // 1. Pega os fatores de MFA
+        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+        if (factorsError) throw factorsError;
+
+        const totp = factors.totp[0];
+        if (!totp) throw new Error("MFA não configurado corretamente.");
+
+        // 2. Valida o código
+        const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({
+            factorId: totp.id,
+            code: codigoInput
         });
 
-       if (error) {
-    alert("Código incorreto!");
-} else {
+        if (verifyError) {
+            alert("Código incorreto ou expirado. Tente novamente.");
+            return;
+        }
 
-    // Busca sessão
-    const { data: { session } } = await supabase.auth.getSession();
+        // 3. Se deu certo, busca o perfil para decidir para onde ir
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('status_acesso, expira_em')
+            .eq('id', session.user.id)
+            .single();
 
-    // Busca perfil
-    const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('status_acesso, expira_em')
-        .eq('id', session.user.id)
-        .single();
+        if (profileError) {
+            alert("Erro ao identificar perfil.");
+            return;
+        }
 
-    if (profileError || !profile) {
-        window.location.href = 'index.html';
-        return;
+        // 4. Redirecionamento Final
+        const estaExpirado = profile.expira_em && new Date(profile.expira_em) < new Date();
+        const ehAdmin = profile.status_acesso === 'admin';
+        const ehAlunoAtivo = (profile.status_acesso === 'beta' || profile.status_acesso === 'pago') && !estaExpirado;
+
+        if (ehAdmin) {
+            window.location.href = 'painel.html';
+        } else if (ehAlunoAtivo) {
+            window.location.href = 'alunos.html';
+        } else {
+            alert("Seu acesso está pendente ou expirado. Entre em contato com o suporte.");
+            window.location.href = 'index.html'; // Expulsa se não tiver permissão
+        }
+
+    } catch (err) {
+        alert("Erro no sistema: " + err.message);
+        console.error(err);
     }
-
-    const ehAdmin = profile.status_acesso === 'admin';
-    const ehBeta = profile.status_acesso === 'beta';
-    const ehPago = profile.status_acesso === 'pago';
-    const estaExpirado = profile.expira_em && new Date(profile.expira_em) < new Date();
-
-    // ADMIN
-    if (ehAdmin) {
-        window.location.href = 'painel.html';
-        return;
-    }
-
-    // ALUNO ATIVO
-    if ((ehBeta || ehPago) && !estaExpirado) {
-        window.location.href = 'alunos.html';
-        return;
-    }
-
-    // PENDENTE OU EXPIRADO
-    if (profile.status_acesso === 'pendente') {
-        alert("Efetue o Pagamento para ter acesso ao conteúdo.");
-    } else {
-        alert("Por favor, revalide ou renove sua assinatura para continuar com acesso.");
-    }
-
-    setTimeout(() => {
-        window.location.href = 'index.html';
-    }, 2000);
-}
+};
 </script>
 </body>
 </html>
