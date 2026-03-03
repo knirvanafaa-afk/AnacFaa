@@ -55,29 +55,51 @@
     };
 
     window.realizarLogin = async () => {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-senha').value;
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-senha').value;
 
-        if(!email || !password) {
-            mostrarMensagem("Preencha e-mail e senha.");
+    if(!email || !password) {
+        mostrarMensagem("Preencha e-mail e senha.");
+        return;
+    }
+
+    try {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+
+        // Verifica MFA
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+
+        if (factors && factors.totp && factors.totp.length > 0) {
+            window.location.href = 'verificar-mfa.html';
             return;
         }
 
-        try {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
+        // Busca perfil após login válido
+        const { data: { session } } = await supabase.auth.getSession();
 
-            const { data: factors } = await supabase.auth.mfa.listFactors();
-            
-            if (factors && factors.totp && factors.totp.length > 0) {
-                window.location.href = 'verificar-mfa.html'; 
-            } else {
-                window.location.href = 'ativar-acesso.html';
-            }
-        } catch (e) {
-            mostrarMensagem("Erro de Acesso: " + e.message);
+        const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('status_acesso')
+            .eq('id', session.user.id)
+            .single();
+
+        if (profileError || !profile) {
+            mostrarMensagem("Erro ao validar perfil.");
+            return;
         }
-    };
+
+        // Direcionamento correto
+        if (profile.status_acesso === 'admin') {
+            window.location.href = 'painel.html';
+        } else {
+            window.location.href = 'alunos.html';
+        }
+
+    } catch (e) {
+        mostrarMensagem("Erro de Acesso: " + e.message);
+    }
+};
 </script>
 </body>
 </html>
