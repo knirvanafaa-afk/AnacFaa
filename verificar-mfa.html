@@ -33,12 +33,53 @@
             code: codigo
         });
 
-        if (error) {
-            alert("Código incorreto!");
-        } else {
-            window.location.href = 'painel.html';
-        }
-    };
+       if (error) {
+    alert("Código incorreto!");
+} else {
+
+    // Busca sessão
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // Busca perfil
+    const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('status_acesso, expira_em')
+        .eq('id', session.user.id)
+        .single();
+
+    if (profileError || !profile) {
+        window.location.href = 'index.html';
+        return;
+    }
+
+    const ehAdmin = profile.status_acesso === 'admin';
+    const ehBeta = profile.status_acesso === 'beta';
+    const ehPago = profile.status_acesso === 'pago';
+    const estaExpirado = profile.expira_em && new Date(profile.expira_em) < new Date();
+
+    // ADMIN
+    if (ehAdmin) {
+        window.location.href = 'painel.html';
+        return;
+    }
+
+    // ALUNO ATIVO
+    if ((ehBeta || ehPago) && !estaExpirado) {
+        window.location.href = 'alunos.html';
+        return;
+    }
+
+    // PENDENTE OU EXPIRADO
+    if (profile.status_acesso === 'pendente') {
+        alert("Efetue o Pagamento para ter acesso ao conteúdo.");
+    } else {
+        alert("Por favor, revalide ou renove sua assinatura para continuar com acesso.");
+    }
+
+    setTimeout(() => {
+        window.location.href = 'index.html';
+    }, 2000);
+}
 </script>
 </body>
 </html>
