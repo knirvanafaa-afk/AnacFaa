@@ -112,6 +112,9 @@ input[type="radio"]:disabled {
 import { validarAcessoTotal } from './seguranca.js';
 validarAcessoTotal(false);
 
+// Executa a validação assim que carregar
+validarAcessoTotal();
+
   const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
   const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
   const supabase = createClient(supabaseUrl, supabaseKey)
