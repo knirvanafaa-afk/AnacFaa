@@ -72,21 +72,27 @@
 </div>
 
 <script>
-    // 1. Carrega a segurança de forma independente
-    // Usamos um import dinâmico que não bloqueia o resto do código
+    // 1. Criamos um "monitor" de erros que exibe na tela se algo falhar
+    window.onerror = function(message, source, lineno, colno, error) {
+        alert("Erro no Script: " + message + " na linha " + lineno);
+    };
+
+    // 2. Carrega a segurança (usando o caminho correto)
     import('./seguranca.js').then(module => {
         module.validarAcessoTotal(false);
-    }).catch(err => console.error("Erro na segurança:", err));
+    }).catch(err => {
+        alert("Erro ao carregar Segurança.js: " + err);
+    });
 
-    // 2. Definimos a função de forma global (na janela)
+    // 3. Função que o botão chama
     window.iniciarSimulado = function(materia) {
-        console.log("Tentando iniciar: " + materia); // Isso vai aparecer no Console (F12)
+        // Log para saber se a função foi chamada
+        console.log("Botão clicado para: " + materia); 
         
-        sessionStorage.clear();
         sessionStorage.setItem('selectedSubject', materia);
         sessionStorage.setItem('questionCount', 60);
         
-        // Redirecionamento forçado
+        // Redireciona
         window.location.href = 'simulado.html';
     };
 </script>
