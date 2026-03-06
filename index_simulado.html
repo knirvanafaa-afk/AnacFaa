@@ -77,10 +77,10 @@
 <script type="module">
     import { validarAcessoTotal } from './seguranca.js';
 
-    // Bloqueia se não estiver autenticado
+    // 1. Validação de segurança primeiro
     await validarAcessoTotal(false);
 
-    // Função de navegação
+    // 2. Função de navegação
     const iniciarSimulado = (materia) => {
         sessionStorage.clear();
         sessionStorage.setItem('selectedSubject', materia);
@@ -88,7 +88,7 @@
         window.location.href = 'simulado.html';
     };
 
-    // Adiciona os ouvintes de evento após o carregamento da página
+    // 3. Garante que os botões funcionem após a página carregar
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('btn-general').addEventListener('click', () => iniciarSimulado('General'));
         document.getElementById('btn-airframe').addEventListener('click', () => iniciarSimulado('Airframe'));
