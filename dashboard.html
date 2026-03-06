@@ -245,13 +245,21 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 
 <div class="nome-usuario-container">
     <span id="display-nome">Carregando...</span>
-    <button onclick="ativarEdicao()" style="margin-left: 10px; cursor: pointer;">✏️</button>
+    <input type="text" id="input-nome" style="display: none; font-size: 15px; width: 140px;">
+    
+    <img src="lapis.jpg" id="btn-lapis" onclick="alternarModo()" 
+         style="width: 20px; height: 20px; cursor: pointer; margin-left: 10px; vertical-align: middle;">
 </div>
 
-<div id="edicao-nome" style="display: none;">
-    <input type="text" id="input-nome">
-    <button onclick="salvarNome()">Salvar</button>
-</div>     
+
+
+
+
+
+
+
+
+
         </span>
     </div>
 </div>
@@ -375,15 +383,23 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
         }
     }
 
-    // 3. Funções para os Botões (atreladas ao window para o onclick funcionar)
-    window.ativarEdicao = () => {
-        document.getElementById('display-nome').style.display = 'none';
-        document.getElementById('edicao-nome').style.display = 'block';
-        document.getElementById('input-nome').value = document.getElementById('display-nome').innerText;
-    };
+  // Variável para saber se estamos editando ou não
+let editando = false;
 
-    window.salvarNome = async () => {
-        const novoNome = document.getElementById('input-nome').value;
+window.alternarModo = async () => {
+    const display = document.getElementById('display-nome');
+    const input = document.getElementById('input-nome');
+    
+    if (!editando) {
+        // MODO EDITAR: Mostra o input, esconde o texto
+        input.value = display.innerText;
+        display.style.display = 'none';
+        input.style.display = 'inline';
+        input.focus();
+        editando = true;
+    } else {
+        // MODO SALVAR: Salva no Supabase e volta ao texto
+        const novoNome = input.value;
         const { data: { session } } = await supabase.auth.getSession();
         
         const { error } = await supabase
@@ -394,11 +410,15 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
         if (error) {
             alert("Erro ao salvar: " + error.message);
         } else {
-            document.getElementById('display-nome').innerText = novoNome;
-            document.getElementById('display-nome').style.display = 'inline';
-            document.getElementById('edicao-nome').style.display = 'none';
+            display.innerText = novoNome;
         }
-    };
+
+        // Esconde o input, mostra o texto
+        input.style.display = 'none';
+        display.style.display = 'inline';
+        editando = false;
+    }
+};
 
     window.tentarSair = async () => {
         if (confirm("Deseja sair?")) {
