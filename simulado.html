@@ -34,7 +34,7 @@
 
     /* --- RESULTADOS E REVISÃO (ORIGINAIS MANTIDOS) --- */
     #result-screen { display: none; text-align: center; padding: 40px; }
-    .status-box { padding: 30px; border-radius: 15px; font-size: 40px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; }
+    .status-box { padding: 30px; border-radius: 15px; font-size: 50px; font-weight: 900; margin-bottom: 20px; text-transform: uppercase; }
     .passed { background-color: #2ecc71; color: white; }
     .failed { background-color: #e74c3c; color: white; }
     #review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 15px; margin: 30px 0; }
@@ -141,23 +141,26 @@
     };
 
     // Função necessária para o botão FINISH (Revisão)
-    window.confirmFinish = () => { 
-        document.getElementById('review-screen').style.display = 'none';
-        window.mostrarMensagem("Finish the Exam?", true);
-    };
+
+     window.confirmFinish = () => { window.mostrarMensagem("Finish the Exam?", true); };
 
     // --- FUNÇÕES ORIGINAIS MANTIDAS ---
     async function fetchQuestions() {
+        let limit = (subject === 'Airframe' || subject === 'Powerplant') ? 100 : 60;
+        
         const { data, error } = await supabase
             .from('questoes')
             .select('pergunta, r1, r2, r3, r4, correta, foto')
-            .eq('materia', subject)
-            .limit(qCount);
+            .eq('materia', subject);
 
-        if (error) { window.mostrarMensagem("Erro ao carregar banco: " + error.message); return; }
-        if (!data || data.length === 0) { window.mostrarMensagem("Nenhuma questão encontrada para esta matéria."); return; }
+        if (error) { window.mostrarMensagem("Erro: " + error.message); return; }
+        
+        // Sorteio aleatório
+        let shuffled = data.sort(() => 0.5 - Math.random());
+        questions = shuffled.slice(0, limit);
 
-        questions = data;
+        if (questions.length === 0) { window.mostrarMensagem("Nenhuma questão encontrada."); return; }
+
         loadQuestion();
         startTimer();
     }
@@ -196,8 +199,13 @@
     window.saveAnswer = (i) => answers[currentIdx] = i;
     window.toggleFlag = () => { flags[currentIdx] = !flags[currentIdx]; updateFlagButton(); };
     window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; loadQuestion(); } };
-    window.finishExam = () => showReview();
-    window.hideReview = () => { document.getElementById('review-screen').style.display = 'none'; document.getElementById('exam-screen').style.display = 'block'; };
+
+
+
+    window.finishExam = () => { document.getElementById('exam-screen').style.display = 'none'; document.getElementById('review-screen').style.display = 'block'; showReview(); }; 
+
+window.hideReview = () => { document.getElementById('review-screen').style.display = 'none'; document.getElementById('exam-screen').style.display = 'block'; loadQuestion(); 
+};
 
     function updateFlagButton() {
         const btn = document.getElementById('btn-flag');
