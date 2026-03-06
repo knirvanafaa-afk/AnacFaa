@@ -67,9 +67,9 @@
 
     <div class="white-box">
         <div class="btn-grid">
-    <button id="btn-general" class="btn-subject btn-general">GENERAL</button>
-    <button id="btn-airframe" class="btn-subject btn-airframe">AIRFRAME</button>
-    <button id="btn-powerplant" class="btn-subject btn-powerplant">POWERPLANT</button>
+    <a href="simulado.html" class="btn-subject btn-general" onclick="salvarSelecao('General')">GENERAL</a>
+    <a href="simulado.html" class="btn-subject btn-airframe" onclick="salvarSelecao('Airframe')">AIRFRAME</a>
+    <a href="simulado.html" class="btn-subject btn-powerplant" onclick="salvarSelecao('Powerplant')">POWERPLANT</a>
 </div>
     </div>
 </div>
@@ -77,23 +77,14 @@
 <script type="module">
     import { validarAcessoTotal } from './seguranca.js';
 
-    // 1. Validação de segurança primeiro
+    // 1. Validação de segurança obrigatória
     await validarAcessoTotal(false);
 
-    // 2. Função de navegação
-    const iniciarSimulado = (materia) => {
-        sessionStorage.clear();
+    // 2. Função simples para salvar o que o usuário clicou
+    window.salvarSelecao = (materia) => {
         sessionStorage.setItem('selectedSubject', materia);
         sessionStorage.setItem('questionCount', 60);
-        window.location.href = 'simulado.html';
     };
-
-    // 3. Garante que os botões funcionem após a página carregar
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('btn-general').addEventListener('click', () => iniciarSimulado('General'));
-        document.getElementById('btn-airframe').addEventListener('click', () => iniciarSimulado('Airframe'));
-        document.getElementById('btn-powerplant').addEventListener('click', () => iniciarSimulado('Powerplant'));
-    });
 </script>
 </body>
 </html>
