@@ -93,125 +93,44 @@
 </div>
 
 <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { validarAcessoTotal } from './seguranca.js';
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
-import { validarAcessoTotal } from './seguranca.js'
+    // Mesma configuração do seu sistema
+    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'; const supabase = createClient(supabaseUrl, supabaseKey); 
+    await validarAcessoTotal(false);
 
-const supabase = createClient(supabaseUrl, supabaseKey)
-
-await validarAcessoTotal(false)
-
-const subject = sessionStorage.getItem('selectedSubject');
-    const qCount = parseInt(sessionStorage.getItem('questionCount')) || 60;
-    if (!subject) window.location.href = 'index_simulado.html';
-    document.querySelector('h2').innerText = `Simulado FAA - ${subject}`;
-
-    let currentIdx = 0;
-    let answers = {};
-    let flags = {};
     let questions = [];
-    let timeLeft = 120 * 60; 
-    let timerInterval; // Variável global para o timer
+    const materiaSelecionada = sessionStorage.getItem('selectedSubject');
 
     async function fetchQuestions() {
+        if (!materiaSelecionada) {
+            alert("Erro: Nenhuma matéria selecionada.");
+            return;
+        }
+
+        // --- IMPORTANTE: Verifique se esses nomes de colunas existem na sua tabela ---
+        // Se na prova.html funciona, verifique se aqui você está usando as mesmas colunas:
         const { data, error } = await supabase
-            .from('perguntas')
-            .select('pergunta, r1, r2, r3, r4, correta')
-            .eq('materia', subject)
-            .limit(qCount);
+            .from('questoes') // Verifique se o nome da tabela é exatamente este
+            .select('*')
+            .eq('materia', materiaSelecionada)
+            .limit(60);
 
-        if (error) { alert("Erro ao carregar banco"); return; }
+        if (error) {
+            console.error("Erro ao buscar:", error);
+            alert("Erro ao carregar questões.");
+            return;
+        }
+
         questions = data;
-        loadQuestion();
-        startTimer();
-    }
-
-    function startTimer() {
-        timerInterval = setInterval(() => {
-            timeLeft--;
-            const h = Math.floor(timeLeft / 3600);
-            const m = Math.floor((timeLeft % 3600) / 60);
-            const s = timeLeft % 60;
-            document.getElementById('timer').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-
-            if (timeLeft <= 300) {
-                document.getElementById('header-box').classList.add('tempo-critico');
-                if (!document.getElementById('aviso-msg')) {
-                    document.getElementById('timer-wrapper').innerHTML += '<br><small id="aviso-msg">TEMPO ESGOTANDO!</small>';
-                }
-            }
-            if(timeLeft <= 0) processFinalResult();
-        }, 1000);
-    }
-
-    function loadQuestion() {
-        const q = questions[currentIdx];
-        document.getElementById('q-counter').innerText = `Q ${currentIdx + 1} of ${questions.length}`;
-        document.getElementById('question-text').innerText = q.pergunta;
-        
-        let html = '';
-        const opts = [q.r1, q.r2, q.r3, q.r4];
-        opts.forEach((opt, i) => {
-            if (opt && opt !== 'N/A') {
-                let checked = (answers[currentIdx] === i) ? 'checked' : '';
-                html += `<label style="display:block; padding:8px; cursor:pointer;">
-                            <input type="radio" name="ans" value="${i}" ${checked} onchange="saveAnswer(${i})"> ${opt}
-                         </label>`;
-            }
-        });
-        document.getElementById('options-container').innerHTML = html;
-        updateFlagButton();
-    }
-
-    window.saveAnswer = (i) => answers[currentIdx] = i;
-    window.toggleFlag = () => { flags[currentIdx] = !flags[currentIdx]; updateFlagButton(); };
-    window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; loadQuestion(); } };
-    window.finishExam = () => showReview();
-
-    function updateFlagButton() {
-        const btn = document.getElementById('btn-flag');
-        btn.className = flags[currentIdx] ? 'active' : '';
-        btn.innerText = flags[currentIdx] ? "🚩 FLAGGED" : "🚩 FLAG";
-    }
-
-    function showReview() {
-        document.getElementById('exam-screen').style.display = 'none';
-        document.getElementById('review-screen').style.display = 'block';
-        const grid = document.getElementById('review-grid');
-        grid.innerHTML = '';
-        questions.forEach((q, i) => {
-            const item = document.createElement('div');
-            item.className = 'review-item ' + (flags[i] ? 'status-flagged' : (answers[i] !== undefined ? 'status-answered' : 'status-unanswered'));
-            item.innerText = i + 1;
-            item.onclick = () => { currentIdx = i; hideReview(); loadQuestion(); };
-            grid.appendChild(item);
-        });
-    }
-
-    window.hideReview = () => { document.getElementById('review-screen').style.display = 'none'; document.getElementById('exam-screen').style.display = 'block'; };
-    
-    window.confirmFinish = () => { if(confirm("Deseja finalizar?")) processFinalResult(); };
-
-    function processFinalResult() {
-        clearInterval(timerInterval); // Para o timer ao finalizar
-        let score = 0;
-        questions.forEach((q, i) => { 
-            const correctIndex = parseInt(q.correta) - 1;
-            if(answers[i] === correctIndex) score++; 
-        });
-        
-        document.getElementById('exam-screen').style.display = 'none';
-        document.getElementById('review-screen').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'block';
-        
-        const passed = (score/questions.length) >= 0.7;
-        document.getElementById('status-text').innerText = passed ? "PASSED" : "FAILED";
-        document.getElementById('status-text').className = `status-box ${passed ? 'passed' : 'failed'}`;
-        document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
-        document.getElementById('final-time').innerText = document.getElementById('timer').innerText;
+        if (questions.length > 0) {
+            // Se carregou, começa a exibir
+            console.log("Questões carregadas:", questions.length);
+            // Aqui você deve chamar a função que desenha a pergunta na tela
+            // ex: carregarPrimeiraPergunta(); 
+        }
     }
 
     fetchQuestions();
