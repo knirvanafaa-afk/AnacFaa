@@ -72,14 +72,23 @@
 </div>
 
 <script>
-import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm').then(async (module) => { const { validarAcessoTotal } = await import('./seguranca.js'); await validarAcessoTotal(false); }); // Esta função agora fica global e o onclick do HTML vai encontrar window.iniciarSimulado = (materia) => { sessionStorage.clear(); sessionStorage.setItem('selectedSubject', materia); sessionStorage.setItem('questionCount', 60); window.location.href = 'simulado.html'; };
+    // 1. Carrega a segurança de forma independente
+    // Usamos um import dinâmico que não bloqueia o resto do código
+    import('./seguranca.js').then(module => {
+        module.validarAcessoTotal(false);
+    }).catch(err => console.error("Erro na segurança:", err));
 
-    // 3. Garante que os botões funcionem após a página carregar
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('btn-general').addEventListener('click', () => iniciarSimulado('General'));
-        document.getElementById('btn-airframe').addEventListener('click', () => iniciarSimulado('Airframe'));
-        document.getElementById('btn-powerplant').addEventListener('click', () => iniciarSimulado('Powerplant'));
-    });
+    // 2. Definimos a função de forma global (na janela)
+    window.iniciarSimulado = function(materia) {
+        console.log("Tentando iniciar: " + materia); // Isso vai aparecer no Console (F12)
+        
+        sessionStorage.clear();
+        sessionStorage.setItem('selectedSubject', materia);
+        sessionStorage.setItem('questionCount', 60);
+        
+        // Redirecionamento forçado
+        window.location.href = 'simulado.html';
+    };
 </script>
 </body>
 </html>
