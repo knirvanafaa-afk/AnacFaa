@@ -121,59 +121,46 @@
     let timeLeft = 120 * 60; 
     let timerInterval;
 
-// 3. ALERTAS PERSONALIZADOS
-
-    // Nova lógica de exibição do alerta
+    // --- ALERTAS PERSONALIZADOS (MODIFICADO APENAS AQUI) ---
     window.mostrarMensagem = (texto, ehConfirmacao = false) => {
         document.getElementById('alert-message').innerText = texto;
         document.getElementById('custom-alert').style.display = 'flex';
-        // Mostra os botões apenas se for uma confirmação
+        // Controla visibilidade dos botões YES/NO
         document.getElementById('btn-no').style.display = ehConfirmacao ? 'inline-block' : 'none';
         document.getElementById('btn-yes').style.display = ehConfirmacao ? 'inline-block' : 'none';
     };
 
     window.fecharAlerta = () => {
         document.getElementById('custom-alert').style.display = 'none';
-        // Se a tela de review estava escondida, ela é restaurada
-        if(document.getElementById('review-screen').style.display === 'none') {
-            document.getElementById('review-screen').style.display = 'block';
-        }
     };
 
-    window.confirmFinish = () => {
-        // Esconde o review para mostrar o alerta centralizado
-        document.getElementById('review-screen').style.display = 'none';
-        window.mostrarMensagem("Finish the Exam?", true);
-    };
-
+    // Função necessária para o botão YES
     window.executarFinalizacao = () => {
         document.getElementById('custom-alert').style.display = 'none';
         processFinalResult();
     };
 
+    // Função necessária para o botão FINISH (Revisão)
+    window.confirmFinish = () => { 
+        document.getElementById('review-screen').style.display = 'none';
+        window.mostrarMensagem("Finish the Exam?", true);
+    };
+
+    // --- FUNÇÕES ORIGINAIS MANTIDAS ---
     async function fetchQuestions() {
-    const { data, error } = await supabase
-        .from('questoes')
-        .select('pergunta, r1, r2, r3, r4, correta, foto')
-        .eq('materia', subject)
-        .limit(qCount);
+        const { data, error } = await supabase
+            .from('questoes')
+            .select('pergunta, r1, r2, r3, r4, correta, foto')
+            .eq('materia', subject)
+            .limit(qCount);
 
-    // O código de erro e de verificação deve estar AQUI DENTRO
-    if (error) { 
-        window.mostrarMensagem("Erro ao carregar banco: " + error.message); 
-        return; 
+        if (error) { window.mostrarMensagem("Erro ao carregar banco: " + error.message); return; }
+        if (!data || data.length === 0) { window.mostrarMensagem("Nenhuma questão encontrada para esta matéria."); return; }
+
+        questions = data;
+        loadQuestion();
+        startTimer();
     }
-
-    if (!data || data.length === 0) {
-        window.mostrarMensagem("Nenhuma questão encontrada para esta matéria.");
-        return;
-    }
-
-    // Se passou pelos testes acima, então carregamos os dados
-    questions = data;
-    loadQuestion();
-    startTimer();
-}
 
     function startTimer() {
         timerInterval = setInterval(() => {
@@ -182,54 +169,36 @@
             const m = Math.floor((timeLeft % 3600) / 60);
             const s = timeLeft % 60;
             document.getElementById('timer').innerText = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-
-            if (timeLeft <= 300) {
-                document.getElementById('header-box').classList.add('tempo-critico');
-            }
+            if (timeLeft <= 300) document.getElementById('header-box').classList.add('tempo-critico');
             if(timeLeft <= 0) processFinalResult();
         }, 1000);
     }
 
     window.loadQuestion = () => {
-    const q = questions[currentIdx];
-    document.getElementById('q-counter').innerText = `Question ${currentIdx + 1} of ${questions.length}`;
-    document.getElementById('question-text').innerText = q.pergunta;
-
-    // Lógica da imagem organizada e corrigida
-    let html = '';
-    if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
-        html += `<div style="margin: 15px 0; text-align: center;">
-                    <img src="${q.foto}" style="max-width: 100%; height: auto; border-radius: 8px;">
-                 </div>`;
-    }
-    
-    // Adiciona as alternativas
-    const opts = [q.r1, q.r2, q.r3, q.r4];
-    opts.forEach((opt, i) => {
-        if (opt && opt !== 'N/A') {
-            let checked = (answers[currentIdx] === i) ? 'checked' : '';
-            html += `<label style="display:block; padding:8px; cursor:pointer;">
-                        <input type="radio" name="ans" value="${i}" ${checked} onchange="saveAnswer(${i})"> ${opt}
-                     </label>`;
+        const q = questions[currentIdx];
+        document.getElementById('q-counter').innerText = `Question ${currentIdx + 1} of ${questions.length}`;
+        document.getElementById('question-text').innerText = q.pergunta;
+        let html = '';
+        if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
+            html += `<div style="margin: 15px 0; text-align: center;"><img src="${q.foto}" style="max-width: 100%; height: auto; border-radius: 8px;"></div>`;
         }
-    });
-     document.getElementById('options-container').innerHTML = html;
-    updateFlagButton();
-};
+        const opts = [q.r1, q.r2, q.r3, q.r4];
+        opts.forEach((opt, i) => {
+            if (opt && opt !== 'N/A') {
+                let checked = (answers[currentIdx] === i) ? 'checked' : '';
+                html += `<label style="display:block; padding:8px; cursor:pointer;"><input type="radio" name="ans" value="${i}" ${checked} onchange="saveAnswer(${i})"> ${opt}</label>`;
+            }
+        });
+        document.getElementById('options-container').innerHTML = html;
+        updateFlagButton();
+    };
 
-    // --- PONTES PARA O HTML ---
     window.saveAnswer = (i) => answers[currentIdx] = i;
     window.toggleFlag = () => { flags[currentIdx] = !flags[currentIdx]; updateFlagButton(); };
     window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; loadQuestion(); } };
     window.finishExam = () => showReview();
     window.hideReview = () => { document.getElementById('review-screen').style.display = 'none'; document.getElementById('exam-screen').style.display = 'block'; };
-    window.confirmFinish = () => { 
 
-document.getElementById('review-screen').style.display = 'none';
-
-window.mostrarMensagem("Deseja finalizar a prova?");
-
-};
     function updateFlagButton() {
         const btn = document.getElementById('btn-flag');
         btn.className = flags[currentIdx] ? 'active' : '';
