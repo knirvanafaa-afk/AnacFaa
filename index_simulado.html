@@ -5,21 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Exam</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', sans-serif; 
-            background: #f0f2f5; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            margin: 0; 
-            -webkit-user-select: none; user-select: none; 
-        }
-
-        .main-wrapper {
-            width: 90%;
-            max-width: 600px;
-        }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; /* Mudamos de center para flex-start para subir a caixa */ align-items: flex-start; min-height: 100vh; margin: 0; padding-top: 50px; /* Isso dá um respiro entre o topo da tela e a caixa */ -webkit-user-select: none; user-select: none; } .main-wrapper { width: 90%; max-width: 600px; }
         
         /* Cabeçalho Amarelo */
         .yellow-header {
