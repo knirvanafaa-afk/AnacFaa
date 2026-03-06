@@ -74,7 +74,7 @@
     </div>
 </div>
 
-<script type="module"> import { validarAcessoTotal } from './Segurança.js'; // Bloqueia se não estiver autenticado await validarAcessoTotal(false); // Esta linha é a chave: 'window.iniciarSimulado' torna a função // visível para o clique do botão, mesmo dentro do módulo. window.iniciarSimulado = (materia) => { sessionStorage.clear(); sessionStorage.setItem('selectedSubject', materia); sessionStorage.setItem('questionCount', 60); window.location.href = 'simulado.html'; };
+<script type="module"> import { validarAcessoTotal } from './seguranca.js'; // Bloqueia se não estiver autenticado await validarAcessoTotal(false); // Esta linha é a chave: 'window.iniciarSimulado' torna a função // visível para o clique do botão, mesmo dentro do módulo. window.iniciarSimulado = (materia) => { sessionStorage.clear(); sessionStorage.setItem('selectedSubject', materia); sessionStorage.setItem('questionCount', 60); window.location.href = 'simulado.html'; };
 </script>
 </body>
 </html>
