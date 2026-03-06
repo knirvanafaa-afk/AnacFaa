@@ -1,15 +1,65 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-br">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Exam</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 40px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); text-align: center; width: 90%; max-width: 600px; }
-        h2 { color: #2c3e50; margin-bottom: 30px; }
-        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .btn-subject { padding: 20px 10px; border: none; border-radius: 10px; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .btn-subject:hover { transform: translateY(-5px); filter: brightness(1.1); }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            -webkit-user-select: none; user-select: none; 
+        }
+
+        .main-wrapper {
+            width: 90%;
+            max-width: 600px;
+        }
+        
+        /* Cabeçalho Amarelo */
+        .yellow-header {
+            background-color: #fff9c4;
+            border: 2px solid #f1c40f;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 15px;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.05);
+        }
+
+        h2 { color: #2c3e50; margin: 0; font-size: 1.2rem; }
+
+        /* Caixa Branca dos Botões */
+        .white-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        .btn-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr 1fr; 
+            gap: 10px; 
+        }
+        
+        .btn-subject { 
+            padding: 15px 5px; 
+            border: none; 
+            border-radius: 8px; 
+            color: white; 
+            font-weight: bold; 
+            cursor: pointer; 
+            transition: 0.3s; 
+            text-transform: uppercase;
+            font-size: 0.75rem;
+        }
+        .btn-subject:hover { transform: translateY(-2px); filter: brightness(1.1); }
         .btn-general { background-color: #3498db; }
         .btn-airframe { background-color: #e74c3c; }
         .btn-powerplant { background-color: #27ae60; }
@@ -17,24 +67,29 @@
 </head>
 <body>
 
-<div class="container">
-    <h2>Choose an option to start your test</h2>
-    <div class="btn-grid">
-        <button class="btn-subject btn-general" onclick="startTest('GENERAL', 60)">GENERAL</button>
-        <button class="btn-subject btn-airframe" onclick="startTest('AIRFRAME', 100)">AIRFRAME</button>
-        <button class="btn-subject btn-powerplant" onclick="startTest('POWERPLANT', 100)">POWERPLANT</button>
+<div class="main-wrapper">
+    <div class="yellow-header">
+        <h2>Choose an option to start your test</h2>
+    </div>
+
+    <div class="white-box">
+        <div class="btn-grid">
+            <button class="btn-subject btn-general" onclick="window.iniciarSimulado('General')">GENERAL</button>
+            <button class="btn-subject btn-airframe" onclick="window.iniciarSimulado('Airframe')">AIRFRAME</button>
+            <button class="btn-subject btn-powerplant" onclick="window.iniciarSimulado('Powerplant')">POWERPLANT</button>
+        </div>
     </div>
 </div>
 
 <script type="module">
     import { validarAcessoTotal } from './Segurança.js';
     
-    // Proteção de entrada
     await validarAcessoTotal(false);
 
-    window.startTest = (subject, qCount) => {
-        sessionStorage.setItem('selectedSubject', subject);
-        sessionStorage.setItem('questionCount', qCount);
+    window.iniciarSimulado = (materia) => {
+        sessionStorage.clear();
+        sessionStorage.setItem('selectedSubject', materia);
+        sessionStorage.setItem('questionCount', 60);
         window.location.href = 'simulado.html';
     };
 </script>
