@@ -200,8 +200,6 @@
     window.toggleFlag = () => { flags[currentIdx] = !flags[currentIdx]; updateFlagButton(); };
     window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; loadQuestion(); } };
 
-
-
     window.finishExam = () => { document.getElementById('exam-screen').style.display = 'none'; document.getElementById('review-screen').style.display = 'block'; showReview(); }; 
 
 window.hideReview = () => { document.getElementById('review-screen').style.display = 'none'; document.getElementById('exam-screen').style.display = 'block'; loadQuestion(); 
@@ -243,6 +241,13 @@ window.hideReview = () => { document.getElementById('review-screen').style.displ
         document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
         document.getElementById('final-time').innerText = document.getElementById('timer').innerText;
     }
+
+window.addEventListener('beforeunload', (event) => {
+    // O navegador vai exibir o alerta padrão dele com o texto que definirmos aqui
+    const message = "ARE YOU SURE YOU WANT TO LEAVE? ALL YOUR PROGRESS WILL BE LOST.";
+    event.returnValue = message; 
+    return message;
+});
 
     fetchQuestions();
 </script>
