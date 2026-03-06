@@ -67,14 +67,33 @@
 
     <div class="white-box">
         <div class="btn-grid">
-            <button class="btn-subject btn-general" onclick="window.iniciarSimulado('General')">GENERAL</button>
-            <button class="btn-subject btn-airframe" onclick="window.iniciarSimulado('Airframe')">AIRFRAME</button>
-            <button class="btn-subject btn-powerplant" onclick="window.iniciarSimulado('Powerplant')">POWERPLANT</button>
-        </div>
+    <button id="btn-general" class="btn-subject btn-general">GENERAL</button>
+    <button id="btn-airframe" class="btn-subject btn-airframe">AIRFRAME</button>
+    <button id="btn-powerplant" class="btn-subject btn-powerplant">POWERPLANT</button>
+</div>
     </div>
 </div>
 
-<script type="module"> import { validarAcessoTotal } from './seguranca.js'; // Bloqueia se não estiver autenticado await validarAcessoTotal(false); // Esta linha é a chave: 'window.iniciarSimulado' torna a função // visível para o clique do botão, mesmo dentro do módulo. window.iniciarSimulado = (materia) => { sessionStorage.clear(); sessionStorage.setItem('selectedSubject', materia); sessionStorage.setItem('questionCount', 60); window.location.href = 'simulado.html'; };
+<script type="module">
+    import { validarAcessoTotal } from './seguranca.js';
+
+    // Bloqueia se não estiver autenticado
+    await validarAcessoTotal(false);
+
+    // Função de navegação
+    const iniciarSimulado = (materia) => {
+        sessionStorage.clear();
+        sessionStorage.setItem('selectedSubject', materia);
+        sessionStorage.setItem('questionCount', 60);
+        window.location.href = 'simulado.html';
+    };
+
+    // Adiciona os ouvintes de evento após o carregamento da página
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('btn-general').addEventListener('click', () => iniciarSimulado('General'));
+        document.getElementById('btn-airframe').addEventListener('click', () => iniciarSimulado('Airframe'));
+        document.getElementById('btn-powerplant').addEventListener('click', () => iniciarSimulado('Powerplant'));
+    });
 </script>
 </body>
 </html>
