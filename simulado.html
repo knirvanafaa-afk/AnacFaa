@@ -115,22 +115,37 @@
 
     // 3. Função de busca
     async function fetchQuestions() {
-        const { data, error } = await supabase
-            .from('perguntas')
-            .select('pergunta, r1, r2, r3, r4, correta')
-            .eq('materia', subject)
-            .limit(qCount);
+    console.log("Buscando questões para:", subject);
+    
+    // O nome da sua tabela no banco deve ser "questoes"
+    const { data, error } = await supabase
+        .from('questoes') 
+        .select('pergunta, r1, r2, r3, r4, correta, materia')
+        .eq('materia', subject)
+        .limit(60);
 
-        if (error) { 
-            alert("Erro ao carregar banco: " + error.message); 
-            return; 
-        }
-        
-        questions = data;
-        if (questions.length > 0) {
-            loadQuestion();
-            startTimer();
-        } else {
+    if (error) {
+        console.error("Erro Supabase:", error);
+        alert("Erro no banco: " + error.message);
+        return;
+    }
+
+    if (!data || data.length === 0) {
+        alert("Nenhuma questão encontrada para " + subject);
+        return;
+    }
+
+    questions = data;
+    console.log("Sucesso! Questões carregadas:", questions.length);
+    
+    // Esconde o loading e inicia
+    document.getElementById('loading-screen').style.display = 'none';
+    document.getElementById('exam-screen').style.display = 'block';
+    
+    loadQuestion();
+    startTimer();
+}
+         else {
             document.getElementById('question-text').innerText = "Nenhuma questão encontrada.";
         }
     }
