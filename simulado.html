@@ -119,7 +119,7 @@
         // AQUI ESTÁ LIGADO À TABELA "questoes" conforme seu CSV
         const { data, error } = await supabase
             .from('questoes')
-            .select('pergunta, r1, r2, r3, r4, correta')
+            .select('pergunta, r1, r2, r3, r4, correta, foto')
             .eq('materia', subject)
             .limit(qCount);
 
