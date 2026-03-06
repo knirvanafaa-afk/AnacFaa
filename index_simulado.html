@@ -66,27 +66,13 @@
     </div>
 
     <div class="white-box">
-        <div class="btn-grid">
-    <button id="btn-general" class="btn-subject btn-general">GENERAL</button>
-    <button id="btn-airframe" class="btn-subject btn-airframe">AIRFRAME</button>
-    <button id="btn-powerplant" class="btn-subject btn-powerplant">POWERPLANT</button>
+       <div class="btn-grid"> <button class="btn-subject btn-general" onclick="iniciarSimulado('General')">GENERAL</button> <button class="btn-subject btn-airframe" onclick="iniciarSimulado('Airframe')">AIRFRAME</button> <button class="btn-subject btn-powerplant" onclick="iniciarSimulado('Powerplant')">POWERPLANT</button> 
 </div>
     </div>
 </div>
 
-<script type="module">
-    import { validarAcessoTotal } from './seguranca.js';
-
-    // 1. Validação de segurança primeiro
-    await validarAcessoTotal(false);
-
-    // 2. Função de navegação
-    const iniciarSimulado = (materia) => {
-        sessionStorage.clear();
-        sessionStorage.setItem('selectedSubject', materia);
-        sessionStorage.setItem('questionCount', 60);
-        window.location.href = 'simulado.html';
-    };
+<script>
+import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm').then(async (module) => { const { validarAcessoTotal } = await import('./seguranca.js'); await validarAcessoTotal(false); }); // Esta função agora fica global e o onclick do HTML vai encontrar window.iniciarSimulado = (materia) => { sessionStorage.clear(); sessionStorage.setItem('selectedSubject', materia); sessionStorage.setItem('questionCount', 60); window.location.href = 'simulado.html'; };
 
     // 3. Garante que os botões funcionem após a página carregar
     document.addEventListener('DOMContentLoaded', () => {
