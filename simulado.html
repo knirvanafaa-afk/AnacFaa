@@ -191,8 +191,13 @@ window.mostrarMensagem = (texto) => { document.getElementById('alert-message').i
     window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; loadQuestion(); } };
     window.finishExam = () => showReview();
     window.hideReview = () => { document.getElementById('review-screen').style.display = 'none'; document.getElementById('exam-screen').style.display = 'block'; };
-    window.confirmFinish = () => { if(confirm("Deseja finalizar?")) processFinalResult(); };
+    window.confirmFinish = () => { 
 
+document.getElementById('review-screen').style.display = 'none';
+
+window.mostrarMensagem("Deseja finalizar a prova?");
+
+};
     function updateFlagButton() {
         const btn = document.getElementById('btn-flag');
         btn.className = flags[currentIdx] ? 'active' : '';
