@@ -100,57 +100,38 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // 1. Valida o acesso primeiro
     await validarAcessoTotal(false);
 
-    // 2. Variáveis globais dentro do módulo
-    const subject = sessionStorage.getItem('selectedSubject');
-    const qCount = parseInt(sessionStorage.getItem('questionCount')) || 60;
     let currentIdx = 0;
     let answers = {};
-    let flags = {};
     let questions = [];
     let timeLeft = 120 * 60; 
     let timerInterval;
 
-    // 3. Função de busca
     async function fetchQuestions() {
-    console.log("Buscando questões para:", subject);
-    
-    // O nome da sua tabela no banco deve ser "questoes"
-    const { data, error } = await supabase
-        .from('questoes') 
-        .select('pergunta, r1, r2, r3, r4, correta, materia')
-        .eq('materia', subject)
-        .limit(60);
+        const subject = sessionStorage.getItem('selectedSubject');
+        console.log("Buscando questões para:", subject);
 
-    if (error) {
-        console.error("Erro Supabase:", error);
-        alert("Erro no banco: " + error.message);
-        return;
-    }
+        const { data, error } = await supabase
+            .from('questoes')
+            .select('pergunta, r1, r2, r3, r4, correta, materia')
+            .eq('materia', subject)
+            .limit(60);
 
-    if (!data || data.length === 0) {
-        alert("Nenhuma questão encontrada para " + subject);
-        return;
-    }
+        if (error) {
+            alert("Erro Supabase: " + error.message);
+            return;
+        }
 
-    questions = data;
-    console.log("Sucesso! Questões carregadas:", questions.length);
-    
-    // Esconde o loading e inicia
-    document.getElementById('loading-screen').style.display = 'none';
-    document.getElementById('exam-screen').style.display = 'block';
-    
-    loadQuestion();
-    startTimer();
-}
-         else {
-            document.getElementById('question-text').innerText = "Nenhuma questão encontrada.";
+        if (data && data.length > 0) {
+            questions = data;
+            loadQuestion();
+            startTimer();
+        } else {
+            document.getElementById('question-text').innerText = "Nenhuma questão encontrada para " + subject;
         }
     }
 
-    // 4. Funções auxiliares movidas para o escopo global para o HTML achar
     window.loadQuestion = () => {
         const q = questions[currentIdx];
         document.getElementById('q-counter').innerText = `Q ${currentIdx + 1} of ${questions.length}`;
@@ -170,7 +151,13 @@
     };
 
     window.saveAnswer = (i) => answers[currentIdx] = i;
-    window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; window.loadQuestion(); } };
+    window.changeQuestion = (dir) => { 
+        if (questions[currentIdx + dir]) { 
+            currentIdx += dir; 
+            window.loadQuestion(); 
+        } 
+    };
+
     window.startTimer = () => {
         timerInterval = setInterval(() => {
             timeLeft--;
@@ -182,7 +169,6 @@
         }, 1000);
     };
 
-    // Inicia o processo
     fetchQuestions();
 </script>
 </body>
