@@ -5,9 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Select Exam</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; display: flex; justify-content: center; /* Mudamos de center para flex-start para subir a caixa */ align-items: flex-start; min-height: 100vh; margin: 0; padding-top: 50px; /* Isso dá um respiro entre o topo da tela e a caixa */ -webkit-user-select: none; user-select: none; } .main-wrapper { width: 90%; max-width: 600px; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #f0f2f5; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; /* Alinhado ao topo */
+            min-height: 100vh; 
+            margin: 0; 
+            padding-top: 50px; /* Respiro do topo */
+            user-select: none; 
+        }
+
+        .main-wrapper { width: 90%; max-width: 600px; }
         
-        /* Cabeçalho Amarelo */
         .yellow-header {
             background-color: #fff9c4;
             border: 2px solid #f1c40f;
@@ -18,16 +29,17 @@
             box-shadow: 0px 5px 15px rgba(0,0,0,0.05);
         }
 
-        h2 { color: #2c3e50; margin: 0; font-size: 1.2rem; }
+        h2 { color: #2c3e50; margin: 0; font-size: 1.1rem; }
 
-        /* Caixa Branca dos Botões */
-       .white-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0px 5px 15px rgba(0,0,0,0.05); border: 2px solid #27ae60; /* Verde padrão do seu site */ }
-        
-        .btn-grid { 
-            display: grid; 
-            grid-template-columns: 1fr 1fr 1fr; 
-            gap: 10px; 
+        .white-box {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #27ae60; /* Verde padrão do seu site */
+            box-shadow: 0px 5px 15px rgba(0,0,0,0.05);
         }
+        
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
         
         .btn-subject { 
             padding: 15px 5px; 
@@ -65,9 +77,12 @@
 <script type="module">
     import { validarAcessoTotal } from './Segurança.js';
     
+    // Bloqueia se não estiver autenticado
     await validarAcessoTotal(false);
 
+    // Vincula a função ao objeto global 'window' para ser acessível pelo onclick
     window.iniciarSimulado = (materia) => {
+        console.log("Iniciando prova para:", materia); // Debug no console (F12)
         sessionStorage.clear();
         sessionStorage.setItem('selectedSubject', materia);
         sessionStorage.setItem('questionCount', 60);
