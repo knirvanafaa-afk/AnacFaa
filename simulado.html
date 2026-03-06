@@ -50,6 +50,8 @@
 </head>
 <body>
 
+<div id="custom-alert" style="display:none; position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; background:#fff9c4; border:2px solid #f1c40f; padding:15px 25px; border-radius:10px; box-shadow:0 4px 6px rgba(0,0,0,0.1); text-align:center;"> <span id="alert-message" style="color:#444; font-weight:bold; margin-right:15px;"></span> <button onclick="fecharAlerta()" style="background:#e74c3c; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">OK</button> </div> 
+
 <div class="container">
     <h2>Simulado FAA</h2>
     
@@ -115,21 +117,31 @@
     let timeLeft = 120 * 60; 
     let timerInterval;
 
-    async function fetchQuestions() {
-        // AQUI ESTÁ LIGADO À TABELA "questoes" conforme seu CSV
-        const { data, error } = await supabase
-            .from('questoes')
-            .select('pergunta, r1, r2, r3, r4, correta, foto')
-            .eq('materia', subject)
-            .limit(qCount);
+window.mostrarMensagem = (texto) => { document.getElementById('alert-message').innerText = texto; document.getElementById('custom-alert').style.display = 'flex'; }; window.fecharAlerta = () => { document.getElementById('custom-alert').style.display = 'none'; }; 
 
-        if (error) { alert("Erro ao carregar banco: " + error.message); return; }
-        questions = data;
-        if(questions.length > 0) {
-            loadQuestion();
-            startTimer();
-        }
+    async function fetchQuestions() {
+    const { data, error } = await supabase
+        .from('questoes')
+        .select('pergunta, r1, r2, r3, r4, correta, foto')
+        .eq('materia', subject)
+        .limit(qCount);
+
+    // O código de erro e de verificação deve estar AQUI DENTRO
+    if (error) { 
+        window.mostrarMensagem("Erro ao carregar banco: " + error.message); 
+        return; 
     }
+
+    if (!data || data.length === 0) {
+        window.mostrarMensagem("Nenhuma questão encontrada para esta matéria.");
+        return;
+    }
+
+    // Se passou pelos testes acima, então carregamos os dados
+    questions = data;
+    loadQuestion();
+    startTimer();
+}
 
     function startTimer() {
         timerInterval = setInterval(() => {
@@ -169,8 +181,7 @@
                      </label>`;
         }
     });
-    
-    document.getElementById('options-container').innerHTML = html;
+     document.getElementById('options-container').innerHTML = html;
     updateFlagButton();
 };
 
