@@ -29,6 +29,25 @@ overflow-y: auto;
 display: flex; flex-direction: column; box-sizing: border-box;
 } 
 
+/* Container para garantir a centralização */
+.container-foto-questao {
+    text-align: center;
+    margin: 10px 0;
+    width: 100%;
+}
+
+/* A regra que resolve o seu problema de escala */
+.foto-simulado {
+    display: inline-block;
+    max-height: 200px;    /* LIMITE DE ALTURA: Ajuste este valor (ex: 180px ou 220px) */
+    max-width: 90%;       /* Garante que não encoste nas bordas laterais */
+    width: auto;          /* Mantém a proporção largura original */
+    height: auto;         /* Mantém a proporção altura original */
+    border-radius: 12px;
+    border: 1px solid #d1e7f5;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
     .texto-enunciado { font-weight: 600; font-size: 24px; line-height: 1.8; color: #2c3e50; margin-bottom: 30px; }
     label { display: block; padding: 18px; border-bottom: 1px solid #d1e7f5; cursor: pointer; font-size: 20px; color: #34495e; transition: 0.2s; }
     label:hover { background-color: #e3f2fd; }
@@ -191,10 +210,12 @@ display: flex; flex-direction: column; box-sizing: border-box;
         const q = questions[currentIdx];
         document.getElementById('q-counter').innerText = `Question ${currentIdx + 1} of ${questions.length}`;
         document.getElementById('question-text').innerText = q.pergunta;
-        let html = '';
-        if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
-            html += `<div style="margin: 15px 0; text-align: center;"><img src="${q.foto}" style="max-width: 100%; height: auto; border-radius: 8px;"></div>`;
-        }
+let html = '';
+if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
+    // Criamos uma div para centralizar e a tag img sem estilos fixos
+    html += `<div class="container-foto-questao"><img src="${q.foto}" class="foto-simulado"></div>`;
+}
+
         const opts = [q.r1, q.r2, q.r3, q.r4];
         opts.forEach((opt, i) => {
             if (opt && opt !== 'N/A') {
