@@ -193,7 +193,7 @@ display: flex; flex-direction: column; box-sizing: border-box;
         document.getElementById('question-text').innerText = q.pergunta;
         let html = '';
         if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
-            html += `<div style="margin: 15px 0; text-align: center;"><img src="${q.foto}" style="max-width: 100%; height: auto; border-radius: 8px;"></div>`;
+            html += `<div style="margin: 15px 0; text-align: center;"><img src="${q.foto}" style="max-width: 90%; max-height: 70%; height: auto; border-radius: 8px;"></div>`;
         }
         const opts = [q.r1, q.r2, q.r3, q.r4];
         opts.forEach((opt, i) => {
