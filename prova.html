@@ -294,6 +294,17 @@ perguntasSorteador.forEach((q, index) => {
     document.getElementById('res-porcentagem').innerText = `Desempenho: ${((acertos/perguntasSorteador.length)*100).toFixed(1)}%`;
     document.getElementById('res-tempo').innerText = `Tempo gasto: ${tempoFormatado}`;
 
+const materia = sessionStorage.getItem('config_materia');
+const capitulo = sessionStorage.getItem('config_capitulo');
+
+registrarResultadoNoBanco(
+    materia,
+    capitulo,
+    acertos,
+    perguntasSorteador.length,
+    tempoFormatado
+);
+
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   };
 

@@ -256,7 +256,13 @@ window.hideReview = () => { document.getElementById('review-screen').style.displ
         document.getElementById('result-screen').style.display = 'block';
 
 // Exemplo de chamada:
-registrarResultadoNoBanco("Geral", "Geral", score, questions.length, document.getElementById('timer').innerText);
+registrarResultadoNoBanco(
+    subject,
+    "N/A",
+    score,
+    questions.length,
+    document.getElementById('timer').innerText
+);
 
         const passed = (score/questions.length) >= 0.7;
         document.getElementById('status-text').innerText = passed ? "PASSED" : "FAILED";
