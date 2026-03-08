@@ -191,17 +191,26 @@ display: flex; flex-direction: column; box-sizing: border-box;
         const q = questions[currentIdx];
         document.getElementById('q-counter').innerText = `Question ${currentIdx + 1} of ${questions.length}`;
         document.getElementById('question-text').innerText = q.pergunta;
+        
         let html = '';
-        if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
-            html += `<div style="margin: 15px 0; text-align: center;"><img src="${q.foto}" style="max-width: 90%; max-height: 70%; height: auto; border-radius: 8px;"></div>`;
-        }
+
+        // 1. PRIMEIRO: Carregamos as opções de resposta
         const opts = [q.r1, q.r2, q.r3, q.r4];
         opts.forEach((opt, i) => {
             if (opt && opt !== 'N/A') {
                 let checked = (answers[currentIdx] === i) ? 'checked' : '';
+                // Mantive seu estilo de padding e cursor
                 html += `<label style="display:block; padding:8px; cursor:pointer;"><input type="radio" name="ans" value="${i}" ${checked} onchange="saveAnswer(${i})"> ${opt}</label>`;
             }
         });
+
+        // 2. DEPOIS: Se houver foto, ela entra abaixo das alternativas
+        if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
+            html += `<div style="margin-top: 20px; text-align: center;">
+                        <img src="${q.foto}" style="max-width: 95%; max-height: 350px; height: auto; border-radius: 8px; border: 1px solid #d1e7f5;">
+                     </div>`;
+        }
+
         document.getElementById('options-container').innerHTML = html;
         updateFlagButton();
     };
