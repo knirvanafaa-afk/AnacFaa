@@ -462,23 +462,84 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     carregarDadosIniciais();
     window.atualizarNivel(600);
 
-    // 6. Configuração do Radar (Preservada)
+    // 6. Configuração do Radar
+
+async function carregarDadosParaTeia() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Busca apenas as colunas que precisamos para economizar memória
+    const { data: historico, error } = await supabase
+        .from('historico_simulados')
+        .select('materia, total_questoes');
+
+    if (error) {
+        console.error("Erro ao carregar dados do gráfico:", error);
+        return;
+    }
+
+    // Inicializamos os contadores
+    let totalG = 0; // General
+    let totalA = 0; // Airframe
+    let totalP = 0; // Powerplant
+
+    // Somamos as questões baseadas na coluna 'materia'
+    historico.forEach(item => {
+        if (item.materia === 'General') totalG += item.total_questoes;
+        if (item.materia === 'Airframe') totalA += item.total_questoes;
+        if (item.materia === 'Powerplant') totalP += item.total_questoes;
+    });
+
+    // Agora que temos os números reais, chamamos a criação do gráfico
+    renderizarGraficoTeia(totalG, totalA, totalP);
+}
+
+function renderizarGraficoTeia(g, a, p) {
+    const totalGeral = g + a + p;
+
+    // Se o aluno nunca fez nada, evitamos divisão por zero
+    const percG = totalGeral > 0 ? ((g / totalGeral) * 100).toFixed(1) : 0;
+    const percA = totalGeral > 0 ? ((a / totalGeral) * 100).toFixed(1) : 0;
+    const percP = totalGeral > 0 ? ((p / totalGeral) * 100).toFixed(1) : 0;
+
     const ctx = document.getElementById('radarChart').getContext('2d');
-    new Chart(ctx, {
+    
+    // Se já existir um gráfico, destruímos para criar um novo (evita sobreposição)
+    if (window.meuGraficoTeia) {
+        window.meuGraficoTeia.destroy();
+    }
+
+    window.meuGraficoTeia = new Chart(ctx, {
         type: 'radar',
         data: {
-            labels: ['General', 'Airframe', 'Powerplant', 'Regulamentação', 'Sistemas'],
+            labels: ['General', 'Airframe', 'Powerplant'],
             datasets: [{
-                label: 'Seu Progresso (%)',
-                data: [90, 45, 30, 70, 60],
+                label: 'Foco de Estudo (%)',
+                data: [percG, percA, percP],
                 fill: true,
-                backgroundColor: 'rgba(39, 174, 96, 0.2)',
-                borderColor: '#27ae60',
-                pointBackgroundColor: '#27ae60',
+                backgroundColor: 'rgba(52, 152, 219, 0.2)', // Fundo azul claro
+                borderColor: '#3498db', // Linha azul
+                pointBackgroundColor: [
+                    '#3498db', // Ponto G (Azul)
+                    '#e74c3c', // Ponto A (Vermelho)
+                    '#27ae60'  // Ponto P (Verde)
+                ],
+                pointBorderColor: '#fff',
+                pointRadius: 5
             }]
         },
-        options: { scales: { r: { suggestMin: 0, suggestMax: 100 } } }
+        options: {
+            scales: {
+                r: {
+                    suggestMin: 0,
+                    suggestMax: 100,
+                    ticks: { stepSize: 20, callback: (v) => v + '%' }
+                }
+            }
+        }
     });
+}
+
 </script>
 </body>
 </html>
