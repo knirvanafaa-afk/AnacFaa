@@ -461,61 +461,81 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 
     // 6. Configuração do Radar
 
-function carregarDadosParaTeia(g, a, p) {
+async function carregarDadosParaTeia() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: historico, error } = await supabase
+        .from('historico_simulados')
+        .select('materia, total_questoes');
+
+    if (error) {
+        console.error("Erro ao carregar dados do gráfico:", error);
+        return;
+    }
+
+    let totalG = 0;
+    let totalA = 0;
+    let totalP = 0;
+
+    historico.forEach(item => {
+        if (item.materia === 'General') totalG += item.total_questoes;
+        if (item.materia === 'Airframe') totalA += item.total_questoes;
+        if (item.materia === 'Powerplant') totalP += item.total_questoes;
+    });
+
+    renderizarGraficoTeia(totalG, totalA, totalP);
+}
+
+function renderizarGraficoTeia(g, a, p) {
     const totalGeral = g + a + p;
 
-    // 1. Cálculo das porcentagens (Preservado)
-    const percG = totalGeral > 0 ? ((g / totalGeral) * 100).toFixed(1) : 0;
-    const percA = totalGeral > 0 ? ((a / totalGeral) * 100).toFixed(1) : 0;
-    const percP = totalGeral > 0 ? ((p / totalGeral) * 100).toFixed(1) : 0;
+    // Agora os valores são números (melhor para o Chart.js)
+    const percG = totalGeral > 0 ? (g / totalGeral) * 100 : 0;
+    const percA = totalGeral > 0 ? (a / totalGeral) * 100 : 0;
+    const percP = totalGeral > 0 ? (p / totalGeral) * 100 : 0;
 
-    // 2. ATUALIZAÇÃO DA LEGENDA MANUAL (O que adicionamos agora)
-    if(document.getElementById('legenda-g')) document.getElementById('legenda-g').innerText = percG + "%";
-    if(document.getElementById('legenda-a')) document.getElementById('legenda-a').innerText = percA + "%";
-    if(document.getElementById('legenda-p')) document.getElementById('legenda-p').innerText = percP + "%";
+    // Atualiza a legenda manual (apenas visual)
+    if (document.getElementById('legenda-g'))
+        document.getElementById('legenda-g').innerText = percG.toFixed(1) + "%";
+
+    if (document.getElementById('legenda-a'))
+        document.getElementById('legenda-a').innerText = percA.toFixed(1) + "%";
+
+    if (document.getElementById('legenda-p'))
+        document.getElementById('legenda-p').innerText = percP.toFixed(1) + "%";
 
     const ctx = document.getElementById('radarChart').getContext('2d');
-    
-    // 3. Limpeza para evitar sobreposição (Preservado)
+
     if (window.meuGraficoTeia) {
         window.meuGraficoTeia.destroy();
     }
 
-    // 4. Criação do Gráfico com TODAS as configurações originais
     window.meuGraficoTeia = new Chart(ctx, {
         type: 'radar',
         data: {
             labels: ['General', 'Airframe', 'Powerplant'],
             datasets: [{
-                label: 'Foco de Estudo (%)', // Voltamos com o Label
+                label: 'Foco de Estudo (%)',
                 data: [percG, percA, percP],
                 fill: true,
-                backgroundColor: 'rgba(52, 152, 219, 0.2)', 
-                borderColor: '#3498db', 
+                backgroundColor: 'rgba(52, 152, 219, 0.2)',
+                borderColor: '#3498db',
                 pointBackgroundColor: [
-                    '#3498db', // Azul
-                    '#e74c3c', // Vermelho
-                    '#27ae60'  // Verde
+                    '#3498db',
+                    '#e74c3c',
+                    '#27ae60'
                 ],
                 pointBorderColor: '#fff',
                 pointRadius: 5
             }]
         },
         options: {
-            plugins: {
-                legend: { display: false } // Esconde apenas a legenda automática feia
-            },
             scales: {
                 r: {
                     suggestMin: 0,
                     suggestMax: 100,
-                    ticks: { 
-                        stepSize: 20, 
-                        display: true, // Voltamos a exibir os números da escala (20%, 40%...)
-                        callback: (v) => v + '%' 
-                    },
-                    grid: { color: 'rgba(0,0,0,0.1)' },
-                    angleLines: { color: 'rgba(0,0,0,0.1)' }
+                    ticks: { stepSize: 20, callback: (v) => v + '%' }
                 }
             }
         }
@@ -523,7 +543,6 @@ function carregarDadosParaTeia(g, a, p) {
 }
 
 carregarDadosParaTeia();
-
 </script>
 </body>
 </html>
