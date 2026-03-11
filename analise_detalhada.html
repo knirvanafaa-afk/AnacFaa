@@ -80,6 +80,41 @@
     </div>
 </div>
 
+// 4. Evolução (Linhas - 3 Matérias)
+        // Primeiro, precisamos agrupar os dados por matéria para fazer a linha
+        const materiasUnicas = ['General', 'Airframe', 'Powerplant'];
+        const datasets = [
+            { label: 'General', data: [], borderColor: '#3498db', backgroundColor: '#3498db', tension: 0.3, pointRadius: 2, borderWidth: 2 },
+            { label: 'Airframe', data: [], borderColor: '#e74c3c', backgroundColor: '#e74c3c', tension: 0.3, pointRadius: 2, borderWidth: 2 },
+            { label: 'Powerplant', data: [], borderColor: '#27ae60', backgroundColor: '#27ae60', tension: 0.3, pointRadius: 2, borderWidth: 2 }
+        ];
+
+        // Filtra o histórico para pegar a evolução de cada uma
+        materiasUnicas.forEach((mat, index) => {
+            datasets[index].data = historico
+                .filter(h => h.materia === mat)
+                .map(h => h.nota);
+        });
+
+        new Chart(document.getElementById('chartLinhas'), {
+            type: 'line',
+            data: {
+                // labels: vamos usar o índice da tentativa de cada matéria
+                labels: historico.filter(h => h.materia === 'General').map((_, i) => i + 1),
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: 'bottom' } // Legenda ativa para poder clicar e sumir
+                },
+                scales: {
+                    y: { min: 0, max: 100 }
+                }
+            }
+        });
+
+
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
     const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
