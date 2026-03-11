@@ -220,7 +220,7 @@
             type: 'line',
             data: {
                 // Definimos o número máximo de simulados para o eixo X
-                labels: Array.from({length: Math.max(...datasets.map(d => d.data.length))}, (_, i) => i + 1),
+                labels: Array.from({length: Math.max(0, ...datasets.map(d => d.data.length))}, (_, i) => i + 1),
                 datasets: datasets
             },
             options: {
@@ -234,7 +234,7 @@
                 }
             }
         });
-
+}
     carregarAnalise();
 </script>
 </body>
