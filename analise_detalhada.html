@@ -115,19 +115,35 @@
             capDados[h.capitulo].e += h.erros;
         });
 
-        // 1. Gráfico Rosca (Mabel)
+        // 1. Gráfico Rosca (Mabel) - APENAS PORCENTAGEM
         new Chart(document.getElementById('chartRosca'), {
             type: 'doughnut',
             data: {
-                labels: ['Acertos', 'Erros'],
+                labels: ['Acertos %', 'Erros %'],
                 datasets: [{
-                    data: [totalAcertos, totalErros],
-                    backgroundColor: ['#27ae60', '#e74c3c']
+                    // Aqui fazemos o cálculo da porcentagem
+                    data: [
+                        ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(1),
+                        ((totalErros / (totalAcertos + totalErros)) * 100).toFixed(1)
+                    ],
+                    backgroundColor: ['#27ae60', '#e74c3c'],
+                    borderWidth: 2
                 }]
             },
-            options: { plugins: { legend: { position: 'bottom' } } }
+            options: { 
+                plugins: { 
+                    legend: { position: 'bottom' },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                // Força a exibição do símbolo % no balãozinho ao tocar
+                                return context.label + ': ' + context.raw + '%';
+                            }
+                        }
+                    }
+                } 
+            }
         });
-
         // 1b. Barras Geral (Números Reais)
         new Chart(document.getElementById('chartBarrasGeral'), {
             type: 'bar',
