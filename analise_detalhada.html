@@ -127,71 +127,7 @@ mapaCapitulos[q.num] = q.capitulo;
 PROCESSAMENTO
 ================================ */
 
-let totalAcertos = 0;
-let totalErros = 0;
-
-let matDados = {
-General:{a:0,t:0},
-Airframe:{a:0,t:0},
-Powerplant:{a:0,t:0}
-};
-
-let capDados = {};
-
-
-historico.forEach(h=>{
-
-totalAcertos += h.acertos;
-totalErros += h.erros;
-
-
-/* MATÉRIAS */
-
-if(matDados[h.materia]){
-matDados[h.materia].a += h.acertos;
-matDados[h.materia].t += h.total_questoes;
-}
-
-
-/* ====================================
-CORREÇÃO DO CAPÍTULO (TOP 7)
-==================================== */
-
-let capReal = h.capitulo;
-
-if(
-!capReal ||
-capReal === 'N/A' ||
-capReal === 'n/a' ||
-capReal === 'todos' ||
-capReal === 'TODOS'
-){
-
-/* tenta descobrir o ID da questão */
-
-const possivelID =
-h.id_questao ||
-h.num ||
-h.questao ||
-h.questao_id;
-
-/* busca no mapa */
-
-capReal = mapaCapitulos[possivelID] || 'Outros';
-
-}
-
-
-/* soma dados */
-
-if(!capDados[capReal]){
-capDados[capReal] = {a:0,e:0};
-}
-
-capDados[capReal].a += h.acertos;
-capDados[capReal].e += h.erros;
-
-});
+async function carregarAnalise(){ const { data: { user } } = await supabase.auth.getUser(); if(!user) return; const [ { data: historico }, { data: questoes } ] = await Promise.all([ supabase.from('historico_simulados').select('*'), supabase.from('questoes').select('num, capitulo') ]); if(!historico) return; // Criamos um mapa para busca rápida: { 'G8011': 'Basic Electricity' } const mapaCapitulos = {}; if(questoes){ questoes.forEach(q => { mapaCapitulos[String(q.num).trim()] = q.capitulo; }); } let capDados = {}; historico.forEach(h => { // Busca o nome real do capítulo pelo ID da questão const id = String(h.id_questao).trim(); const nomeCap = mapaCapitulos[id] || "Outros"; // Se não achar o ID, cai em Outros if(!capDados[nomeCap]){ capDados[nomeCap] = {a:0, e:0}; } capDados[nomeCap].a += h.acertos; capDados[nomeCap].e += h.erros; });
 
 
 /* ================================
