@@ -98,7 +98,7 @@
         const mapaCapitulos = {};
         if (questoes) questoes.forEach(q => mapaCapitulos[q.num.trim()] = q.capitulo);
 
-        // --- PROCESSAMENTO ---
+    // --- PROCESSAMENTO ---
         let totalAcertos = 0, totalErros = 0;
         let matDados = { General: { a:0, t:0 }, Airframe: { a:0, t:0 }, Powerplant: { a:0, t:0 } };
         let capDados = {};
@@ -112,11 +112,10 @@
                 matDados[h.materia].t += h.total_questoes;
             }
 
-            // MÁGICA: Sempre busca o capítulo real no mapa pelo ID da questão
+            // A MÁGICA: O capítulo agora vem SOMENTE do nosso mapa de referência
+            // Se o ID da questão não for encontrado, classificamos como 'Outros'
             const idQuestao = String(h.id_questao).trim();
-            const capReal = (mapaCapitulos[idQuestao] && mapaCapitulos[idQuestao] !== 'N/A') 
-                          ? mapaCapitulos[idQuestao] 
-                          : 'Outros';
+            const capReal = mapaCapitulos[idQuestao] || 'Outros';
 
             if(!capDados[capReal]) capDados[capReal] = { a:0, e:0 };
             capDados[capReal].a += h.acertos;
