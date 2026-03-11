@@ -83,7 +83,7 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient(
 'https://ymyxikhlhkkvcufgwufe.supabase.co',
-'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
 );
 
 async function carregarAnalise(){
@@ -91,35 +91,20 @@ async function carregarAnalise(){
 const { data:{ user } } = await supabase.auth.getUser();
 if(!user) return;
 
-
-/* ================================
-CARREGA HISTÓRICO + QUESTÕES
-================================ */
-
-const [ { data: historico }, { data: questoes } ] = await Promise.all([
-supabase.from('historico_simulados').select('*').order('data_hora',{ascending:true}),
-supabase.from('questoes').select('num,capitulo')
-]);
+const { data: historico } = await supabase
+.from('historico_simulados')
+.select(`
+    *,
+    questoes (
+        capitulo
+    )
+`)
+.order('data_hora',{ascending:true});
 
 if(!historico || historico.length === 0) return;
 
 
-/* ================================
-MAPA VERDADEIRO ID → CAPÍTULO
-================================ */
-
-const mapaCapitulos = {};
-
-if(questoes){
-questoes.forEach(q=>{
-mapaCapitulos[q.num] = q.capitulo;
-});
-}
-
-
-/* ================================
-PROCESSAMENTO
-================================ */
+/* PROCESSAMENTO */
 
 let totalAcertos = 0;
 let totalErros = 0;
@@ -132,51 +117,17 @@ Powerplant:{a:0,t:0}
 
 let capDados = {};
 
-
 historico.forEach(h=>{
 
 totalAcertos += h.acertos;
 totalErros += h.erros;
-
-
-/* MATÉRIAS */
 
 if(matDados[h.materia]){
 matDados[h.materia].a += h.acertos;
 matDados[h.materia].t += h.total_questoes;
 }
 
-
-/* ====================================
-CORREÇÃO DO CAPÍTULO (TOP 7)
-==================================== */
-
-let capReal = h.capitulo;
-
-if(
-!capReal ||
-capReal === 'N/A' ||
-capReal === 'n/a' ||
-capReal === 'todos' ||
-capReal === 'TODOS'
-){
-
-/* tenta descobrir o ID da questão */
-
-const possivelID =
-h.id_questao ||
-h.num ||
-h.questao ||
-h.questao_id;
-
-/* busca no mapa */
-
-capReal = mapaCapitulos[possivelID] || 'Outros';
-
-}
-
-
-/* soma dados */
+let capReal = h.questoes?.capitulo || 'Outros';
 
 if(!capDados[capReal]){
 capDados[capReal] = {a:0,e:0};
@@ -188,9 +139,7 @@ capDados[capReal].e += h.erros;
 });
 
 
-/* ================================
-GRÁFICO ROSCA
-================================ */
+/* ROSCA */
 
 new Chart(document.getElementById('chartRosca'),{
 type:'doughnut',
@@ -235,9 +184,7 @@ ctx.save();
 });
 
 
-/* ================================
-BARRAS GERAL
-================================ */
+/* BARRAS GERAL */
 
 new Chart(document.getElementById('chartBarrasGeral'),{
 type:'bar',
@@ -251,9 +198,7 @@ datasets:[
 });
 
 
-/* ================================
-MÉDIA POR MATÉRIA
-================================ */
+/* MÉDIAS */
 
 new Chart(document.getElementById('chartMateriasH'),{
 type:'bar',
@@ -277,9 +222,7 @@ plugins:{legend:{display:false}}
 });
 
 
-/* ================================
-TOP 7 CAPÍTULOS
-================================ */
+/* TOP 7 */
 
 const capOrdenados = Object.keys(capDados)
 .sort((a,b)=>
@@ -288,8 +231,6 @@ const capOrdenados = Object.keys(capDados)
 )
 .slice(0,7);
 
-
-/* ACERTOS */
 
 new Chart(document.getElementById('chartAcertos'),{
 type:'bar',
@@ -308,8 +249,6 @@ plugins:{legend:{display:false}}
 });
 
 
-/* ERROS */
-
 new Chart(document.getElementById('chartErros'),{
 type:'bar',
 data:{
@@ -327,9 +266,7 @@ plugins:{legend:{display:false}}
 });
 
 
-/* ================================
-EVOLUÇÃO
-================================ */
+/* EVOLUÇÃO */
 
 const materiasUnicas=['General','Airframe','Powerplant'];
 const cores=['#3498db','#e74c3c','#27ae60'];
@@ -377,7 +314,6 @@ x:{title:{display:true,text:'Simulado nº'}}
 }
 
 carregarAnalise();
-
 </script>
 </body>
 </html>
