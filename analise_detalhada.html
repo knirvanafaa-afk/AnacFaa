@@ -74,46 +74,10 @@
         <canvas id="chartCapitulos"></canvas>
     </div>
 
-    <div class="card">
-        <h3>Linha de Tendência (Evolução)</h3>
-        <canvas id="chartLinhas"></canvas>
-    </div>
+   <div class="card">
+    <h3>Linha de Tendência (Evolução)</h3>
+    <canvas id="chartLinhas"></canvas>
 </div>
-
-// 4. Evolução (Linhas - 3 Matérias)
-        // Primeiro, precisamos agrupar os dados por matéria para fazer a linha
-        const materiasUnicas = ['General', 'Airframe', 'Powerplant'];
-        const datasets = [
-            { label: 'General', data: [], borderColor: '#3498db', backgroundColor: '#3498db', tension: 0.3, pointRadius: 2, borderWidth: 2 },
-            { label: 'Airframe', data: [], borderColor: '#e74c3c', backgroundColor: '#e74c3c', tension: 0.3, pointRadius: 2, borderWidth: 2 },
-            { label: 'Powerplant', data: [], borderColor: '#27ae60', backgroundColor: '#27ae60', tension: 0.3, pointRadius: 2, borderWidth: 2 }
-        ];
-
-        // Filtra o histórico para pegar a evolução de cada uma
-        materiasUnicas.forEach((mat, index) => {
-            datasets[index].data = historico
-                .filter(h => h.materia === mat)
-                .map(h => h.nota);
-        });
-
-        new Chart(document.getElementById('chartLinhas'), {
-            type: 'line',
-            data: {
-                // labels: vamos usar o índice da tentativa de cada matéria
-                labels: historico.filter(h => h.materia === 'General').map((_, i) => i + 1),
-                datasets: datasets
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: { display: true, position: 'bottom' } // Legenda ativa para poder clicar e sumir
-                },
-                scales: {
-                    y: { min: 0, max: 100 }
-                }
-            }
-        });
-
 
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -232,17 +196,43 @@
             options: { indexAxis: 'y' }
         });
 
-        // 4. Evolução (Linhas)
+// 4. Evolução (Linhas - 3 Matérias)
+        const materiasUnicas = ['General', 'Airframe', 'Powerplant'];
+        const cores = ['#3498db', '#e74c3c', '#27ae60']; // Azul, Vermelho, Verde
+
+        const datasets = materiasUnicas.map((mat, index) => {
+            return {
+                label: mat,
+                data: historico
+                    .filter(h => h.materia === mat)
+                    .map(h => h.nota),
+                borderColor: cores[index],
+                backgroundColor: cores[index],
+                tension: 0.3,
+                pointRadius: 3,
+                borderWidth: 2,
+                fill: false
+            };
+        });
+
         new Chart(document.getElementById('chartLinhas'), {
             type: 'line',
             data: {
-                labels: historico.map((_, i) => i + 1),
-                datasets: [
-                    { label: 'Nota %', data: historico.map(h => h.nota), borderColor: '#f1c40f', tension: 0.3 }
-                ]
+                // Definimos o número máximo de simulados para o eixo X
+                labels: Array.from({length: Math.max(...datasets.map(d => d.data.length))}, (_, i) => i + 1),
+                datasets: datasets
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: true, position: 'bottom' }
+                },
+                scales: {
+                    y: { min: 0, max: 100, title: { display: true, text: 'Nota %' } },
+                    x: { title: { display: true, text: 'Simulado nº' } }
+                }
             }
         });
-    }
 
     carregarAnalise();
 </script>
