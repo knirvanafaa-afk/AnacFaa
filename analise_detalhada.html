@@ -79,169 +79,305 @@
 </div>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    async function carregarAnalise() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+const supabase = createClient(
+'https://ymyxikhlhkkvcufgwufe.supabase.co',
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+);
 
-        // 1. Carrega Histórico E o Banco de Questões
-        const [ { data: historico }, { data: questoes } ] = await Promise.all([
-            supabase.from('historico_simulados').select('*'),
-            supabase.from('questoes').select('num, capitulo')
-        ]);
+async function carregarAnalise(){
 
-        // Cria um mapa "mestre" para consulta rápida: { 'G8011': 'Basic Electricity', ... }
-        const mapaMestre = {};
-        questoes.forEach(q => mapaMestre[String(q.num).trim()] = q.capitulo);
-
- // --- PROCESSAMENTO CORRIGIDO ---
-        let totalAcertos = 0, totalErros = 0;
-        let matDados = { General: { a:0, t:0 }, Airframe: { a:0, t:0 }, Powerplant: { a:0, t:0 } };
-        let capDados = {};
-
-        historico.forEach(h => {
-            totalAcertos += h.acertos;
-            totalErros += h.erros;
-            
-            // 1. Populando matDados (para o gráfico de Médias por Matéria)
-            if(matDados[h.materia]) {
-                matDados[h.materia].a += h.acertos;
-                matDados[h.materia].t += h.total_questoes;
-            }
-
-            // 2. BUSCA A VERDADE NO MAPA MESTRE PELO ID
-            const idQuestao = String(h.id_questao).trim();
-            const capituloReal = mapaMestre[idQuestao] || "Outros"; 
-            
-            // 3. Agrupa usando o capituloReal (O que está no banco de questões)
-            if(!capDados[capituloReal]) capDados[capituloReal] = { a:0, e:0 };
-            capDados[capituloReal].a += h.acertos;
-            capDados[capituloReal].e += h.erros;
-        });
+const { data:{ user } } = await supabase.auth.getUser();
+if(!user) return;
 
 
-        // 1. Gráfico Rosca (Mabel)
-        new Chart(document.getElementById('chartRosca'), {
-            type: 'doughnut',
-            data: {
-                labels: ['% Acertos', '% Erros'],
-                datasets: [{
-                    data: [
-                        ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(1),
-                        ((totalErros / (totalAcertos + totalErros)) * 100).toFixed(1)
-                    ],
-                    backgroundColor: ['#27ae60', '#e74c3c'],
-                    borderWidth: 2
-                }]
-            },
-            options: { plugins: { legend: { position: 'top' }, tooltip: { callbacks: { label: (context) => context.label + ': ' + context.raw + '%' } } } },
-            plugins: [{
-                id: 'textCenter',
-                beforeDraw: (chart) => {
-                    const { ctx, width, height } = chart;
-                    ctx.restore();
-                    ctx.font = 'bold 24px Segoe UI';
-                    ctx.fillStyle = '#2c3e50';
-                    ctx.textBaseline = 'middle';
-                    ctx.textAlign = 'center';
-                    const text = ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(0) + '%';
-                    ctx.fillText(text, width / 2 + 6, height / 2 + 15);
-                    ctx.save();
-                }
-            }]
-        });
+/* ================================
+CARREGA HISTÓRICO + QUESTÕES
+================================ */
 
-        // 1b. Barras Geral
-        new Chart(document.getElementById('chartBarrasGeral'), {
-            type: 'bar',
-            data: {
-                labels: ['Número de Questões'],
-                datasets: [
-                    { label: ' N° Acertos', data: [totalAcertos], backgroundColor: '#27ae60' },
-                    { label: 'N° Erros', data: [totalErros], backgroundColor: '#e74c3c' }
-                ]
-            }
-        });
+const [ { data: historico }, { data: questoes } ] = await Promise.all([
+supabase.from('historico_simulados').select('*').order('data_hora',{ascending:true}),
+supabase.from('questoes').select('num,capitulo')
+]);
 
-        // 2. Médias por Matéria
-        new Chart(document.getElementById('chartMateriasH'), {
-            type: 'bar',
-            data: {
-                labels: ['General', 'Airframe', 'Powerplant'],
-                datasets: [{
-                    label: 'Média %',
-                    data: [
-                        (matDados.General.t > 0 ? (matDados.General.a / matDados.General.t * 100).toFixed(1) : 0),
-                        (matDados.Airframe.t > 0 ? (matDados.Airframe.a / matDados.Airframe.t * 100).toFixed(1) : 0),
-                        (matDados.Powerplant.t > 0 ? (matDados.Powerplant.a / matDados.Powerplant.t * 100).toFixed(1) : 0)
-                    ],
-                    backgroundColor: ['#3498db', '#e74c3c', '#27ae60']
-                }]
-            },
-            options: { indexAxis: 'y', scales: { x: { max: 100 } }, plugins: { legend: { display: false } } }
-        });
+if(!historico || historico.length === 0) return;
 
-        // 3. Top 7 Capítulos (Acertos vs Erros - Separados)
-        const capOrdenados = Object.keys(capDados).sort((a,b) => 
-            (capDados[b].a + capDados[b].e) - (capDados[a].a + capDados[a].e)
-        ).slice(0, 7);
 
-        new Chart(document.getElementById('chartAcertos'), {
-            type: 'bar',
-            data: {
-                labels: capOrdenados,
-                datasets: [{ label: 'Acertos', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }]
-            },
-            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
-        });
+/* ================================
+MAPA VERDADEIRO ID → CAPÍTULO
+================================ */
 
-        new Chart(document.getElementById('chartErros'), {
-            type: 'bar',
-            data: {
-                labels: capOrdenados,
-                datasets: [{ label: 'Erros', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }]
-            },
-            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
-        });
+const mapaCapitulos = {};
 
-        // 4. Evolução (Linhas - 3 Matérias)
-        const materiasUnicas = ['General', 'Airframe', 'Powerplant'];
-        const cores = ['#3498db', '#e74c3c', '#27ae60'];
+if(questoes){
+questoes.forEach(q=>{
+mapaCapitulos[q.num] = q.capitulo;
+});
+}
 
-        const datasets = materiasUnicas.map((mat, index) => {
-            return {
-                label: mat,
-                data: historico.filter(h => h.materia === mat).map(h => h.nota),
-                borderColor: cores[index],
-                backgroundColor: cores[index],
-                tension: 0,
-                pointRadius: 3,
-                borderWidth: 2,
-                fill: false
-            };
-        });
 
-        new Chart(document.getElementById('chartLinhas'), {
-            type: 'line',
-            data: {
-                labels: Array.from({length: Math.max(0, ...datasets.map(d => d.data.length))}, (_, i) => i + 1),
-                datasets: datasets
-            },
-            options: {
-                aspectRatio: 1.5,
-                responsive: true,
-                plugins: { legend: { display: true, position: 'bottom' } },
-                scales: {
-                    y: { min: 0, max: 110, title: { display: true, text: 'Nota %' } },
-                    x: { title: { display: true, text: 'Simulado nº' } }
-                }
-            }
-        });
-    }
+/* ================================
+PROCESSAMENTO
+================================ */
 
-    carregarAnalise();
+let totalAcertos = 0;
+let totalErros = 0;
+
+let matDados = {
+General:{a:0,t:0},
+Airframe:{a:0,t:0},
+Powerplant:{a:0,t:0}
+};
+
+let capDados = {};
+
+
+historico.forEach(h=>{
+
+totalAcertos += h.acertos;
+totalErros += h.erros;
+
+
+/* MATÉRIAS */
+
+if(matDados[h.materia]){
+matDados[h.materia].a += h.acertos;
+matDados[h.materia].t += h.total_questoes;
+}
+
+
+/* ====================================
+CORREÇÃO DO CAPÍTULO (TOP 7)
+==================================== */
+
+let capReal = h.capitulo;
+
+if(
+!capReal ||
+capReal === 'N/A' ||
+capReal === 'n/a' ||
+capReal === 'todos' ||
+capReal === 'TODOS'
+){
+
+/* tenta descobrir o ID da questão */
+
+const possivelID =
+h.id_questao ||
+h.num ||
+h.questao ||
+h.questao_id;
+
+/* busca no mapa */
+
+capReal = mapaCapitulos[possivelID] || 'Outros';
+
+}
+
+
+/* soma dados */
+
+if(!capDados[capReal]){
+capDados[capReal] = {a:0,e:0};
+}
+
+capDados[capReal].a += h.acertos;
+capDados[capReal].e += h.erros;
+
+});
+
+
+/* ================================
+GRÁFICO ROSCA
+================================ */
+
+new Chart(document.getElementById('chartRosca'),{
+type:'doughnut',
+data:{
+labels:['% Acertos','% Erros'],
+datasets:[{
+data:[
+((totalAcertos/(totalAcertos+totalErros))*100).toFixed(1),
+((totalErros/(totalAcertos+totalErros))*100).toFixed(1)
+],
+backgroundColor:['#27ae60','#e74c3c'],
+borderWidth:2
+}]
+},
+options:{
+plugins:{
+legend:{position:'top'},
+tooltip:{
+callbacks:{
+label:(context)=>context.label+': '+context.raw+'%'
+}
+}
+}
+},
+plugins:[{
+id:'textCenter',
+beforeDraw:(chart)=>{
+const {ctx,width,height} = chart;
+ctx.restore();
+ctx.font='bold 24px Segoe UI';
+ctx.fillStyle='#2c3e50';
+ctx.textBaseline='middle';
+ctx.textAlign='center';
+
+const text=((totalAcertos/(totalAcertos+totalErros))*100).toFixed(0)+'%';
+
+ctx.fillText(text,width/2+6,height/2+15);
+
+ctx.save();
+}
+}]
+});
+
+
+/* ================================
+BARRAS GERAL
+================================ */
+
+new Chart(document.getElementById('chartBarrasGeral'),{
+type:'bar',
+data:{
+labels:['Número de Questões'],
+datasets:[
+{label:' N° Acertos',data:[totalAcertos],backgroundColor:'#27ae60'},
+{label:'N° Erros',data:[totalErros],backgroundColor:'#e74c3c'}
+]
+}
+});
+
+
+/* ================================
+MÉDIA POR MATÉRIA
+================================ */
+
+new Chart(document.getElementById('chartMateriasH'),{
+type:'bar',
+data:{
+labels:['General','Airframe','Powerplant'],
+datasets:[{
+label:'Média %',
+data:[
+(matDados.General.t>0?(matDados.General.a/matDados.General.t*100).toFixed(1):0),
+(matDados.Airframe.t>0?(matDados.Airframe.a/matDados.Airframe.t*100).toFixed(1):0),
+(matDados.Powerplant.t>0?(matDados.Powerplant.a/matDados.Powerplant.t*100).toFixed(1):0)
+],
+backgroundColor:['#3498db','#e74c3c','#27ae60']
+}]
+},
+options:{
+indexAxis:'y',
+scales:{x:{max:100}},
+plugins:{legend:{display:false}}
+}
+});
+
+
+/* ================================
+TOP 7 CAPÍTULOS
+================================ */
+
+const capOrdenados = Object.keys(capDados)
+.sort((a,b)=>
+(capDados[b].a+capDados[b].e)-
+(capDados[a].a+capDados[a].e)
+)
+.slice(0,7);
+
+
+/* ACERTOS */
+
+new Chart(document.getElementById('chartAcertos'),{
+type:'bar',
+data:{
+labels:capOrdenados,
+datasets:[{
+label:'Acertos',
+data:capOrdenados.map(c=>capDados[c].a),
+backgroundColor:'#27ae60'
+}]
+},
+options:{
+indexAxis:'y',
+plugins:{legend:{display:false}}
+}
+});
+
+
+/* ERROS */
+
+new Chart(document.getElementById('chartErros'),{
+type:'bar',
+data:{
+labels:capOrdenados,
+datasets:[{
+label:'Erros',
+data:capOrdenados.map(c=>capDados[c].e),
+backgroundColor:'#e74c3c'
+}]
+},
+options:{
+indexAxis:'y',
+plugins:{legend:{display:false}}
+}
+});
+
+
+/* ================================
+EVOLUÇÃO
+================================ */
+
+const materiasUnicas=['General','Airframe','Powerplant'];
+const cores=['#3498db','#e74c3c','#27ae60'];
+
+const datasets = materiasUnicas.map((mat,index)=>{
+
+return{
+label:mat,
+data:historico
+.filter(h=>h.materia===mat)
+.map(h=>h.nota),
+borderColor:cores[index],
+backgroundColor:cores[index],
+tension:0,
+pointRadius:3,
+borderWidth:2,
+fill:false
+};
+
+});
+
+
+new Chart(document.getElementById('chartLinhas'),{
+type:'line',
+data:{
+labels:Array.from(
+{length:Math.max(0,...datasets.map(d=>d.data.length))},
+(_,i)=>i+1
+),
+datasets:datasets
+},
+options:{
+aspectRatio:1.5,
+responsive:true,
+plugins:{
+legend:{display:true,position:'bottom'}
+},
+scales:{
+y:{min:0,max:110,title:{display:true,text:'Nota %'}},
+x:{title:{display:true,text:'Simulado nº'}}
+}
+}
+});
+
+}
+
+carregarAnalise();
+
 </script>
 </body>
 </html>
