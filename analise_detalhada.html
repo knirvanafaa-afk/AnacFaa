@@ -132,7 +132,7 @@
         new Chart(document.getElementById('chartRosca'), {
             type: 'doughnut',
             data: {
-                labels: ['Acertos', 'Erros'],
+                labels: ['% Acertos', '% Erros'],
                 datasets: [{
                     data: [
                         ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(1),
