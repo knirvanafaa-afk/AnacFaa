@@ -281,30 +281,31 @@ window.addEventListener('beforeunload', (event) => {
     fetchQuestions();
 
 // Função exclusiva para salvar no Supabase (não interfere no restante)
-async function registrarResultadoNoBanco(materia, capitulo, acertos, total, tempo) {
+
+async function registrarResultadoNoBanco(materia, questoesRespondidas) {
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const nota = (acertos / total) * 100;
+        // O segredo está aqui: mapeamos cada questão para o seu capítulo real
+        const logs = questoesRespondidas.map(q => ({
+            user_id: user.id,
+            materia: materia,
+            // PEGANDO O CAPÍTULO DIRETO DA QUESTÃO (q.capitulo)
+            // Se por acaso vier vazio, ele tenta buscar no objeto ou coloca 'Geral'
+            capitulo: q.capitulo || q.category || 'Geral', 
+            id_questao: q.id || q.num,
+            acertos: q.acertou ? 1 : 0,
+            erros: q.acertou ? 0 : 1,
+            total_questoes: 1,
+            nota: q.acertou ? 100 : 0
+        }));
 
-        const { error } = await supabase
-            .from('historico_simulados')
-            .insert([{
-                user_id: user.id,
-                materia: materia || "Geral", // Ajuste conforme a matéria da prova
-                capitulo: capitulo || "N/A", // Se não tiver capítulo agora, usamos N/A
-                acertos: acertos,
-                erros: total - acertos,
-                total_questoes: total,
-                nota: nota,
-                tentativa_n: 1 // Inicia com 1, depois automatizamos
-            }]);
-
+        const { error } = await supabase.from('historico_simulados').insert(logs);
         if (error) throw error;
-        console.log("Histórico registrado com sucesso!");
+        console.log("Histórico detalhado por capítulo gravado com sucesso!");
     } catch (err) {
-        console.error("Falha ao salvar no banco:", err);
+        console.error("Erro ao salvar:", err);
     }
 }
 
