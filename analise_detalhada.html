@@ -140,6 +140,7 @@
         });
 
         // 2. Médias por Matéria
+// 2. Médias por Matéria (CORRIGIDO)
         new Chart(document.getElementById('chartMateriasH'), {
             type: 'bar',
             data: {
@@ -147,14 +148,23 @@
                 datasets: [{
                     label: 'Média %',
                     data: [
-                        (matDados.General.a / matDados.General.t * 100).toFixed(1),
-                        (matDados.Airframe.a / matDados.Airframe.t * 100).toFixed(1),
-                        (matDados.Powerplant.a / matDados.Powerplant.t * 100).toFixed(1)
+                        (matDados.General.t > 0 ? (matDados.General.a / matDados.General.t * 100).toFixed(1) : 0),
+                        (matDados.Airframe.t > 0 ? (matDados.Airframe.a / matDados.Airframe.t * 100).toFixed(1) : 0),
+                        (matDados.Powerplant.t > 0 ? (matDados.Powerplant.a / matDados.Powerplant.t * 100).toFixed(1) : 0)
                     ],
                     backgroundColor: ['#3498db', '#e74c3c', '#27ae60']
                 }]
             },
-            options: { indexAxis: 'y', scales: { x: { max: 100 } }, plugins: { legend: { display: false // DESLIGA A LEGENDA AZUL AUTOMÁTICA } } }
+            options: { 
+                indexAxis: 'y', 
+                scales: { 
+                    x: { max: 100 } 
+                }, 
+                plugins: { 
+                    legend: { display: false } // LEGENDA DESLIGADA CORRETAMENTE
+                } 
+            }
+        });
 
         // 3. Capítulos (Top 5)
         const sortedCaps = Object.keys(capDados).slice(0,7);
