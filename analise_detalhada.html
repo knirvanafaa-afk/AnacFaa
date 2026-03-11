@@ -70,8 +70,12 @@
 </div>
 
     <div class="card">
-        <h3>Top Capítulos (Acertos vs Erros)</h3>
-        <canvas id="chartCapitulos"></canvas>
+        <h3>Top 7 Capítulos - Acertos</h3>
+        <canvas id="chartAcertos"></canvas>
+    </div>
+    <div class="card">
+        <h3>Top 7 Capítulos - Erros</h3>
+        <canvas id="chartErros"></canvas>
     </div>
 
    <div class="card">
@@ -88,14 +92,19 @@
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: historico } = await supabase
-            .from('historico_simulados')
-            .select('*')
-            .order('data_hora', { ascending: true });
+        // 1. Carrega Histórico E o Banco de Questões (Mapa da Verdade)
+        const [ { data: historico }, { data: questoes } ] = await Promise.all([
+            supabase.from('historico_simulados').select('*').order('data_hora', { ascending: true }),
+            supabase.from('questoes').select('num, capitulo')
+        ]);
 
         if (!historico || historico.length === 0) return;
 
-        // --- PROCESSAMENTO DOS DADOS ---
+        // Cria o mapa: { 'G8011': 'Basic Electricity', ... }
+        const mapaCapitulos = {};
+        if (questoes) questoes.forEach(q => mapaCapitulos[q.num] = q.capitulo);
+
+        // --- PROCESSAMENTO ---
         let totalAcertos = 0, totalErros = 0;
         let matDados = { General: { a:0, t:0 }, Airframe: { a:0, t:0 }, Powerplant: { a:0, t:0 } };
         let capDados = {};
@@ -109,13 +118,17 @@
                 matDados[h.materia].t += h.total_questoes;
             }
 
-            // Agrupa por capítulo
-            if(!capDados[h.capitulo]) capDados[h.capitulo] = { a:0, e:0 };
-            capDados[h.capitulo].a += h.acertos;
-            capDados[h.capitulo].e += h.erros;
+            // Busca capítulo real no mapa se for N/A ou TODOS
+            let capReal = (h.capitulo === 'N/A' || h.capitulo === 'TODOS') 
+                          ? (mapaCapitulos[h.id_questao] || 'Outros') 
+                          : h.capitulo;
+
+            if(!capDados[capReal]) capDados[capReal] = { a:0, e:0 };
+            capDados[capReal].a += h.acertos;
+            capDados[capReal].e += h.erros;
         });
 
-  // 1. Gráfico Rosca (Mabel) - Legenda no TOPO + Texto Centralizado
+        // 1. Gráfico Rosca (Mabel)
         new Chart(document.getElementById('chartRosca'), {
             type: 'doughnut',
             data: {
@@ -131,37 +144,27 @@
             },
             options: { 
                 plugins: { 
-                    legend: { position: 'top' }, // Legenda movida para o topo
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => context.label + ': ' + context.raw + '%'
-                        }
-                    }
+                    legend: { position: 'top' },
+                    tooltip: { callbacks: { label: (context) => context.label + ': ' + context.raw + '%' } }
                 } 
             },
             plugins: [{
                 id: 'textCenter',
                 beforeDraw: (chart) => {
-                    const { ctx } = chart;
-                    const width = chart.width;
-                    const height = chart.height;
-                    
+                    const { ctx, width, height } = chart;
                     ctx.restore();
                     ctx.font = 'bold 24px Segoe UI';
                     ctx.fillStyle = '#2c3e50';
                     ctx.textBaseline = 'middle';
                     ctx.textAlign = 'center';
-
-                    // O segredo está em somar metade da largura e altura
                     const text = ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(0) + '%';
-                    
-                    // Ajuste manual: width/2 e height/2 apontam para o centro real
                     ctx.fillText(text, width / 2 + 6, height / 2 + 15);
                     ctx.save();
                 }
             }]
-});
-        // 1b. Barras Geral (Números Reais)
+        });
+
+        // 1b. Barras Geral
         new Chart(document.getElementById('chartBarrasGeral'), {
             type: 'bar',
             data: {
@@ -174,7 +177,6 @@
         });
 
         // 2. Médias por Matéria
-// 2. Médias por Matéria (CORRIGIDO)
         new Chart(document.getElementById('chartMateriasH'), {
             type: 'bar',
             data: {
@@ -189,41 +191,40 @@
                     backgroundColor: ['#3498db', '#e74c3c', '#27ae60']
                 }]
             },
-            options: { 
-                indexAxis: 'y', 
-                scales: { 
-                    x: { max: 100 } 
-                }, 
-                plugins: { 
-                    legend: { display: false } // LEGENDA DESLIGADA CORRETAMENTE
-                } 
-            }
+            options: { indexAxis: 'y', scales: { x: { max: 100 } }, plugins: { legend: { display: false } } }
         });
 
-        // 3. Capítulos (Top 5)
-        const sortedCaps = Object.keys(capDados).slice(0,7);
-        new Chart(document.getElementById('chartCapitulos'), {
+        // 3. Top 7 Capítulos (Acertos vs Erros - Separados)
+        const capOrdenados = Object.keys(capDados).sort((a,b) => 
+            (capDados[b].a + capDados[b].e) - (capDados[a].a + capDados[a].e)
+        ).slice(0, 7);
+
+        new Chart(document.getElementById('chartAcertos'), {
             type: 'bar',
             data: {
-                labels: sortedCaps,
-                datasets: [
-                    { label: 'Acertos', data: sortedCaps.map(c => capDados[c].a), backgroundColor: '#27ae60' },
-                    { label: 'Erros', data: sortedCaps.map(c => capDados[c].e), backgroundColor: '#e74c3c' }
-                ]
+                labels: capOrdenados,
+                datasets: [{ label: 'Acertos', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }]
             },
-            options: { indexAxis: 'y' }
+            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
         });
 
-// 4. Evolução (Linhas - 3 Matérias)
+        new Chart(document.getElementById('chartErros'), {
+            type: 'bar',
+            data: {
+                labels: capOrdenados,
+                datasets: [{ label: 'Erros', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }]
+            },
+            options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+        });
+
+        // 4. Evolução (Linhas - 3 Matérias)
         const materiasUnicas = ['General', 'Airframe', 'Powerplant'];
-        const cores = ['#3498db', '#e74c3c', '#27ae60']; // Azul, Vermelho, Verde
+        const cores = ['#3498db', '#e74c3c', '#27ae60'];
 
         const datasets = materiasUnicas.map((mat, index) => {
             return {
                 label: mat,
-                data: historico
-                    .filter(h => h.materia === mat)
-                    .map(h => h.nota),
+                data: historico.filter(h => h.materia === mat).map(h => h.nota),
                 borderColor: cores[index],
                 backgroundColor: cores[index],
                 tension: 0,
@@ -236,23 +237,21 @@
         new Chart(document.getElementById('chartLinhas'), {
             type: 'line',
             data: {
-                // Definimos o número máximo de simulados para o eixo X
                 labels: Array.from({length: Math.max(0, ...datasets.map(d => d.data.length))}, (_, i) => i + 1),
                 datasets: datasets
             },
             options: {
-aspectRatio: 1.5,
+                aspectRatio: 1.5,
                 responsive: true,
-                plugins: {
-                    legend: { display: true, position: 'bottom' }
-                },
+                plugins: { legend: { display: true, position: 'bottom' } },
                 scales: {
-                    y: { min: 0, max: 100, title: { display: true, text: 'Nota %' } },
+                    y: { min: 0, max: 110, title: { display: true, text: 'Nota %' } },
                     x: { title: { display: true, text: 'Simulado nº' } }
                 }
             }
         });
-}
+    }
+
     carregarAnalise();
 </script>
 </body>
