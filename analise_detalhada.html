@@ -86,40 +86,32 @@
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Carrega Histórico E o Banco de Questões (Mapa da Verdade)
+        // 1. Carrega Histórico E o Banco de Questões
         const [ { data: historico }, { data: questoes } ] = await Promise.all([
-            supabase.from('historico_simulados').select('*').order('data_hora', { ascending: true }),
+            supabase.from('historico_simulados').select('*'),
             supabase.from('questoes').select('num, capitulo')
         ]);
 
-        if (!historico || historico.length === 0) return;
+        // Cria um mapa "mestre" para consulta rápida: { 'G8011': 'Basic Electricity', ... }
+        const mapaMestre = {};
+        questoes.forEach(q => mapaMestre[String(q.num).trim()] = q.capitulo);
 
-        // Cria o mapa: { 'G8011': 'Basic Electricity', ... }
-        const mapaCapitulos = {};
-        if (questoes) questoes.forEach(q => mapaCapitulos[q.num.trim()] = q.capitulo);
-
-    // --- PROCESSAMENTO ---
+        // --- PROCESSAMENTO (IGNORANDO O HISTÓRICO PARA CAPÍTULOS) ---
         let totalAcertos = 0, totalErros = 0;
-        let matDados = { General: { a:0, t:0 }, Airframe: { a:0, t:0 }, Powerplant: { a:0, t:0 } };
         let capDados = {};
 
         historico.forEach(h => {
             totalAcertos += h.acertos;
             totalErros += h.erros;
             
-            if(matDados[h.materia]) {
-                matDados[h.materia].a += h.acertos;
-                matDados[h.materia].t += h.total_questoes;
-            }
-
-            // A MÁGICA: O capítulo agora vem SOMENTE do nosso mapa de referência
-            // Se o ID da questão não for encontrado, classificamos como 'Outros'
+            // BUSCA A VERDADE NO MAPA MESTRE PELO ID
             const idQuestao = String(h.id_questao).trim();
-            const capReal = mapaCapitulos[idQuestao] || 'Outros';
-
-            if(!capDados[capReal]) capDados[capReal] = { a:0, e:0 };
-            capDados[capReal].a += h.acertos;
-            capDados[capReal].e += h.erros;
+            const capituloReal = mapaMestre[idQuestao] || "Outros"; 
+            
+            // Agrupa usando o capituloReal (O que está no banco de questões)
+            if(!capDados[capituloReal]) capDados[capituloReal] = { a:0, e:0 };
+            capDados[capituloReal].a += h.acertos;
+            capDados[capituloReal].e += h.erros;
         });
 
         // 1. Gráfico Rosca (Mabel)
