@@ -115,13 +115,12 @@
             capDados[h.capitulo].e += h.erros;
         });
 
-        // 1. Gráfico Rosca (Mabel) - APENAS PORCENTAGEM
+  // 1. Gráfico Rosca (Mabel) - Legenda no TOPO + Texto Centralizado
         new Chart(document.getElementById('chartRosca'), {
             type: 'doughnut',
             data: {
-                labels: ['Acertos %', 'Erros %'],
+                labels: ['Acertos', 'Erros'],
                 datasets: [{
-                    // Aqui fazemos o cálculo da porcentagem
                     data: [
                         ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(1),
                         ((totalErros / (totalAcertos + totalErros)) * 100).toFixed(1)
@@ -132,26 +131,40 @@
             },
             options: { 
                 plugins: { 
-                    legend: { position: 'bottom' },
+                    legend: { position: 'top' }, // Legenda movida para o topo
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
-                                // Força a exibição do símbolo % no balãozinho ao tocar
-                                return context.label + ': ' + context.raw + '%';
-                            }
+                            label: (context) => context.label + ': ' + context.raw + '%'
                         }
                     }
                 } 
-            }
+            },
+            plugins: [{
+                id: 'textCenter',
+                beforeDraw: (chart) => {
+                    const { ctx, chartArea: { width, height } } = chart;
+                    ctx.save();
+                    ctx.font = 'bold 20px Segoe UI';
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    // Calcula a % total de acertos para mostrar no centro
+                    const total = totalAcertos + totalErros;
+                    const percent = total > 0 ? ((totalAcertos / total) * 100).toFixed(0) : 0;
+                    ctx.fillText(percent + '%', width / 2, height / 2);
+                    ctx.restore();
+                }
+            }]
         });
+
         // 1b. Barras Geral (Números Reais)
         new Chart(document.getElementById('chartBarrasGeral'), {
             type: 'bar',
             data: {
                 labels: ['Número de Questões'],
                 datasets: [
-                    { label: 'Acertos', data: [totalAcertos], backgroundColor: '#27ae60' },
-                    { label: 'Erros', data: [totalErros], backgroundColor: '#e74c3c' }
+                    { label: ' N° Acertos', data: [totalAcertos], backgroundColor: '#27ae60' },
+                    { label: 'N° Erros', data: [totalErros], backgroundColor: '#e74c3c' }
                 ]
             }
         });
