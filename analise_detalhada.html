@@ -13,37 +13,15 @@
         .grid-duplo { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media(min-width: 600px) { .grid-duplo { grid-template-columns: 1fr 1fr; } }
         h3 { border-left: 5px solid #27ae60; padding-left: 10px; font-size: 16px; text-transform: uppercase; }
-
-.btn-voltar {
-    background-color: #27ae60; /* O VERDE EXATO DO BANCO.HTML */
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0px 4px 0px #1e8449; /* SOMBRA DE BOTÃO 3D IGUAL AO BANCO */
-    transition: 0.1s;
-    margin-bottom: 25px;
-    text-decoration: none;
-}
-
-.btn-voltar:active {
-    transform: translateY(3px); /* EFEITO DE AFUNDAR AO CLICAR */
-    box-shadow: 0px 1px 0px #1e8449;
-}
+        .btn-voltar { background-color: #27ae60; color: white; border: none; padding: 12px 25px; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; font-size: 14px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0px 4px 0px #1e8449; transition: 0.1s; margin-bottom: 25px; text-decoration: none; }
+        .btn-voltar:active { transform: translateY(3px); box-shadow: 0px 1px 0px #1e8449; }
     </style>
 </head>
 <body>
 
-<button class="btn-voltar" onclick="window.location.href='dashboard.html'">⬅ Voltar
-</button>
+<button class="btn-voltar" onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
 
+<div class="container">
     <div class="header">
         <h2 style="margin:0">Diagnóstico de Performance</h2>
         <p style="margin:5px 0 0; font-weight:bold; color: #7f8c8d;">Análise em tempo real do seu banco de dados</p>
@@ -57,17 +35,10 @@
         </div>
     </div>
 
-<div class="card">
-    <h3>Média por Habilitação</h3>
-    
-    <div style="text-align: center; margin-bottom: 15px;">
-        <span style="font-size: 14px; font-weight: bold; color: #2c3e50;">
-            Média de Acertos %
-        </span>
+    <div class="card">
+        <h3>Média por Habilitação</h3>
+        <canvas id="chartMateriasH"></canvas>
     </div>
-
-    <canvas id="chartMateriasH"></canvas>
-</div>
 
     <div class="card">
         <h3>Top 7 Capítulos - Acertos</h3>
@@ -78,248 +49,89 @@
         <canvas id="chartErros"></canvas>
     </div>
 
-   <div class="card">
-    <h3>Linha de Tendência (Evolução)</h3>
-    <canvas id="chartLinhas"></canvas>
+    <div class="card">
+        <h3>Linha de Tendência (Evolução)</h3>
+        <canvas id="chartLinhas"></canvas>
     </div>
 </div>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabase = createClient(
-'https://ymyxikhlhkkvcufgwufe.supabase.co',
-'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
-);
+    const supabase = createClient(
+        'https://ymyxikhlhkkvcufgwufe.supabase.co',
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+    );
 
-async function carregarAnalise(){
+    async function carregarAnalise() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
 
-const { data:{ user } } = await supabase.auth.getUser();
-if(!user) return;
+        const [{ data: historico }, { data: questoes }] = await Promise.all([
+            supabase.from('historico_simulados').select('*').order('data_hora', { ascending: true }),
+            supabase.from('questoes').select('num,capitulo')
+        ]);
 
+        if (!historico || historico.length === 0) return;
 
-/* ================================
-CARREGA HISTÓRICO + QUESTÕES
-================================ */
+        const mapaCapitulos = {};
+        if (questoes) questoes.forEach(q => mapaCapitulos[q.num] = q.capitulo);
 
-const [ { data: historico }, { data: questoes } ] = await Promise.all([
-supabase.from('historico_simulados').select('*').order('data_hora',{ascending:true}),
-supabase.from('questoes').select('num,capitulo')
-]);
+        let totalAcertos = 0, totalErros = 0;
+        let matDados = { General: { a: 0, t: 0 }, Airframe: { a: 0, t: 0 }, Powerplant: { a: 0, t: 0 } };
+        let capDados = {};
 
-if(!historico || historico.length === 0) return;
+        historico.forEach(h => {
+            totalAcertos += h.acertos;
+            totalErros += h.erros;
 
+            if (matDados[h.materia]) {
+                matDados[h.materia].a += h.acertos;
+                matDados[h.materia].t += h.total_questoes;
+            }
 
-/* ================================
-MAPA VERDADEIRO ID → CAPÍTULO
-================================ */
+            let capReal = h.capitulo && h.capitulo !== 'N/A' && h.capitulo !== 'todos' ? h.capitulo : (mapaCapitulos[h.id_questao || h.num] || 'Outros');
 
-const mapaCapitulos = {};
+            if (!capDados[capReal]) capDados[capReal] = { a: 0, e: 0 };
+            capDados[capReal].a += h.acertos;
+            capDados[capReal].e += h.erros;
+        });
 
-if(questoes){
-questoes.forEach(q=>{
-mapaCapitulos[q.num] = q.capitulo;
-});
-}
+        // --- Geração dos Gráficos ---
+        
+        new Chart(document.getElementById('chartRosca'), {
+            type: 'doughnut',
+            data: { labels: ['% Acertos', '% Erros'], datasets: [{ data: [((totalAcertos/(totalAcertos+totalErros))*100).toFixed(1), ((totalErros/(totalAcertos+totalErros))*100).toFixed(1)], backgroundColor: ['#27ae60', '#e74c3c'] }] }
+        });
 
+        new Chart(document.getElementById('chartBarrasGeral'), {
+            type: 'bar',
+            data: { labels: ['Total'], datasets: [{ label: 'Acertos', data: [totalAcertos], backgroundColor: '#27ae60' }, { label: 'Erros', data: [totalErros], backgroundColor: '#e74c3c' }] }
+        });
 
-/* ================================
-PROCESSAMENTO
-================================ */
+        new Chart(document.getElementById('chartMateriasH'), {
+            type: 'bar',
+            data: { labels: ['General', 'Airframe', 'Powerplant'], datasets: [{ label: 'Média %', data: [matDados.General.t ? (matDados.General.a/matDados.General.t*100) : 0, matDados.Airframe.t ? (matDados.Airframe.a/matDados.Airframe.t*100) : 0, matDados.Powerplant.t ? (matDados.Powerplant.a/matDados.Powerplant.t*100) : 0], backgroundColor: ['#3498db', '#e74c3c', '#27ae60'] }] },
+            options: { indexAxis: 'y' }
+        });
 
-async function carregarAnalise(){ const { data: { user } } = await supabase.auth.getUser(); if(!user) return; const [ { data: historico }, { data: questoes } ] = await Promise.all([ supabase.from('historico_simulados').select('*'), supabase.from('questoes').select('num, capitulo') ]); if(!historico) return; // Criamos um mapa para busca rápida: { 'G8011': 'Basic Electricity' } const mapaCapitulos = {}; if(questoes){ questoes.forEach(q => { mapaCapitulos[String(q.num).trim()] = q.capitulo; }); } let capDados = {}; historico.forEach(h => { // Busca o nome real do capítulo pelo ID da questão const id = String(h.id_questao).trim(); const nomeCap = mapaCapitulos[id] || "Outros"; // Se não achar o ID, cai em Outros if(!capDados[nomeCap]){ capDados[nomeCap] = {a:0, e:0}; } capDados[nomeCap].a += h.acertos; capDados[nomeCap].e += h.erros; });
+        const capOrdenados = Object.keys(capDados).sort((a, b) => (capDados[b].a + capDados[b].e) - (capDados[a].a + capDados[a].e)).slice(0, 7);
 
+        new Chart(document.getElementById('chartAcertos'), { type: 'bar', data: { labels: capOrdenados, datasets: [{ label: 'Acertos', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }] }, options: { indexAxis: 'y' } });
+        new Chart(document.getElementById('chartErros'), { type: 'bar', data: { labels: capOrdenados, datasets: [{ label: 'Erros', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }] }, options: { indexAxis: 'y' } });
 
-/* ================================
-GRÁFICO ROSCA
-================================ */
+        // Gráfico de Tendência (Evolução)
+        const materiasUnicas = ['General', 'Airframe', 'Powerplant'];
+        new Chart(document.getElementById('chartLinhas'), {
+            type: 'line',
+            data: {
+                labels: Array.from({ length: historico.length }, (_, i) => i + 1),
+                datasets: materiasUnicas.map((mat, i) => ({ label: mat, data: historico.filter(h => h.materia === mat).map(h => h.nota), borderColor: ['#3498db', '#e74c3c', '#27ae60'][i], fill: false }))
+            }
+        });
+    }
 
-new Chart(document.getElementById('chartRosca'),{
-type:'doughnut',
-data:{
-labels:['% Acertos','% Erros'],
-datasets:[{
-data:[
-((totalAcertos/(totalAcertos+totalErros))*100).toFixed(1),
-((totalErros/(totalAcertos+totalErros))*100).toFixed(1)
-],
-backgroundColor:['#27ae60','#e74c3c'],
-borderWidth:2
-}]
-},
-options:{
-plugins:{
-legend:{position:'top'},
-tooltip:{
-callbacks:{
-label:(context)=>context.label+': '+context.raw+'%'
-}
-}
-}
-},
-plugins:[{
-id:'textCenter',
-beforeDraw:(chart)=>{
-const {ctx,width,height} = chart;
-ctx.restore();
-ctx.font='bold 24px Segoe UI';
-ctx.fillStyle='#2c3e50';
-ctx.textBaseline='middle';
-ctx.textAlign='center';
-
-const text=((totalAcertos/(totalAcertos+totalErros))*100).toFixed(0)+'%';
-
-ctx.fillText(text,width/2+6,height/2+15);
-
-ctx.save();
-}
-}]
-});
-
-
-/* ================================
-BARRAS GERAL
-================================ */
-
-new Chart(document.getElementById('chartBarrasGeral'),{
-type:'bar',
-data:{
-labels:['Número de Questões'],
-datasets:[
-{label:' N° Acertos',data:[totalAcertos],backgroundColor:'#27ae60'},
-{label:'N° Erros',data:[totalErros],backgroundColor:'#e74c3c'}
-]
-}
-});
-
-
-/* ================================
-MÉDIA POR MATÉRIA
-================================ */
-
-new Chart(document.getElementById('chartMateriasH'),{
-type:'bar',
-data:{
-labels:['General','Airframe','Powerplant'],
-datasets:[{
-label:'Média %',
-data:[
-(matDados.General.t>0?(matDados.General.a/matDados.General.t*100).toFixed(1):0),
-(matDados.Airframe.t>0?(matDados.Airframe.a/matDados.Airframe.t*100).toFixed(1):0),
-(matDados.Powerplant.t>0?(matDados.Powerplant.a/matDados.Powerplant.t*100).toFixed(1):0)
-],
-backgroundColor:['#3498db','#e74c3c','#27ae60']
-}]
-},
-options:{
-indexAxis:'y',
-scales:{x:{max:100}},
-plugins:{legend:{display:false}}
-}
-});
-
-
-/* ================================
-TOP 7 CAPÍTULOS
-================================ */
-
-const capOrdenados = Object.keys(capDados)
-.sort((a,b)=>
-(capDados[b].a+capDados[b].e)-
-(capDados[a].a+capDados[a].e)
-)
-.slice(0,7);
-
-
-/* ACERTOS */
-
-new Chart(document.getElementById('chartAcertos'),{
-type:'bar',
-data:{
-labels:capOrdenados,
-datasets:[{
-label:'Acertos',
-data:capOrdenados.map(c=>capDados[c].a),
-backgroundColor:'#27ae60'
-}]
-},
-options:{
-indexAxis:'y',
-plugins:{legend:{display:false}}
-}
-});
-
-
-/* ERROS */
-
-new Chart(document.getElementById('chartErros'),{
-type:'bar',
-data:{
-labels:capOrdenados,
-datasets:[{
-label:'Erros',
-data:capOrdenados.map(c=>capDados[c].e),
-backgroundColor:'#e74c3c'
-}]
-},
-options:{
-indexAxis:'y',
-plugins:{legend:{display:false}}
-}
-});
-
-
-/* ================================
-EVOLUÇÃO
-================================ */
-
-const materiasUnicas=['General','Airframe','Powerplant'];
-const cores=['#3498db','#e74c3c','#27ae60'];
-
-const datasets = materiasUnicas.map((mat,index)=>{
-
-return{
-label:mat,
-data:historico
-.filter(h=>h.materia===mat)
-.map(h=>h.nota),
-borderColor:cores[index],
-backgroundColor:cores[index],
-tension:0,
-pointRadius:3,
-borderWidth:2,
-fill:false
-};
-
-});
-
-
-new Chart(document.getElementById('chartLinhas'),{
-type:'line',
-data:{
-labels:Array.from(
-{length:Math.max(0,...datasets.map(d=>d.data.length))},
-(_,i)=>i+1
-),
-datasets:datasets
-},
-options:{
-aspectRatio:1.5,
-responsive:true,
-plugins:{
-legend:{display:true,position:'bottom'}
-},
-scales:{
-y:{min:0,max:110,title:{display:true,text:'Nota %'}},
-x:{title:{display:true,text:'Simulado nº'}}
-}
-}
-});
-
-}
-
-carregarAnalise();
-
+    carregarAnalise();
 </script>
 </body>
 </html>
