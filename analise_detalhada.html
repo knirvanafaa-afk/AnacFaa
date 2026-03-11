@@ -142,20 +142,24 @@
             plugins: [{
                 id: 'textCenter',
                 beforeDraw: (chart) => {
-                    const { ctx, chartArea: { width, height } } = chart;
-                    ctx.save();
-                    ctx.font = 'bold 20px Segoe UI';
-                    ctx.fillStyle = '#2c3e50';
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    // Calcula a % total de acertos para mostrar no centro
-                    const total = totalAcertos + totalErros;
-                    const percent = total > 0 ? ((totalAcertos / total) * 100).toFixed(0) : 0;
-                    ctx.fillText(percent + '%', width / 2, height / 2);
+                    const { ctx } = chart;
+                    const width = chart.width;
+                    const height = chart.height;
+                    
                     ctx.restore();
+                    ctx.font = 'bold 24px Segoe UI';
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.textBaseline = 'middle';
+                    ctx.textAlign = 'center';
+
+                    // O segredo está em somar metade da largura e altura
+                    const text = ((totalAcertos / (totalAcertos + totalErros)) * 100).toFixed(0) + '%';
+                    
+                    // Ajuste manual: width/2 e height/2 apontam para o centro real
+                    ctx.fillText(text, width / 2, height / 2);
+                    ctx.save();
                 }
             }]
-        });
 
         // 1b. Barras Geral (Números Reais)
         new Chart(document.getElementById('chartBarrasGeral'), {
