@@ -13,37 +13,14 @@
         .grid-duplo { display: grid; grid-template-columns: 1fr; gap: 20px; }
         @media(min-width: 600px) { .grid-duplo { grid-template-columns: 1fr 1fr; } }
         h3 { border-left: 5px solid #27ae60; padding-left: 10px; font-size: 16px; text-transform: uppercase; }
-
-.btn-voltar {
-    background-color: #27ae60; /* O VERDE EXATO DO BANCO.HTML */
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0px 4px 0px #1e8449; /* SOMBRA DE BOTÃO 3D IGUAL AO BANCO */
-    transition: 0.1s;
-    margin-bottom: 25px;
-    text-decoration: none;
-}
-
-.btn-voltar:active {
-    transform: translateY(3px); /* EFEITO DE AFUNDAR AO CLICAR */
-    box-shadow: 0px 1px 0px #1e8449;
-}
+        .btn-voltar { background: #34495e; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<button class="btn-voltar" onclick="window.location.href='dashboard.html'">⬅ Voltar
-</button>
-
+<div class="container">
+    <button class="btn-voltar" onclick="window.location.href='dashboard.html'">← Voltar</button>
+    
     <div class="header">
         <h2 style="margin:0">Diagnóstico de Performance</h2>
         <p style="margin:5px 0 0; font-weight:bold; color: #7f8c8d;">Análise em tempo real do seu banco de dados</p>
@@ -58,15 +35,9 @@
     </div>
 
     <div class="card">
-    <h3>Média por Habilitação</h3>
-    
-    <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px;">
-        <div style="width: 15px; height: 15px; background-color: #f1c40f; border-radius: 3px;"></div>
-        <span style="font-size: 14px; font-weight: bold; color: #2c3e50;">Média %</span>
+        <h3>Média por Habilitação</h3>
+        <canvas id="chartMateriasH"></canvas>
     </div>
-
-    <canvas id="chartMateriasH"></canvas>
-</div>
 
     <div class="card">
         <h3>Top Capítulos (Acertos vs Erros)</h3>
@@ -140,7 +111,6 @@
         });
 
         // 2. Médias por Matéria
-// 2. Médias por Matéria (CORRIGIDO)
         new Chart(document.getElementById('chartMateriasH'), {
             type: 'bar',
             data: {
@@ -148,22 +118,14 @@
                 datasets: [{
                     label: 'Média %',
                     data: [
-                        (matDados.General.t > 0 ? (matDados.General.a / matDados.General.t * 100).toFixed(1) : 0),
-                        (matDados.Airframe.t > 0 ? (matDados.Airframe.a / matDados.Airframe.t * 100).toFixed(1) : 0),
-                        (matDados.Powerplant.t > 0 ? (matDados.Powerplant.a / matDados.Powerplant.t * 100).toFixed(1) : 0)
+                        (matDados.General.a / matDados.General.t * 100).toFixed(1),
+                        (matDados.Airframe.a / matDados.Airframe.t * 100).toFixed(1),
+                        (matDados.Powerplant.a / matDados.Powerplant.t * 100).toFixed(1)
                     ],
                     backgroundColor: ['#3498db', '#e74c3c', '#27ae60']
                 }]
             },
-            options: { 
-                indexAxis: 'y', 
-                scales: { 
-                    x: { max: 100 } 
-                }, 
-                plugins: { 
-                    legend: { display: false } // LEGENDA DESLIGADA CORRETAMENTE
-                } 
-            }
+            options: { indexAxis: 'y', scales: { x: { max: 100 } } }
         });
 
         // 3. Capítulos (Top 5)
