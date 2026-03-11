@@ -127,27 +127,31 @@ mapaCapitulos[q.num] = q.capitulo;
 PROCESSAMENTO
 ================================ */
 
-// 1. Carrega histórico e tabela de referência de capítulos
-        const [ { data: historico }, { data: questoes } ] = await Promise.all([
-            supabase.from('historico_simulados').select('*'),
-            supabase.from('questoes').select('num, capitulo')
-        ]);
+let totalAcertos = 0;
+let totalErros = 0;
 
-        // Cria mapa: { 'G8011': 'Basic Electricity' }
-        const mapa = {};
-        questoes.forEach(q => mapa[String(q.num).trim()] = q.capitulo);
+let matDados = {
+General:{a:0,t:0},
+Airframe:{a:0,t:0},
+Powerplant:{a:0,t:0}
+};
 
-        let capDados = {};
+let capDados = {};
 
-        historico.forEach(h => {
-            // Busca o nome do capítulo real pelo ID
-            const id = String(h.id_questao).trim();
-            const nomeCapitulo = mapa[id] || "Não Classificado";
 
-            if (!capDados[nomeCapitulo]) capDados[nomeCapitulo] = { a:0, e:0 };
-            capDados[nomeCapitulo].a += h.acertos;
-            capDados[nomeCapitulo].e += h.erros;
-        });
+historico.forEach(h=>{
+
+totalAcertos += h.acertos;
+totalErros += h.erros;
+
+
+/* MATÉRIAS */
+
+if(matDados[h.materia]){
+matDados[h.materia].a += h.acertos;
+matDados[h.materia].t += h.total_questoes;
+}
+
 
 /* ====================================
 CORREÇÃO DO CAPÍTULO (TOP 7)
