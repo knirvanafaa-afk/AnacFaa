@@ -50,21 +50,27 @@
     </div>
 
     <div class="card">
-        <h3>Desempenho Geral (Mabel & Real)</h3>
+        <h3>Desempenho Geral</h3>
         <div class="grid-duplo">
             <div style="max-width: 250px; margin: 0 auto;"><canvas id="chartRosca"></canvas></div>
             <div><canvas id="chartBarrasGeral"></canvas></div>
         </div>
     </div>
 
-    <div class="card">
+<div class="card">
     <h3>Média por Habilitação</h3>
     
     <div style="text-align: center; margin-bottom: 15px;">
-        <span style="font-size: 14px; font-weight: bold; color: #7f8c8d; text-transform: uppercase; letter-spacing: 1px;">
-            Média de Acertos %
+        <span style="font-size: 14px; font-weight: bold; color: #2c3e50;">
+            Média %
         </span>
     </div>
+
+    <canvas id="chartMateriasH"></canvas>
+</div>
+
+    <canvas id="chartMateriasH"></canvas>
+</div>
 
     <canvas id="chartMateriasH"></canvas>
 </div>
@@ -132,7 +138,7 @@
         new Chart(document.getElementById('chartBarrasGeral'), {
             type: 'bar',
             data: {
-                labels: ['Qtd. Real'],
+                labels: ['Número de Questões'],
                 datasets: [
                     { label: 'Acertos', data: [totalAcertos], backgroundColor: '#27ae60' },
                     { label: 'Erros', data: [totalErros], backgroundColor: '#e74c3c' }
