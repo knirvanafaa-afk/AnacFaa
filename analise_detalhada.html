@@ -219,22 +219,42 @@ async function carregarAnalise() {
         fill: false
     }));
 
-    new Chart(document.getElementById('chartLinhas'), {
-    type: 'line',
-    data: {
-        labels: Array.from({ length: Math.max(0, ...datasets.map(d => d.data.length)) }, (_, i) => i + 1),
-        datasets: datasets
-    },
-    options: {
-        aspectRatio: 1.5,
-        responsive: true,
-        plugins: { legend: { display: true, position: 'top', labels: { usePointStyle: true, pointStyle: 'rect', boxWidth: 20, generateLabels: (chart) => { return chart.data.datasets.map((dataset, i) => ({ text: dataset.label, fillStyle: dataset.backgroundColor, strokeStyle: dataset.borderColor, lineWidth: 0, hidden: !chart.isDatasetVisible(i), datasetIndex: i })); } } } },
-        scales: {
-            y: { min: 0, max: 100, title: { display: true, text: 'Média %' } },
-            x: { title: { display: true, text: 'Simulado nº' } }
+   new Chart(document.getElementById('chartLinhas'), {
+        type: 'line',
+        data: {
+            labels: Array.from({ length: Math.max(0, ...datasets.map(d => d.data.length)) }, (_, i) => i + 1),
+            datasets: datasets
+        },
+        options: {
+            aspectRatio: 1.5,
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        pointStyle: 'rect',
+                        boxWidth: 20,
+                        generateLabels: (chart) => {
+                            return chart.data.datasets.map((dataset, i) => ({
+                                text: dataset.label,
+                                fillStyle: dataset.backgroundColor,
+                                strokeStyle: dataset.borderColor,
+                                lineWidth: 0,
+                                hidden: !chart.isDatasetVisible(i),
+                                datasetIndex: i
+                            }));
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: { min: 0, max: 100, title: { display: true, text: 'Nota %' } },
+                x: { title: { display: true, text: 'Simulado nº' } }
+            }
         }
-    }
-});
+    });
 }
 
 carregarAnalise();
