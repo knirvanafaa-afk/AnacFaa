@@ -191,10 +191,10 @@ async function carregarAnalise() {
         options: { indexAxis: 'y', scales: { x: { max: 100 } }, plugins: { legend: { display: false } } }
     });
 
-    // TOP 7 CAPÍTULOS (Código ajustado)
+   // TOP 7 CAPÍTULOS
 const capOrdenados = Object.keys(capDados)
-    .sort((a, b) => capDados[a].a - capDados[b].a) // Invertido para o maior ficar no topo
-    .slice(0, 7);
+    .sort((a, b) => (capDados[a].a + capDados[a].e) - (capDados[b].a + capDados[b].e)) // Ordena do menor para o maior
+    .reverse(); // Inverte para que o maior fique no topo (primeiro do array)
 
 new Chart(document.getElementById('chartAcertos'), {
     type: 'bar',
@@ -204,20 +204,22 @@ new Chart(document.getElementById('chartAcertos'), {
     },
     options: { 
         indexAxis: 'y', 
-        layout: {
-            padding: { left: 20 } // Adiciona espaço extra à esquerda para os rótulos
-        },
+        maintainAspectRatio: false, // Permite que o gráfico use a altura definida
+        layout: { padding: { left: 10, right: 20 } },
         scales: {
             y: {
                 ticks: {
-                    mirror: false, // Se ainda estiver cortando, mude para true
-                    autoSkip: false
+                    mirror: false,
+                    autoSkip: false,
+                    font: { size: 12 } // Fonte menor para caber melhor
                 }
             }
         },
         plugins: { legend: { display: false } } 
     }
 });
+
+
   // EVOLUÇÃO
     const datasets = ['General', 'Airframe', 'Powerplant'].map((mat, i) => ({
         label: mat,
