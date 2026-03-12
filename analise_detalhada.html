@@ -220,17 +220,31 @@ async function carregarAnalise() {
     }));
 
     new Chart(document.getElementById('chartLinhas'), {
-        type: 'line',
-        data: {
-            labels: Array.from({ length: Math.max(0, ...datasets.map(d => d.data.length)) }, (_, i) => i + 1),
-            datasets: datasets
+    type: 'line',
+    data: {
+        labels: Array.from({ length: Math.max(0, ...datasets.map(d => d.data.length)) }, (_, i) => i + 1),
+        datasets: datasets
+    },
+    options: {
+        aspectRatio: 1.5,
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                position: 'bottom',
+                labels: {
+                    // Isso garante que o ícone da legenda seja um retângulo sólido
+                    usePointStyle: true,
+                    pointStyle: 'rect'
+                }
+            }
         },
-        options: {
-            responsive: true,
-            scales: { y: { min: 0, max: 110, title: { display: true, text: 'Nota %' } } }
+        scales: {
+            y: { min: 0, max: 100, title: { display: true, text: 'Média %' } },
+            x: { title: { display: true, text: 'Simulado nº' } }
         }
-    });
-}
+    }
+});
 
 carregarAnalise();
 
