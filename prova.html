@@ -360,7 +360,7 @@ async function registrarResultadoNoBanco(materia, capitulo, acertos, total, temp
         // Precisamos ter acesso à variável 'questions' ou 'perguntasSorteador' aqui
         // Se ela não estiver disponível, o código não grava os detalhes, mas não quebra o sistema.
       
-  if (typeof perguntasSorteador !== 'undefined' && perguntasSorteador.length > 0) { const logsDetalhe = perguntasSorteador.map(q => ({ user_id: user.id, // VERIFIQUE: Se o ID não aparece, tente q.id, q.num, ou q.codigo id_questao: String(q.id || q.num || ''), capitulo: q.capitulo || q.category || 'Geral', acertou: (q.marcado === q.correta) 
+  if (typeof perguntasSorteador !== 'undefined' && perguntasSorteador.length > 0) { const logsDetalhe = perguntasSorteador.map(q => ({ user_id: user.id, // VERIFIQUE: Se o ID não aparece, tente q.id, q.num, ou q.codigo id_questao: String(q.num || q.id || 'SemID'), capitulo: q.capitulo || q.category || 'Geral', acertou: (q.marcado === q.correta) 
             }));
             await supabase.from('detalhes_questoes').insert(logsDetalhe);
             console.log("Detalhes gravados na tabela nova!");

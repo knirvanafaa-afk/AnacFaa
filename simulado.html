@@ -312,7 +312,7 @@ async function registrarResultadoNoBanco(materia, capitulo, acertos, total, temp
         if (typeof questions !== 'undefined' && questions.length > 0) {
             const logsDetalhe = questions.map(q => ({
                 user_id: user.id,
-                id_questao: q.id || q.num,
+                id_questao: String(q.num || q.id || 'SemID'),
                 capitulo: q.capitulo || 'Geral',
                 acertou: (q.userAnswer === q.correta) // Ajuste conforme seu campo de acerto
             }));
