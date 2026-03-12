@@ -192,20 +192,34 @@ async function carregarAnalise() {
     });
 
     // TOP 7 CAPÍTULOS
+    // Ordenamos do menor para o maior pelo total de questões (a + e)
+    // Depois usamos .reverse() para que o maior fique no topo do gráfico
     const capOrdenados = Object.keys(capDados)
-        .sort((a, b) => (capDados[b].a + capDados[b].e) - (capDados[a].a + capDados[a].e))
-        .slice(0, 7);
+        .sort((a, b) => (capDados[a].a + capDados[a].e) - (capDados[b].a + capDados[b].e))
+        .reverse(); 
 
     new Chart(document.getElementById('chartAcertos'), {
         type: 'bar',
-        data: { labels: capOrdenados, datasets: [{ label: 'N° de Questões Corretas', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }] },
-        options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+        data: { 
+            labels: capOrdenados, 
+            datasets: [{ label: 'N° de Questões Corretas', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }] 
+        },
+        options: { 
+            indexAxis: 'y', 
+            plugins: { legend: { display: false } } 
+        }
     });
 
     new Chart(document.getElementById('chartErros'), {
         type: 'bar',
-        data: { labels: capOrdenados, datasets: [{ label: 'N° de Questões Erradas', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }] },
-        options: { indexAxis: 'y', plugins: { legend: { display: false } } }
+        data: { 
+            labels: capOrdenados, 
+            datasets: [{ label: 'N° de Questões Erradas', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }] 
+        },
+        options: { 
+            indexAxis: 'y', 
+            plugins: { legend: { display: false } } 
+        }
     });
 
   // EVOLUÇÃO
