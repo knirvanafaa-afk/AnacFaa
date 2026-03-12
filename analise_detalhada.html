@@ -14,74 +14,68 @@
         @media(min-width: 600px) { .grid-duplo { grid-template-columns: 1fr 1fr; } }
         h3 { border-left: 5px solid #27ae60; padding-left: 10px; font-size: 16px; text-transform: uppercase; }
 
-.btn-voltar {
-    background-color: #27ae60; /* O VERDE EXATO DO BANCO.HTML */
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: bold;
-    text-transform: uppercase;
-    font-size: 14px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0px 4px 0px #1e8449; /* SOMBRA DE BOTÃO 3D IGUAL AO BANCO */
-    transition: 0.1s;
-    margin-bottom: 25px;
-    text-decoration: none;
-}
+        .btn-voltar {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0px 4px 0px #1e8449;
+            transition: 0.1s;
+            margin-bottom: 25px;
+            text-decoration: none;
+        }
 
-.btn-voltar:active {
-    transform: translateY(3px); /* EFEITO DE AFUNDAR AO CLICAR */
-    box-shadow: 0px 1px 0px #1e8449;
-}
+        .btn-voltar:active {
+            transform: translateY(3px);
+            box-shadow: 0px 1px 0px #1e8449;
+        }
     </style>
 </head>
 <body>
 
-<button class="btn-voltar" onclick="window.location.href='dashboard.html'">⬅ Voltar
-</button>
+<button class="btn-voltar" onclick="window.location.href='dashboard.html'">⬅ Voltar</button>
 
-    <div class="header">
-        <h2 style="margin:0">Diagnóstico de Performance</h2>
-        <p style="margin:5px 0 0; font-weight:bold; color: #7f8c8d;">Análise em tempo real do seu banco de dados</p>
-    </div>
+<div class="header">
+    <h2 style="margin:0">Diagnóstico de Performance</h2>
+    <p style="margin:5px 0 0; font-weight:bold; color: #7f8c8d;">Análise em tempo real do seu banco de dados</p>
+</div>
 
-    <div class="card">
-        <h3>Desempenho Geral</h3>
-        <div class="grid-duplo">
-            <div style="max-width: 250px; margin: 0 auto;"><canvas id="chartRosca"></canvas></div>
-            <div><canvas id="chartBarrasGeral"></canvas></div>
-        </div>
+<div class="card">
+    <h3>Desempenho Geral</h3>
+    <div class="grid-duplo">
+        <div style="max-width: 250px; margin: 0 auto;"><canvas id="chartRosca"></canvas></div>
+        <div><canvas id="chartBarrasGeral"></canvas></div>
     </div>
+</div>
 
 <div class="card">
     <h3>Média por Habilitação</h3>
-    
     <div style="text-align: center; margin-bottom: 15px;">
-        <span style="font-size: 14px; font-weight: bold; color: #2c3e50;">
-            Média de Acertos %
-        </span>
+        <span style="font-size: 14px; font-weight: bold; color: #2c3e50;">Média de Acertos %</span>
     </div>
-
     <canvas id="chartMateriasH"></canvas>
 </div>
 
-    <div class="card">
-        <h3>Top 7 Capítulos - Acertos</h3>
-        <canvas id="chartAcertos"></canvas>
-    </div>
-    <div class="card">
-        <h3>Top 7 Capítulos - Erros</h3>
-        <canvas id="chartErros"></canvas>
-    </div>
+<div class="card">
+    <h3>Top 7 Capítulos - Acertos</h3>
+    <canvas id="chartAcertos"></canvas>
+</div>
+<div class="card">
+    <h3>Top 7 Capítulos - Erros</h3>
+    <canvas id="chartErros"></canvas>
+</div>
 
-   <div class="card">
+<div class="card">
     <h3>Linha de Tendência (Evolução)</h3>
     <canvas id="chartLinhas"></canvas>
-    </div>
 </div>
 
 <script type="module">
