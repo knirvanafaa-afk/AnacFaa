@@ -191,23 +191,33 @@ async function carregarAnalise() {
         options: { indexAxis: 'y', scales: { x: { max: 100 } }, plugins: { legend: { display: false } } }
     });
 
-    // TOP 7 CAPÍTULOS
-    const capOrdenados = Object.keys(capDados)
-        .sort((a, b) => (capDados[b].a + capDados[b].e) - (capDados[a].a + capDados[a].e))
-        .slice(0, 7);
+    // TOP 7 CAPÍTULOS (Código ajustado)
+const capOrdenados = Object.keys(capDados)
+    .sort((a, b) => capDados[a].a - capDados[b].a) // Invertido para o maior ficar no topo
+    .slice(0, 7);
 
-    new Chart(document.getElementById('chartAcertos'), {
-        type: 'bar',
-        data: { labels: capOrdenados, datasets: [{ label: 'N° de Questões Corretas', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }] },
-        options: { indexAxis: 'y', plugins: { legend: { display: false } } }
-    });
-
-    new Chart(document.getElementById('chartErros'), {
-        type: 'bar',
-        data: { labels: capOrdenados, datasets: [{ label: 'N° de Questões Erradas', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }] },
-        options: { indexAxis: 'y', plugins: { legend: { display: false } } }
-    });
-
+new Chart(document.getElementById('chartAcertos'), {
+    type: 'bar',
+    data: { 
+        labels: capOrdenados, 
+        datasets: [{ label: 'N° de Questões Corretas', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }] 
+    },
+    options: { 
+        indexAxis: 'y', 
+        layout: {
+            padding: { left: 20 } // Adiciona espaço extra à esquerda para os rótulos
+        },
+        scales: {
+            y: {
+                ticks: {
+                    mirror: false, // Se ainda estiver cortando, mude para true
+                    autoSkip: false
+                }
+            }
+        },
+        plugins: { legend: { display: false } } 
+    }
+});
   // EVOLUÇÃO
     const datasets = ['General', 'Airframe', 'Powerplant'].map((mat, i) => ({
         label: mat,
