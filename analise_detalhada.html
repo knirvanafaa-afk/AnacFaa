@@ -213,6 +213,7 @@ async function carregarAnalise() {
         label: mat,
         data: historico.filter(h => h.materia === mat).map(h => h.nota),
         borderColor: ['#3498db', '#e74c3c', '#27ae60'][i],
+       backgroundColor: ['#3498db', '#e74c3c', '#27ae60'][i],
         tension: 0,
         pointRadius: 3,
         borderWidth: 2,
