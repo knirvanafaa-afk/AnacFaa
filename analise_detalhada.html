@@ -208,19 +208,19 @@ async function carregarAnalise() {
         options: { indexAxis: 'y', plugins: { legend: { display: false } } }
     });
 
-    // EVOLUÇÃO
+  // EVOLUÇÃO
     const datasets = ['General', 'Airframe', 'Powerplant'].map((mat, i) => ({
         label: mat,
         data: historico.filter(h => h.materia === mat).map(h => h.nota),
         borderColor: ['#3498db', '#e74c3c', '#27ae60'][i],
-       backgroundColor: ['#3498db', '#e74c3c', '#27ae60'][i],
+        backgroundColor: ['#3498db', '#e74c3c', '#27ae60'][i],
         tension: 0,
         pointRadius: 3,
         borderWidth: 2,
         fill: false
     }));
 
-   new Chart(document.getElementById('chartLinhas'), {
+    new Chart(document.getElementById('chartLinhas'), {
         type: 'line',
         data: {
             labels: Array.from({ length: Math.max(0, ...datasets.map(d => d.data.length)) }, (_, i) => i + 1),
@@ -232,17 +232,18 @@ async function carregarAnalise() {
             plugins: {
                 legend: {
                     display: true,
-                    position: 'top',
+                    position: 'top', // Legenda no topo
                     labels: {
                         usePointStyle: true,
-                        pointStyle: 'rect',
-                        boxWidth: 20,
+                        pointStyle: 'rect', // Retângulos
+                        boxWidth: 20,       // Largura do retângulo
+                        boxHeight: 12,      // Altura do retângulo
                         generateLabels: (chart) => {
                             return chart.data.datasets.map((dataset, i) => ({
                                 text: dataset.label,
-                                fillStyle: dataset.backgroundColor,
-                                strokeStyle: dataset.borderColor,
-                                lineWidth: 0,
+                                fillStyle: dataset.backgroundColor, // Cor sólida interna
+                                strokeStyle: dataset.borderColor,   // Cor da borda
+                                lineWidth: 2,                       // Espessura da borda
                                 hidden: !chart.isDatasetVisible(i),
                                 datasetIndex: i
                             }));
@@ -257,7 +258,6 @@ async function carregarAnalise() {
         }
     });
 }
-
 carregarAnalise();
 
 </script>
