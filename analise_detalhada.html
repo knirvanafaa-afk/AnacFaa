@@ -198,13 +198,13 @@ async function carregarAnalise() {
 
     new Chart(document.getElementById('chartAcertos'), {
         type: 'bar',
-        data: { labels: capOrdenados, datasets: [{ label: 'Acertos', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }] },
+        data: { labels: capOrdenados, datasets: [{ label: 'N° de Questões Corretas', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }] },
         options: { indexAxis: 'y', plugins: { legend: { display: false } } }
     });
 
     new Chart(document.getElementById('chartErros'), {
         type: 'bar',
-        data: { labels: capOrdenados, datasets: [{ label: 'Erros', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }] },
+        data: { labels: capOrdenados, datasets: [{ label: 'N° de Questões Erradas', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }] },
         options: { indexAxis: 'y', plugins: { legend: { display: false } } }
     });
 
