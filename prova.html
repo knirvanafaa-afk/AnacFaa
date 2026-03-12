@@ -295,8 +295,21 @@ perguntasSorteador.forEach((q, index) => {
     document.getElementById('res-tempo').innerText = `Tempo gasto: ${tempoFormatado}`;
 
 const materia = sessionStorage.getItem('config_materia');
-const capitulo = sessionStorage.getItem('config_capitulo');
+let capitulo = sessionStorage.getItem('config_capitulo');
 
+if (capitulo === "todos") {
+
+    const contagem = {};
+
+    perguntasSorteador.forEach(q => {
+        const cap = q.capitulo || "Outros";
+        contagem[cap] = (contagem[cap] || 0) + 1;
+    });
+
+    capitulo = Object.keys(contagem).reduce((a, b) =>
+        contagem[a] > contagem[b] ? a : b
+    );
+}
 registrarResultadoNoBanco(
     materia,
     capitulo,
