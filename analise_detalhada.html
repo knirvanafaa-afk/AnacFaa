@@ -86,110 +86,56 @@ const supabase = createClient(
 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
 );
 
-async function carregarAnalise(){
+async function carregarAnalise() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-const { data:{ user } } = await supabase.auth.getUser();
-if(!user) return;
+    // 1. CARREGA TUDO DE UMA VEZ
+    const [ { data: historico }, { data: detalhes } ] = await Promise.all([
+        supabase.from('historico_simulados').select('*').order('data_hora', { ascending: true }),
+        supabase.from('detalhes_questoes').select('id_questao, capitulo, acertou')
+    ]);
 
+    if (!historico) return;
 
-/* ================================
-CARREGA HISTÓRICO + QUESTÕES
-================================ */
+    // 2. CRIA UM MAPA DE DETALHES (Isso é o "passear" do cachorro)
+    // Se o historico tem o ID da questão, a gente busca o capítulo real aqui
+    const mapaDetalhes = {};
+    if (detalhes) {
+        detalhes.forEach(d => {
+            mapaDetalhes[d.id_questao] = d.capitulo;
+        });
+    }
 
-const [ { data: historico }, { data: questoes } ] = await Promise.all([
-supabase.from('historico_simulados').select('*').order('data_hora',{ascending:true}),
-supabase.from('questoes').select('num,capitulo')
-]);
+    // 3. PROCESSAMENTO
+    let totalAcertos = 0;
+    let totalErros = 0;
+    let matDados = { General: { a: 0, t: 0 }, Airframe: { a: 0, t: 0 }, Powerplant: { a: 0, t: 0 } };
+    let capDados = {};
 
-if(!historico || historico.length === 0) return;
+    historico.forEach(h => {
+        totalAcertos += h.acertos;
+        totalErros += h.erros;
 
+        // Materias
+        if (matDados[h.materia]) {
+            matDados[h.materia].a += h.acertos;
+            matDados[h.materia].t += h.total_questoes;
+        }
 
-/* ================================
-MAPA VERDADEIRO ID → CAPÍTULO
-================================ */
+        // CORREÇÃO DO CAPÍTULO (Aqui a mágica acontece)
+        let capReal = h.capitulo;
+        
+        // Se for genérico, tenta buscar o capítulo real na tabela nova
+        if (['OUTROS', 'N/A', 'n/a', 'todos', 'TODOS'].includes(capReal)) {
+            const idBusca = h.id_questao || h.num;
+            capReal = mapaDetalhes[idBusca] || 'Outros';
+        }
 
-const mapaCapitulos = {};
-
-if(questoes){
-questoes.forEach(q=>{
-mapaCapitulos[q.num] = q.capitulo;
-});
-}
-
-
-/* ================================
-PROCESSAMENTO
-================================ */
-
-let totalAcertos = 0;
-let totalErros = 0;
-
-let matDados = {
-General:{a:0,t:0},
-Airframe:{a:0,t:0},
-Powerplant:{a:0,t:0}
-};
-
-let capDados = {};
-
-
-historico.forEach(h=>{
-
-totalAcertos += h.acertos;
-totalErros += h.erros;
-
-
-/* MATÉRIAS */
-
-if(matDados[h.materia]){
-matDados[h.materia].a += h.acertos;
-matDados[h.materia].t += h.total_questoes;
-}
-
-
-/* ====================================
-CORREÇÃO DO CAPÍTULO (TOP 7)
-==================================== */
-
-let capReal = h.capitulo;
-
-if(
-!capReal ||
-capReal === 'N/A' ||
-capReal === 'n/a' ||
-capReal === 'todos' ||
-capReal === 'TODOS'
-){
-
-/* tenta descobrir o ID da questão */
-
-const possivelID =
-h.id_questao ||
-h.num ||
-h.questao ||
-h.questao_id;
-
-/* busca no mapa */
-
-capReal = mapaCapitulos[possivelID] || 'Outros';
-
-}
-
-
-/* soma dados */
-
-if(!capDados[capReal]){
-capDados[capReal] = {a:0,e:0};
-}
-
-capDados[capReal].a += h.acertos;
-capDados[capReal].e += h.erros;
-
-});
-
-if (historico.capitulo === 'OUTROS') {
-
-}
+        if (!capDados[capReal]) capDados[capReal] = { a: 0, e: 0 };
+        capDados[capReal].a += h.acertos;
+        capDados[capReal].e += h.erros;
+    });
 
 /* ================================
 GRÁFICO ROSCA
