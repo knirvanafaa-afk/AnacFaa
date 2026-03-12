@@ -228,7 +228,7 @@ async function carregarAnalise() {
     options: {
         aspectRatio: 1.5,
         responsive: true,
-        plugins: { legend: { display: true, position: 'top', labels: { usePointStyle: true, pointStyle: 'rect', boxWidth: 20, // Apenas este bloco altera o preenchimento do ícone generateLabels: (chart) => { return chart.data.datasets.map((dataset, i) => ({ text: dataset.label, fillStyle: dataset.backgroundColor, strokeStyle: dataset.borderColor, lineWidth: 0, hidden: !chart.isDatasetVisible(i), datasetIndex: i })); } } } },
+        plugins: { legend: { display: true, position: 'top', labels: { usePointStyle: true, pointStyle: 'rect', boxWidth: 20, generateLabels: (chart) => { return chart.data.datasets.map((dataset, i) => ({ text: dataset.label, fillStyle: dataset.backgroundColor, strokeStyle: dataset.borderColor, lineWidth: 0, hidden: !chart.isDatasetVisible(i), datasetIndex: i })); } } } },
         scales: {
             y: { min: 0, max: 100, title: { display: true, text: 'Média %' } },
             x: { title: { display: true, text: 'Simulado nº' } }
