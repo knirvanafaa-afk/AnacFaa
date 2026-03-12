@@ -232,12 +232,12 @@ async function carregarAnalise() {
             plugins: {
                 legend: {
                     display: true,
-                    position: 'top', // Legenda no topo
+                    position: 'top', 
                     labels: {
-                        usePointStyle: true,
-                        pointStyle: 'rect', // Retângulos
-                        boxWidth: 20,       // Largura do retângulo
-                        boxHeight: 12,      // Altura do retângulo
+                        usePointStyle: false,
+                        pointStyle: 'rect', 
+                        boxWidth: 20,     
+                        boxHeight: 12,     
                         generateLabels: (chart) => {
                             return chart.data.datasets.map((dataset, i) => ({
                                 text: dataset.label,
