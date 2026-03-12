@@ -107,7 +107,7 @@ display: flex; flex-direction: column; box-sizing: border-box;
         <button style="
     width: 100%; 
     background-color: #fff9c4; 
-    border: 2px solid #f1c40f; 
+    border: 4px solid #3498db;     /* Borda externa principal */
     padding: 30px; 
     border-radius: 12px; 
     font-size: 40px; 
@@ -116,7 +116,11 @@ display: flex; flex-direction: column; box-sizing: border-box;
     cursor: pointer; 
     box-shadow: 0px 5px 15px rgba(0,0,0,0.05);
     text-transform: uppercase;
-"onclick="window.location.href='index_simulado.html'">NEW TEST</button>
+    
+    /* O SEGREDO DO RETÂNGULO INTERNO */
+    outline: 2px solid #3498db;    /* A borda menor */
+    outline-offset: -12px;         /* Move a borda para dentro (cerca de 30-40% do padding) */
+" onclick="window.location.href='index_simulado.html'">NEW TEST</button>
     </div>
 </div>
 
