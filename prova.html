@@ -357,6 +357,17 @@ async function registrarResultadoNoBanco(materia, capitulo, acertos, total, temp
     }
 }
 
+// Apenas essa inserção (mantendo a original intacta)
+if (listaQuestoes) {
+    const logsDetalhe = listaQuestoes.map(q => ({
+        user_id: user.id,
+        id_questao: q.id || q.num,
+        capitulo: q.capitulo || 'Geral',
+        acertou: q.acertou // ou o campo que define acerto
+    }));
+    await supabase.from('detalhes_questoes').insert(logsDetalhe);
+}
+
 </script>
 </body>
 </html>
