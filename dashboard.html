@@ -348,7 +348,7 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
  <th style="color: #f1c40f;">DATA</th>
                 <th style="color: #f1c40f;">MATÉRIA</th>
                 <th style="color: #f1c40f;">DESEMPENHO</th>
-                <th style="color: #f1c40f;">ACERTOS</th>
+                <th style="color: #f1c40f;">TEMPO</th>
             </tr>
         </thead>
         <tbody id="tabela-historico">
@@ -592,10 +592,10 @@ async function alimentarLogBookReal() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Buscamos os dados com os nomes REAIS das colunas do seu CSV
+        // 1. Adicionamos 'tempo' e 'tipo' na busca para a tabela ficar completa
         const { data: historico, error } = await supabase
             .from('historico_simulados')
-            .select('data_hora, materia, capitulo, nota, acertos, total_questoes')
+            .select('data_hora, materia, capitulo, nota, tempo, tipo') 
             .eq('user_id', user.id)
             .order('data_hora', { ascending: false })
             .limit(3);
@@ -615,16 +615,15 @@ async function alimentarLogBookReal() {
                     month: '2-digit'
                 });
 
-                // Formata a nota para não ter casas decimais infinitas
                 const notaExibicao = item.nota ? parseFloat(item.nota).toFixed(0) : 0;
                 
-                // Criamos a linha com o que temos de real no banco
+                // 2. Aqui montamos a linha trocando os acertos pelo tempo real do banco
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td style="color: white;">${dataFormatada}</td>
-                    <td style="color: white;">${item.materia} (${item.capitulo || 'N/A'})</td>
+                    <td style="color: white;">${item.materia} (${item.tipo || 'N/A'})</td>
                     <td style="font-weight: bold; color: #f1c40f;">${notaExibicao}%</td> 
-                    <td style="color: white;">${item.acertos}/${item.total_questoes} qst</td> 
+                    <td style="color: white;">${item.tempo || '--:--'}</td> 
                 `;
                 tbody.appendChild(tr);
             });
@@ -633,8 +632,6 @@ async function alimentarLogBookReal() {
         console.error("Erro ao carregar LogBook:", err);
     }
 }
-
-alimentarLogBookReal();
 
 </script>
 </body>
