@@ -112,7 +112,7 @@ input[type="radio"]:disabled {
 </div>
     <div id="questoes-container">
 
-<button class="btn-flag" onclick="toggleFlag(this)">🚩 FLAG</button> 
+<button id="btn-flag" onclick="toggleFlag()">🚩 FLAG</button>
 
 </div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
@@ -265,7 +265,8 @@ if (tempoRestante <= 300) {
     });
   }
 
-window.toggleFlag = function(btn) {
+window.toggleFlag = function() {
+    const btn = document.getElementById('btn-flag');
     btn.classList.toggle('active');
     
     // Atualiza o texto visualmente para igualar o simulado
