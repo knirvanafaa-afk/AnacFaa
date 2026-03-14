@@ -92,7 +92,12 @@ input[type="radio"]:disabled {
     TEMPO: <span id="contagem">--:--</span> MIN
    </div>
 </div>
-    <div id="questoes-container"></div>
+    <div id="questoes-container"><button id="flag-btn-${questao.id}" 
+        class="flag-btn" 
+        onclick="toggleFlag('${questao.id}')">
+    <i class="fas fa-flag"></i> 
+    <span class="flag-text">Flag</span>
+</button></div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
     
 <div id="resultado-caixa">
