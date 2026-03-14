@@ -248,6 +248,28 @@ if (tempoRestante <= 300) {
     });
   }
 
+window.toggleFlag = function(questaoId) {
+    const btn = document.getElementById(`flag-btn-${questaoId}`);
+    const isFlagged = btn.classList.toggle('flagged');
+    
+    // Altera o texto e o ícone
+    const icon = btn.querySelector('i');
+    const text = btn.querySelector('.flag-text');
+    
+    if (isFlagged) {
+        icon.className = 'fas fa-flag'; // Ícone preenchido
+        text.innerText = 'Flagged';
+        // Aqui você chamaria a função para salvar no banco
+        salvarFlagNoBanco(questaoId, true);
+    } else {
+        icon.className = 'far fa-flag'; // Ícone contorno
+        text.innerText = 'Flag';
+        salvarFlagNoBanco(questaoId, false);
+    }
+};
+
+
+
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
 
 window.finalizarProva = function(foiPorTempo = false) {
