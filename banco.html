@@ -243,7 +243,7 @@ function renderizarCardNormal(card, d) {
     listaDiv.innerHTML = "<p style='text-align: center;'>Carregando...</p>";
     
     try {
-      const { data, error } = await supabase.from('questoes').select('*').order('num', { ascending: true }).range(0, 9999);
+      const { data, error } = await supabase.from('questoes').select('*').range(0, 4000).order('num', { ascending: true });
       if (error) throw error;
       
       listaDiv.innerHTML = "";
