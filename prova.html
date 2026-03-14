@@ -92,12 +92,7 @@ input[type="radio"]:disabled {
     TEMPO: <span id="contagem">--:--</span> MIN
    </div>
 </div>
-    <div id="questoes-container"><button id="flag-btn-${questao.id}" 
-        class="flag-btn" 
-        onclick="toggleFlag('${questao.id}')">
-    <i class="fas fa-flag"></i> 
-    <span class="flag-text">Flag</span>
-</button></div>
+    <div id="questoes-container"></div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
     
 <div id="resultado-caixa">
@@ -247,28 +242,6 @@ if (tempoRestante <= 300) {
         `;
     });
   }
-
-window.toggleFlag = function(questaoId) {
-    const btn = document.getElementById(`flag-btn-${questaoId}`);
-    const isFlagged = btn.classList.toggle('flagged');
-    
-    // Altera o texto e o ícone
-    const icon = btn.querySelector('i');
-    const text = btn.querySelector('.flag-text');
-    
-    if (isFlagged) {
-        icon.className = 'fas fa-flag'; // Ícone preenchido
-        text.innerText = 'Flagged';
-        // Aqui você chamaria a função para salvar no banco
-        salvarFlagNoBanco(questaoId, true);
-    } else {
-        icon.className = 'far fa-flag'; // Ícone contorno
-        text.innerText = 'Flag';
-        salvarFlagNoBanco(questaoId, false);
-    }
-};
-
-
 
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
 
