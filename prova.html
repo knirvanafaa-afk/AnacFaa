@@ -19,7 +19,7 @@ h2 { background-color: #27ae60; color: white; text-align: center; padding: 15px;
         .correta { border: 2px solid #2ecc71 !important; background-color: #eafff0 !important; }
         .errada { border: 2px solid #e74c3c !important; background-color: #fff0f0 !important; }
 
-#btn-flag { 
+.btn-flag { 
     background: #f39c12; 
     border: none;
     padding: 10px 20px;
@@ -28,7 +28,7 @@ h2 { background-color: #27ae60; color: white; text-align: center; padding: 15px;
     font-weight: bold;
     border-radius: 5px;
 }
-#btn-flag.active { 
+.btn-flag.active { 
     background: #e67e22; 
     border: 2px solid #fff; 
     box-shadow: 0 0 10px rgba(0,0,0,0.3); 
@@ -110,11 +110,8 @@ input[type="radio"]:disabled {
     TEMPO: <span id="contagem">--:--</span> MIN
    </div>
 </div>
-    <div id="questoes-container">
+    <div id="questoes-container"></div>
 
-<button id="btn-flag" onclick="toggleFlag()">🚩 FLAG</button>
-
-</div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
     
 <div id="resultado-caixa">
@@ -252,35 +249,39 @@ if (tempoRestante <= 300) {
         const displayR4 = (q.r4 === "N/A") ? 'none' : 'flex';
 
         container.innerHTML += `
-            <div class="pergunta-card" id="card-${index}">
-                <span class="texto-enunciado">${index + 1}) ${q.pergunta}</span>
-                ${q.foto ? `<img src="${q.foto}" style="max-width:100%; border-radius:10px; margin-bottom:15px; display:block;">` : ''}
-                <label class="opcao"><input type="radio" name="p${index}" value="1"> ${q.r1}</label>
-                <label class="opcao"><input type="radio" name="p${index}" value="2"> ${q.r2}</label>
-                <label class="opcao"><input type="radio" name="p${index}" value="3"> ${q.r3}</label>
-                <label class="opcao" style="display: ${displayR4};"><input type="radio" name="p${index}" value="4"> ${q.r4}</label>
-                <div id="feedback-${index}" style="margin-top:10px; font-weight:bold; display:none;"></div>
-            </div>
-        `;
-    });
-  }
+<div class="pergunta-card" id="card-${index}" data-id="${q.id}">
 
-window.toggleFlag = function() {
-    const btn = document.getElementById('btn-flag');
-    btn.classList.toggle('active');
-    
-    // Atualiza o texto visualmente para igualar o simulado
-    if (btn.classList.contains('active')) {
-        btn.innerText = '🚩 FLAGGED';
-    } else {
-        btn.innerText = '🚩 FLAG';
+<span class="texto-enunciado">${index + 1}) ${q.pergunta}</span>
+
+${q.foto ? `<img src="${q.foto}" style="max-width:100%; border-radius:10px; margin-bottom:15px; display:block;">` : ''}
+
+<label class="opcao"><input type="radio" name="p${index}" value="1"> ${q.r1}</label>
+<label class="opcao"><input type="radio" name="p${index}" value="2"> ${q.r2}</label>
+<label class="opcao"><input type="radio" name="p${index}" value="3"> ${q.r3}</label>
+<label class="opcao" style="display:${displayR4};"><input type="radio" name="p${index}" value="4"> ${q.r4}</label>
+
+<button class="btn-flag" onclick="toggleFlag(this)">
+🚩 FLAG
+</button>
+
+<div id="feedback-${index}" style="margin-top:10px; font-weight:bold; display:none;"></div>
+</div>
+ `;
+
+     });
+}
+
+window.toggleFlag = function(botao){
+
+    botao.classList.toggle('active');
+
+    if(botao.classList.contains('active')){
+        botao.innerText = '🚩 FLAGGED';
+    }else{
+        botao.innerText = '🚩 FLAG';
     }
-};
 
-    // AQUI entra a chamada que vai alimentar o banco (que faremos no próximo passo)
-    salvarFavoritoNoBanco(questaoId, isFlagged);
-};
-
+}
 
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
 
