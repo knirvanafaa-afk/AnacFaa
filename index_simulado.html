@@ -89,7 +89,8 @@
         // Log para saber se a função foi chamada
         console.log("Botão clicado para: " + materia); 
         
-        sessionStorage.setItem('selectedSubject', materia);
+sessionStorage.setItem('modo_execucao', 'Simulado');      
+ sessionStorage.setItem('selectedSubject', materia);
         sessionStorage.setItem('questionCount', 60);
         
         // Redireciona

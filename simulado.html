@@ -315,6 +315,8 @@ async function registrarResultadoNoBanco(materia, capitulo, acertos, total, temp
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
+const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identificado';
+
         const nota = (acertos / total) * 100;
 
         const { error } = await supabase
@@ -327,6 +329,7 @@ async function registrarResultadoNoBanco(materia, capitulo, acertos, total, temp
                 erros: total - acertos,
                 total_questoes: total,
                 nota: nota,
+                tipo: tipoExecucao,
                 tentativa_n: 1 // Inicia com 1, depois automatizamos
             }]);
 

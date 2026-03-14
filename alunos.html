@@ -121,6 +121,8 @@ await validarAcessoTotal(false);
         const cap = document.getElementById('capitulo_simulado').value;
         const qtd = document.getElementById('qtd_questoes').value;
         
+sessionStorage.setItem('modo_execucao', 'Prova');
+
         if(!mat || mat === "") {
             window.mostrarMensagem("Por favor, selecione uma matéria!");
             return;
