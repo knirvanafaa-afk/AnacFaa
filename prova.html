@@ -20,26 +20,29 @@ h2 { background-color: #27ae60; color: white; text-align: center; padding: 15px;
         .errada { border: 2px solid #e74c3c !important; background-color: #fff0f0 !important; }
 
 .flag-btn {
-    background: none;
-    border: 1px solid #7f8c8d;
-    padding: 5px 10px;
-    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background: #fff;
     cursor: pointer;
-    color: #7f8c8d;
     transition: 0.2s;
+    font-weight: 600;
 }
 
 .flag-btn.flagged {
+    background-color: #fff9c4;
     border-color: #f1c40f;
-    color: #f1c40f;
-    background-color: #fffdf0;
+    color: #b8860b;
 }
 
-.flag-btn:hover {
-    background-color: #ecf0f1;
-}
+.flag-btn i { font-size: 16px; }
 
         .btn-finalizar { background-color: #27ae60; color: white; width: 100%; padding: 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; margin-top: 10px; }
+
+
         #resultado-caixa { display: none; background: #27ae60; color: white; padding: 25px; border-radius: 15px; margin-top: 30px; text-align: center; }
         .btn-voltar { background: #fff9c4; padding: 10px 20px; border: 2px solid #f1c40f; color: #000000; border-radius: 8px; cursor: pointer; margin-top: 15px; }
 
@@ -115,12 +118,7 @@ input[type="radio"]:disabled {
 </div>
     <div id="questoes-container">
 
-<button id="flag-btn-${questao.id}" 
-        class="flag-btn ${questao.isFlagged ? 'flagged' : ''}" 
-        onclick="toggleFlag('${questao.id}')">
-    <i class="${questao.isFlagged ? 'fas' : 'far'} fa-flag"></i>
-    <span class="flag-text">${questao.isFlagged ? 'Flagged' : 'Flag'}</span>
-</button>
+<button id="btn-flag" onclick="toggleFlag()">🚩 FLAG</button>
 
 </div>
     <button class="btn-finalizar" id="btn-concluir" onclick="finalizarProva()">Finalizar Prova</button>
@@ -277,23 +275,23 @@ window.toggleFlag = function(questaoId) {
     const btn = document.getElementById(`flag-btn-${questaoId}`);
     if (!btn) return;
 
-    // Alterna a classe visual
+    // Alterna a classe que define o estado visual (o "pisca" ou mudança de cor)
     const isFlagged = btn.classList.toggle('flagged');
     
-    // Atualiza o ícone e texto
+    // Atualiza ícone e texto de forma síncrona
     const icon = btn.querySelector('i');
     const text = btn.querySelector('.flag-text');
     
     if (isFlagged) {
         icon.className = 'fas fa-flag';
         text.innerText = 'Flagged';
-        // Aqui chamaremos a função de salvar no banco futuramente
-        console.log("Questão marcada:", questaoId);
     } else {
         icon.className = 'far fa-flag';
         text.innerText = 'Flag';
-        console.log("Questão desmarcada:", questaoId);
     }
+
+    // AQUI entra a chamada que vai alimentar o banco (que faremos no próximo passo)
+    salvarFavoritoNoBanco(questaoId, isFlagged);
 };
 
 
