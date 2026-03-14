@@ -343,12 +343,13 @@ window.addEventListener('beforeunload', (event) => {
 });
 
 // Função exclusiva para salvar no Supabase (não interfere no restante)
+
 async function registrarResultadoNoBanco(materia, capitulo, acertos, total, tempo) {
     try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-const elementoTimer = document.getElementById('timer'); const tempoGasto = elementoTimer ? elementoTimer.innerText : "00:00"; 
+ const tempoGasto = tempo;
 
 const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identificado';
 
