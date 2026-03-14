@@ -246,9 +246,6 @@ if (tempoRestante <= 300) {
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
 
 window.finalizarProva = function(foiPorTempo = false) {
-
-const displayTimer = document.getElementById('timer'); const tempoGasto = displayTimer ? displayTimer.innerText : "00:00";
-
 clearInterval(intervaloTimer);
     let acertos = 0;
     let tempoFim = Date.now();
@@ -318,8 +315,7 @@ registrarResultadoNoBanco(
     capitulo,
     acertos,
     perguntasSorteador.length,
-    tempoFormatado,
-    tempoGasto
+    tempoFormatado
 );
 
     window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -352,7 +348,7 @@ async function registrarResultadoNoBanco(materia, capitulo, acertos, total, temp
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-let tempoGasto = "00:00"; const displayTimer = document.getElementById('timer'); if (displayTimer) { tempoGasto = displayTimer.innerText; } 
+const elementoTimer = document.getElementById('timer'); const tempoGasto = elementoTimer ? elementoTimer.innerText : "00:00"; 
 
 const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identificado';
 
