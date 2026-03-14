@@ -348,7 +348,7 @@ async function registrarResultadoNoBanco(materia, capitulo, acertos, total, temp
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-const elementoTimer = document.getElementById('timer'); const tempoGasto = elementoTimer ? elementoTimer.innerText : "00:00"; 
+let tempoFinal = "00:00"; const displayTimer = document.getElementById('timer'); if (displayTimer) { tempoFinal = displayTimer.innerText; } 
 
 const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identificado';
 
