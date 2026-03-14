@@ -19,26 +19,20 @@ h2 { background-color: #27ae60; color: white; text-align: center; padding: 15px;
         .correta { border: 2px solid #2ecc71 !important; background-color: #eafff0 !important; }
         .errada { border: 2px solid #e74c3c !important; background-color: #fff0f0 !important; }
 
-.flag-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    background: #fff;
+#btn-flag { 
+    background: #f39c12; 
+    border: none;
+    padding: 10px 20px;
+    color: white;
     cursor: pointer;
-    transition: 0.2s;
-    font-weight: 600;
+    font-weight: bold;
+    border-radius: 5px;
 }
-
-.flag-btn.flagged {
-    background-color: #fff9c4;
-    border-color: #f1c40f;
-    color: #b8860b;
+#btn-flag.active { 
+    background: #e67e22; 
+    border: 2px solid #fff; 
+    box-shadow: 0 0 10px rgba(0,0,0,0.3); 
 }
-
-.flag-btn i { font-size: 16px; }
 
         .btn-finalizar { background-color: #27ae60; color: white; width: 100%; padding: 18px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 18px; text-transform: uppercase; margin-top: 10px; }
 
@@ -271,24 +265,17 @@ if (tempoRestante <= 300) {
     });
   }
 
-window.toggleFlag = function(questaoId) {
-    const btn = document.getElementById(`flag-btn-${questaoId}`);
-    if (!btn) return;
-
-    // Alterna a classe que define o estado visual (o "pisca" ou mudança de cor)
-    const isFlagged = btn.classList.toggle('flagged');
+window.toggleFlag = function() {
+    const btn = document.getElementById('btn-flag');
+    btn.classList.toggle('active');
     
-    // Atualiza ícone e texto de forma síncrona
-    const icon = btn.querySelector('i');
-    const text = btn.querySelector('.flag-text');
-    
-    if (isFlagged) {
-        icon.className = 'fas fa-flag';
-        text.innerText = 'Flagged';
+    // Atualiza o texto visualmente para igualar o simulado
+    if (btn.classList.contains('active')) {
+        btn.innerText = '🚩 FLAGGED';
     } else {
-        icon.className = 'far fa-flag';
-        text.innerText = 'Flag';
+        btn.innerText = '🚩 FLAG';
     }
+};
 
     // AQUI entra a chamada que vai alimentar o banco (que faremos no próximo passo)
     salvarFavoritoNoBanco(questaoId, isFlagged);
