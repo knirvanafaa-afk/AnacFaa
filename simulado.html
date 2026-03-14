@@ -317,6 +317,17 @@ async function registrarResultadoNoBanco(materia, capitulo, acertos, total, temp
 
 const elementoTimer = document.getElementById('timer'); const tempoGasto = elementoTimer ? elementoTimer.innerText : "00:00"; 
 
+const partes = tempoGasto.split(':').map(Number);
+
+const restanteSegundos = (partes[0] * 3600) + (partes[1] * 60) + (partes[2] || 0);
+
+const gastoSegundos = 7200 - restanteSegundos;
+
+const min = Math.floor(gastoSegundos / 60);
+const seg = gastoSegundos % 60;
+
+const tempoFinal = `${min}min ${seg}s`;
+
 const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identificado';
 
         const nota = (acertos / total) * 100;
@@ -332,7 +343,7 @@ const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identifica
                 total_questoes: total,
                 nota: nota,
                 tipo: tipoExecucao,
-                tempo: tempoGasto,
+                tempo: tempoFinal,
                 tentativa_n: 1 // Inicia com 1, depois automatizamos
             }]);
 
