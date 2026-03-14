@@ -331,28 +331,28 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
         </div>
     </div>
 
+
+
+
+
+
+
 <div class="secao-titulo">Histórico de LogBook</div>
 
-    <div class="secao-verde">
+<div class="secao-verde">
     <div class="titulo-tabela-historico">Simulados Realizados</div>
 
-    <table style="width: 100%; border-collapse: collapse;">
+ <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="color: #f1c40f;">DATA</th>
+ <th style="color: #f1c40f;">DATA</th>
                 <th style="color: #f1c40f;">MATÉRIA</th>
                 <th style="color: #f1c40f;">DESEMPENHO</th>
                 <th style="color: #f1c40f;">TEMPO</th>
             </tr>
         </thead>
         <tbody id="tabela-historico">
-            <tr>
-                <td style="color: white;">11/02/24</td>
-                <td style="color: white;">General (Basic Electricity)</td>
-                <td style="font-weight: bold; color: #f1c40f;">85%</td> 
-                <td style="color: white;">42min</td> 
-            </tr>
-        </tbody>
+            </tbody>
     </table>
 </div>
 
@@ -586,6 +586,57 @@ display: false
 }
 
 carregarDadosParaTeia();
+
+async function alimentarLogBookReal() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Buscamos os 3 registros mais recentes
+        const { data: historico, error } = await supabase
+            .from('historico_simulados')
+            .select('data_hora, materia, capitulo, nota, tempo')
+            .eq('user_id', user.id)
+            .order('data_hora', { ascending: false })
+            .limit(3);
+
+        if (error) throw error;
+
+        const tbody = document.getElementById('tabela-historico');
+        
+        if (historico && historico.length > 0) {
+            tbody.innerHTML = ''; // Removemos apenas a linha estática de exemplo
+
+            historico.forEach(item => {
+                // Formatação simples da data: DD/MM/YY
+                const dataObj = new Date(item.data_hora);
+                const dataFormatada = dataObj.toLocaleDateString('pt-BR', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: '2-digit'
+                });
+
+                const notaFinal = item.nota ? parseFloat(item.nota).toFixed(0) : 0;
+                
+                // Criamos a linha mantendo EXATAMENTE o seu estilo CSS
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td style="color: white;">${dataFormatada}</td>
+                    <td style="color: white;">${item.materia} (${item.capitulo || 'N/A'})</td>
+                    <td style="font-weight: bold; color: #f1c40f;">${notaFinal}%</td> 
+                    <td style="color: white;">${item.tempo || '--'}</td> 
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    } catch (err) {
+        console.error("Erro ao carregar LogBook:", err);
+    }
+}
+
+// Chame a função para ela rodar assim que a página carregar
+alimentarLogBookReal();
+
 </script>
 </body>
 </html>
