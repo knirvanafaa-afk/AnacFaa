@@ -326,27 +326,34 @@ perguntasSorteador.forEach((q, index) => {
     }); // <--- Aqui termina o loop de checagem
 
 // --- LOGICA DE FAVORITOS (SOLICITADA PELO SÓCIO) ---
-const questoesFlagged = [];
+
+
+// --- CAPTURA DE FAVORITOS (NO ENCERRAMENTO) ---
+
+
+// --- LOGICA DE FAVORITOS ---
+const favoritosParaSalvar = [];
+const { data: { user } } = await supabase.auth.getUser();
+
 perguntasSorteador.forEach((q, index) => {
-    const btn = document.getElementById(`btn-flag-${q.id}`); // Lembra que mudamos para dinâmico
-    // Se o botão existir e estiver com a classe 'active' (Flagged)
-    if (btn && btn.classList.contains('active')) {
-        questoesFlagged.push({
-            user_id: user.id, // pegaremos do auth.getUser()
-            questao_id: q.id,
+    const card = document.getElementById(`card-${index}`);
+    const btnFlag = card.querySelector('.btn-flag');
+    
+    if (btnFlag && btnFlag.classList.contains('active')) {
+        favoritosParaSalvar.push({
+            user_id: user.id,
+            questao_id: q.id.toString(),
             materia: q.materia,
             pergunta: q.pergunta,
-            resposta_correta: q.correta, // Salvando a resposta para estudo posterior
+            resposta_correta: q.correta.toString(),
             origem: 'prova'
         });
     }
 });
 
-if (questoesFlagged.length > 0) {
-    // Envia todos os favoritos de uma vez só para o banco
-    await supabase.from('favoritos').insert(questoesFlagged);
+if (favoritosParaSalvar.length > 0) {
+    await supabase.from('favoritos').insert(favoritosParaSalvar);
 }
-
 
     // AGORA SIM: Trava todos de uma vez, independente de acerto ou erro
     document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);

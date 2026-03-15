@@ -487,8 +487,7 @@ async function carregarFavoritosResumo() {
         container.innerHTML = ''; 
 
         if (!favoritos || favoritos.length === 0) {
-            container.innerHTML = '
-<div class="explica-asa" "padding:15px;">Nenhuma questão favoritada ainda.</div>';
+            container.innerHTML = '<p style="padding:15px; color:#666;">Nenhuma questão favoritada ainda.</p>';
             return;
         }
 
@@ -506,6 +505,9 @@ async function carregarFavoritosResumo() {
         console.error("Erro ao carregar Favoritos:", err);
     }
 }
+
+// Chamar após o login
+carregarFavoritosResumo();
 
 // Chame a função no final do script
 carregarFavoritosResumo();

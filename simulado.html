@@ -168,16 +168,20 @@ display: flex; flex-direction: column; box-sizing: border-box;
 
      window.confirmFinish = () => { window.mostrarMensagem("Finish the Exam?", true); };
 
-// Verifica se a questão atual foi "flagada" antes de encerrar
-const btnFlag = document.getElementById('btn-flag'); 
+// Verifica se a questão atual foi flagged
+
+// No momento de salvar o resultado final do simulado:
+const btnFlag = document.getElementById('btn-flag');
 if (btnFlag && btnFlag.classList.contains('active')) {
-    const q = perguntasSorteador[indiceAtual]; // Pega a questão da memória
+    const q = perguntasSorteador[indiceAtual];
+    const { data: { user } } = await supabase.auth.getUser();
+    
     await supabase.from('favoritos').insert([{
         user_id: user.id,
-        questao_id: q.id,
+        questao_id: q.id.toString(),
         materia: q.materia,
         pergunta: q.pergunta,
-        resposta_correta: q.correta,
+        resposta_correta: q.correta.toString(),
         origem: 'simulado'
     }]);
 }
