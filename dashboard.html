@@ -321,12 +321,15 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
         </div>
     </div>
 
-  <div class="secao-branca">
-    <div class="secao-titulo">🚩Questões Favoritas (FLAGGED)</div>
-    <div id="lista-favoritos">
-        <div class="explica-asa">     Nenhum favorito recente...</div> 
+    <div class="secao-branca">
+        <div class="secao-titulo">⭐ Questões Favoritas</div>
+        <div id="lista-favoritos">
+            <div class="favorito-item">
+                <strong>Q#125:</strong> What is the main purpose of a rectifier in an electrical system?
+                <div class="explica-asa">Explicação ASA: Rectifiers convert alternating current (AC) into direct current (DC)...</div>
+            </div>
+        </div>
     </div>
-</div>
 
 <div class="secao-titulo">Histórico de LogBook</div>
 
@@ -465,52 +468,6 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
         input.style.display = 'none';
         span.style.display = 'inline-block';
     };
-
-
-async function carregarFavoritosResumo() {
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-        const { data: favoritos, error } = await supabase
-            .from('favoritos')
-            .select('materia, pergunta, resposta_correta, questao_id')
-            .eq('user_id', user.id)
-            .order('data_flag', { ascending: false })
-            .limit(3);
-
-        if (error) throw error;
-
-        const container = document.getElementById('lista-favoritos');
-        if (!container) return;
-        
-        container.innerHTML = ''; 
-
-        if (!favoritos || favoritos.length === 0) {
-            container.innerHTML = '<div     <div class="explica-asa" style="padding:15px;">Nenhuma questão favoritada ainda.</div>';
-            return;
-        }
-
-        favoritos.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'favorito-item';
-            div.innerHTML = `
-                <strong>${item.materia} (#${item.questao_id}):</strong> 
-                ${item.pergunta}
-                <div class="explica-asa">Gabarito: Opção ${item.resposta_correta}</div>
-            `;
-            container.appendChild(div);
-        });
-    } catch (err) {
-        console.error("Erro ao carregar Favoritos:", err);
-    }
-}
-
-// Chamar após o login
-carregarFavoritosResumo();
-
-// Chame a função no final do script
-carregarFavoritosResumo();
 
     // 4. Outras Funções do Sistema (Preservadas)
     window.tentarSair = async () => {
