@@ -255,7 +255,6 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     box-shadow: 0px 1px 0px #1e8449; /* A SOMBRA DIMINUI */
 }
 
-
     </style>
 </head>
 <body>
@@ -321,14 +320,19 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
         </div>
     </div>
 
-   <div class="secao-branca">
-    <div class="secao-titulo">🚩 Questões Favoritas (FLAGGED)</div>
-    <div id="lista-favoritos">
-        <div class="favorito-item">
-            <strong>Q#125:</strong> What is the main purpose of a rectifier in an electrical system?
-            <div class="explica-asa">Explicação ASA: Rectifiers convert alternating current (AC) into direct current (DC)...</div>
-        </div>
-    </div>
+    <div class="secao-branca">
+    <div class="secao-titulo">🚩Questões Favoritas (FLAGGED)</div>
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th style="color: black;">MATÉRIA</th>
+                <th style="color: black;">PERGUNTA</th>
+                <th style="color: black;">RESPOSTA</th>
+            </tr>
+        </thead>
+        <tbody id="tabela-favoritos">
+            </tbody>
+    </table>
 </div>
 
 <div class="secao-titulo">Histórico de LogBook</div>
@@ -628,7 +632,35 @@ async function alimentarLogBookReal() {
 }
 alimentarLogBookReal();
 
-carregarFavoritos();
+async function alimentarFavoritos() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data: favoritos } = await supabase
+        .from('favoritos')
+        .select('materia, pergunta, resposta_correta')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+    const tbody = document.getElementById('tabela-favoritos');
+    if (!tbody) return; // Segurança caso a tabela não exista
+    
+    tbody.innerHTML = ''; 
+
+    favoritos.forEach(f => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td class="explica-asa">${f.materia}</td>
+            <td class="explica-asa">${f.pergunta}</td>
+            <td class="explica-asa">${f.resposta_correta}</td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+// O gatilho que inicia a função:
+alimentarFavoritos();
 
 </script>
 </body>
