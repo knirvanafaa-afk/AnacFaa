@@ -84,12 +84,6 @@ display: flex; flex-direction: column; box-sizing: border-box;
         <div class="nav-bar">
             <button onclick="changeQuestion(-1)">BACK</button>
             <button id="btn-flag" onclick="toggleFlag()">🚩 FLAG</button>
-
-document.getElementById("flag-btn").addEventListener("click", () => {
-    const questaoAtual = questoes[indiceAtual];
-    salvarFavorito(questaoAtual);
-});
-
             <button onclick="changeQuestion(1)">NEXT</button>
             <button id="btn-finish" onclick="finishExam()">FINISH</button>
         </div>
@@ -360,29 +354,34 @@ const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identifica
     }
 }
 
-async function salvarFavorito(questao) {
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+async function finalizarSimulado() {
+    const total = perguntasSorteador.length;
+    const acertos = respostasUsuario.filter((r, i) => r === perguntasSorteador[i].correta).length;
+    const elementoTimer = document.getElementById('timer');
+    const tempoGasto = elementoTimer ? elementoTimer.innerText : "00:00";
 
-        const { error } = await supabase
-            .from('favoritos')
-            .insert({
-                user_id: user.id,
-                questao_id: questao.num,
-                materia: questao.materia,
-                pergunta: questao.pergunta,
-                resposta_correta: questao.correta,
-                origem: "simulado"
-            });
-
-        if (error) throw error;
-
-        alert("Questão adicionada aos favoritos");
-
-    } catch (err) {
-        console.error("Erro ao salvar favorito:", err);
+    // --- SALVAR FAVORITO SE O BOTÃO ESTIVER ATIVO ---
+    const btnFlag = document.getElementById('btn-flag');
+    if (btnFlag && btnFlag.classList.contains('active')) {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const q = perguntasSorteador[indiceAtual];
+                await supabase.from('favoritos').insert([{
+                    user_id: user.id,
+                    questao_id: q.id.toString(),
+                    materia: q.materia,
+                    pergunta: q.pergunta,
+                    resposta_correta: q.correta.toString(),
+                    origem: 'simulado'
+                }]);
+            }
+        } catch (e) { console.error("Erro favorito:", e); }
     }
+
+    await registrarResultadoNoBanco(materiaGlobal, "Geral", acertos, total, tempoGasto);
+    alert(`Simulado finalizado! Acertos: ${acertos} de ${total}`);
+    window.location.href = 'dashboard.html';
 }
 
 </script>
