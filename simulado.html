@@ -266,19 +266,35 @@ const { data: { user } } = await supabase.auth.getUser();
 
 if (user) {
     for (const i in flags) {
-    if (flags[i]) {
+        if (flags[i] && questions[i]) { // Verifica se existe a flag E a questão
+            try {
+                // Segurança: Garante que 'correta' seja um número válido
+                const indiceCorreto = parseInt(questions[i].correta) - 1;
+                
+                // Cria o array apenas se as respostas existirem
+                const respostas = [questions[i].r1, questions[i].r2, questions[i].r3, questions[i].r4];
+                
+                // Valida se o índice existe no array antes de acessar
+                const respostaTexto = (indiceCorreto >= 0 && indiceCorreto < respostas.length) 
+                                      ? respostas[indiceCorreto] 
+                                      : "Resposta não encontrada";
 
-        const respostas = [questions[i].r1, questions[i].r2, questions[i].r3, questions[i].r4];
-        const respostaTexto = respostas[parseInt(questions[i].correta) - 1];
-
-        await supabase.from('favoritos').insert([{
-            user_id: user.id,
-            materia: subject,
-            pergunta: questions[i].pergunta,
-            resposta_correta: respostaTexto
-        }]);
+                await supabase.from('favoritos').insert([{
+                    user_id: user.id,
+                    materia: subject,
+                    pergunta: questions[i].pergunta,
+                    resposta_correta: respostaTexto
+                }]);
+            } catch (err) {
+                console.error("Erro ao salvar favorito na questão " + i, err);
+                // O 'continue' aqui garante que, se uma questão falhar, a prova continua finalizando
+                continue; 
+            }
+        }
     }
 }
+
+
 // --- FIM DA LÓGICA DE FAVORITOS ---
 
         clearInterval(timerInterval);
