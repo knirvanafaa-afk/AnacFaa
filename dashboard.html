@@ -640,7 +640,7 @@ async function alimentarFavoritos() {
         .from('favoritos')
         .select('materia, pergunta, resposta_correta')
         .eq('user_id', user.id)
-        .order('created_at', { ascending: false })
+     .order('data_flag', { ascending: false })
         .limit(3);
 
     const tbody = document.getElementById('tabela-favoritos');

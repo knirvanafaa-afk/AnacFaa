@@ -159,11 +159,43 @@ display: flex; flex-direction: column; box-sizing: border-box;
     };
 
     // Função necessária para o botão YES
-    window.executarFinalizacao = () => {
+    window.executarFinalizacao = async () => {
 
-const btnFlag = document.getElementById('btn-flag'); const isFlagged = btnFlag && btnFlag.classList.contains('active'); 
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-if (isFlagged) { await supabase.from('favoritos').insert([ { user_id: user.id, materia: materiaAtual, pergunta: perguntaAtual, resposta_correta: respostaAtual } ]); }
+    const favoritosParaSalvar = [];
+
+    for (let i = 0; i < questions.length; i++) {
+
+        if (flags[i]) {
+
+            const q = questions[i];
+
+            favoritosParaSalvar.push({
+                user_id: user.id,
+                materia: subject,
+                pergunta: q.pergunta,
+                resposta_correta: q.correta
+            });
+
+        }
+
+    }
+
+    if (favoritosParaSalvar.length > 0) {
+
+        await supabase
+            .from('favoritos')
+            .insert(favoritosParaSalvar);
+
+    }
+
+    document.getElementById('custom-alert').style.display = 'none';
+
+    processFinalResult();
+}
+
         document.getElementById('custom-alert').style.display = 'none';
         processFinalResult();
     };
