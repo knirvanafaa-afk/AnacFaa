@@ -487,7 +487,8 @@ async function carregarFavoritosResumo() {
         container.innerHTML = ''; 
 
         if (!favoritos || favoritos.length === 0) {
-            container.innerHTML = '<p style="padding:15px; color:#666;">Nenhuma questão favoritada ainda.</p>';
+            container.innerHTML = '
+<div class="explica-asa" "padding:15px;">Nenhuma questão favoritada ainda.</div>';
             return;
         }
 
