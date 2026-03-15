@@ -266,17 +266,19 @@ const { data: { user } } = await supabase.auth.getUser();
 
 if (user) {
     for (const i in flags) {
-        if (flags[i]) {
-            await supabase.from('favoritos').insert([{
-                user_id: user.id,
-                materia: subject,
-                pergunta: questions[i].pergunta,
-                resposta_correta: questions[i].correta
-            }]);
-        }
+    if (flags[i]) {
+
+        const respostas = [questions[i].r1, questions[i].r2, questions[i].r3, questions[i].r4];
+        const respostaTexto = respostas[parseInt(questions[i].correta) - 1];
+
+        await supabase.from('favoritos').insert([{
+            user_id: user.id,
+            materia: subject,
+            pergunta: questions[i].pergunta,
+            resposta_correta: respostaTexto
+        }]);
     }
 }
-
 // --- FIM DA LÓGICA DE FAVORITOS ---
 
         clearInterval(timerInterval);
