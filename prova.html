@@ -288,10 +288,6 @@ window.toggleFlag = function(botao){
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
 
 window.finalizarProva = function(foiPorTempo = false) {
-clearInterval(intervaloTimer);
-    let acertos = 0;
-    let tempoFim = Date.now();
-    let totalSegundos;
 
 // --- LÓGICA DE FAVORITOS CORRIGIDA ---
 const { data: { user } } = await supabase.auth.getUser();
@@ -318,6 +314,11 @@ if (user) {
 }
 // --- FIM DA LOGICA DE FAVORITOS ---
 
+
+clearInterval(intervaloTimer);
+    let acertos = 0;
+    let tempoFim = Date.now();
+    let totalSegundos;
 
     if (foiPorTempo) {
         const qtdAlvo = parseInt(sessionStorage.getItem('config_qtd'));
