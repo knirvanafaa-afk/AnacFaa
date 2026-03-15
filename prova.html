@@ -419,6 +419,24 @@ const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identifica
     }
 }
 
+// Dentro da sua função que finaliza a prova
+async function finalizarProva() {
+    // 1. Pega o estado do botão de flag
+    const btnFlag = document.getElementById('btn-flag');
+    const isFlagged = btnFlag && btnFlag.classList.contains('active'); 
+
+    // 2. Se estiver marcado, grava no Supabase
+    if (isFlagged) {
+        await supabase.from('favoritos').insert([
+            {
+                user_id: user.id,
+                materia: materiaAtual,
+                pergunta: perguntaAtual,
+                resposta_correta: respostaAtual
+            }
+        ]);
+    }
+}
 </script>
 </body>
 </html>
