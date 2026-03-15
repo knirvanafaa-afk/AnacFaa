@@ -132,95 +132,56 @@ display: flex; flex-direction: column; box-sizing: border-box;
 
     await validarAcessoTotal(false);
 
-    const subject = sessionStorage.getItem('selectedSubject');
-    const qCount = parseInt(sessionStorage.getItem('questionCount')) || 60;
-    
-    if (!subject) window.location.href = 'index_simulado.html';
-    document.querySelector('h2').innerText = `Simulado FAA - ${subject}`;
-
     let currentIdx = 0;
     let answers = {};
     let flags = {};
     let questions = [];
     let timeLeft = 120 * 60; 
     let timerInterval;
+    const subject = sessionStorage.getItem('selectedSubject');
 
-    // --- ALERTAS PERSONALIZADOS (MODIFICADO APENAS AQUI) ---
+    if (!subject) window.location.href = 'index_simulado.html';
+    document.querySelector('h2').innerText = `Simulado FAA - ${subject}`;
+
+    // --- ALERTAS ---
     window.mostrarMensagem = (texto, ehConfirmacao = false) => {
         document.getElementById('alert-message').innerText = texto;
         document.getElementById('custom-alert').style.display = 'flex';
-        // Controla visibilidade dos botões YES/NO
         document.getElementById('btn-no').style.display = ehConfirmacao ? 'inline-block' : 'none';
         document.getElementById('btn-yes').style.display = ehConfirmacao ? 'inline-block' : 'none';
     };
+    window.fecharAlerta = () => document.getElementById('custom-alert').style.display = 'none';
 
-    window.fecharAlerta = () => {
-        document.getElementById('custom-alert').style.display = 'none';
-    };
-
-    // Função necessária para o botão YES
+    // --- LÓGICA DE FINALIZAÇÃO (INTEGRADA) ---
     window.executarFinalizacao = async () => {
-
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const favoritosParaSalvar = [];
-
-    for (let i = 0; i < questions.length; i++) {
-
-        if (flags[i]) {
-
-            const q = questions[i];
-
-            favoritosParaSalvar.push({
-                user_id: user.id,
-                materia: subject,
-                pergunta: q.pergunta,
-                resposta_correta: q.correta
-            });
-
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const favoritosParaSalvar = [];
+            for (let i = 0; i < questions.length; i++) {
+                if (flags[i]) {
+                    favoritosParaSalvar.push({
+                        user_id: user.id,
+                        materia: subject,
+                        pergunta: questions[i].pergunta,
+                        resposta_correta: questions[i].correta
+                    });
+                }
+            }
+            if (favoritosParaSalvar.length > 0) {
+                await supabase.from('favoritos').insert(favoritosParaSalvar);
+            }
         }
-
-    }
-
-    if (favoritosParaSalvar.length > 0) {
-
-        await supabase
-            .from('favoritos')
-            .insert(favoritosParaSalvar);
-
-    }
-
-    document.getElementById('custom-alert').style.display = 'none';
-
-    processFinalResult();
-}
-
         document.getElementById('custom-alert').style.display = 'none';
         processFinalResult();
     };
 
-    // Função necessária para o botão FINISH (Revisão)
+    window.confirmFinish = () => { window.mostrarMensagem("Finish the Exam?", true); };
 
-     window.confirmFinish = () => { window.mostrarMensagem("Finish the Exam?", true); };
-
-    // --- FUNÇÕES ORIGINAIS MANTIDAS ---
+    // --- FUNÇÕES ORIGINAIS ---
     async function fetchQuestions() {
-        let limit = (subject === 'Airframe' || subject === 'Powerplant') ? 100 : 60;
-        
-        const { data, error } = await supabase
-            .from('questoes')
-            .select('pergunta, r1, r2, r3, r4, correta, foto, capitulo')
-            .eq('materia', subject);
-
+        const { data, error } = await supabase.from('questoes').select('*').eq('materia', subject);
         if (error) { window.mostrarMensagem("Erro: " + error.message); return; }
-        
-        // Sorteio aleatório
-        let shuffled = data.sort(() => 0.5 - Math.random());
-        questions = shuffled.slice(0, limit);
-
-        if (questions.length === 0) { window.mostrarMensagem("Nenhuma questão encontrada."); return; }
-
+        questions = data.sort(() => 0.5 - Math.random()).slice(0, 60);
         loadQuestion();
         startTimer();
     }
@@ -241,26 +202,17 @@ display: flex; flex-direction: column; box-sizing: border-box;
         const q = questions[currentIdx];
         document.getElementById('q-counter').innerText = `Question ${currentIdx + 1} of ${questions.length}`;
         document.getElementById('question-text').innerText = q.pergunta;
-        
         let html = '';
-
-        // 1. PRIMEIRO: Carregamos as opções de resposta
         const opts = [q.r1, q.r2, q.r3, q.r4];
         opts.forEach((opt, i) => {
             if (opt && opt !== 'N/A') {
                 let checked = (answers[currentIdx] === i) ? 'checked' : '';
-                // Mantive seu estilo de padding e cursor
                 html += `<label style="display:block; padding:8px; cursor:pointer;"><input type="radio" name="ans" value="${i}" ${checked} onchange="saveAnswer(${i})"> ${opt}</label>`;
             }
         });
-
-        // 2. DEPOIS: Se houver foto, ela entra abaixo das alternativas
-        if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
-            html += `<div style="margin-top: 20px; text-align: center;">
-                        <img src="${q.foto}" style="max-width: 100%; max-height: 650px; height: auto; border-radius: 8px; border: 1px solid #d1e7f5;">
-                     </div>`;
+        if (q.foto && q.foto !== 'N/A') {
+            html += `<div style="text-align: center; margin-top:20px;"><img src="${q.foto}" style="max-width:100%;"></div>`;
         }
-
         document.getElementById('options-container').innerHTML = html;
         updateFlagButton();
     };
@@ -268,128 +220,35 @@ display: flex; flex-direction: column; box-sizing: border-box;
     window.saveAnswer = (i) => answers[currentIdx] = i;
     window.toggleFlag = () => { flags[currentIdx] = !flags[currentIdx]; updateFlagButton(); };
     window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; loadQuestion(); } };
-
-    window.finishExam = () => { document.getElementById('exam-screen').style.display = 'none'; document.getElementById('review-screen').style.display = 'block'; showReview(); }; 
-
-window.hideReview = () => { document.getElementById('review-screen').style.display = 'none'; document.getElementById('exam-screen').style.display = 'block'; loadQuestion(); 
-};
-
-    function updateFlagButton() {
+    window.updateFlagButton = () => {
         const btn = document.getElementById('btn-flag');
         btn.className = flags[currentIdx] ? 'active' : '';
         btn.innerText = flags[currentIdx] ? "🚩 FLAGGED" : "🚩 FLAG";
-    }
-
-    function showReview() {
-        document.getElementById('exam-screen').style.display = 'none';
-        document.getElementById('review-screen').style.display = 'block';
-        const grid = document.getElementById('review-grid');
-        grid.innerHTML = '';
-        questions.forEach((q, i) => {
-            const item = document.createElement('div');
-            item.className = 'review-item ' + (flags[i] ? 'status-flagged' : (answers[i] !== undefined ? 'status-answered' : 'status-unanswered'));
-            item.innerText = i + 1;
-            item.onclick = () => { currentIdx = i; hideReview(); loadQuestion(); };
-            grid.appendChild(item);
-        });
-    }
+    };
 
     function processFinalResult() {
         clearInterval(timerInterval);
         let score = 0;
-        questions.forEach((q, i) => { 
-            const correctIndex = parseInt(q.correta) - 1;
-            if(answers[i] === correctIndex) score++; 
-        });
+        questions.forEach((q, i) => { if(answers[i] === parseInt(q.correta)-1) score++; });
         document.getElementById('exam-screen').style.display = 'none';
         document.getElementById('review-screen').style.display = 'none';
         document.getElementById('result-screen').style.display = 'block';
-
-// Exemplo de chamada:
-let capituloFinal = "N/A";
-
-const contagem = {};
-
-questions.forEach(q => {
-    const cap = q.capitulo || "Outros";
-    contagem[cap] = (contagem[cap] || 0) + 1;
-});
-
-if (Object.keys(contagem).length > 0) {
-    capituloFinal = Object.keys(contagem).reduce((a, b) =>
-        contagem[a] > contagem[b] ? a : b
-    );
-}
-
-registrarResultadoNoBanco(
-    subject,
-    capituloFinal,
-    score,
-    questions.length,
-    document.getElementById('timer').innerText
-);
-
-        const passed = (score/questions.length) >= 0.7;
-        document.getElementById('status-text').innerText = passed ? "PASSED" : "FAILED";
-        document.getElementById('status-text').className = `status-box ${passed ? 'passed' : 'failed'}`;
+        document.getElementById('status-text').innerText = (score/questions.length >= 0.7) ? "PASSED" : "FAILED";
         document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
         document.getElementById('final-time').innerText = document.getElementById('timer').innerText;
     }
 
-window.addEventListener('beforeunload', (event) => {
-    // O navegador vai exibir o alerta padrão dele com o texto que definirmos aqui
-    const message = "ARE YOU SURE YOU WANT TO LEAVE? ALL YOUR PROGRESS WILL BE LOST.";
-    event.returnValue = message; 
-    return message;
-});
+    window.addEventListener('beforeunload', (e) => { e.returnValue = ''; });
 
     fetchQuestions();
-
-// Função exclusiva para salvar no Supabase (não interfere no restante)
-async function registrarResultadoNoBanco(materia, capitulo, acertos, total, tempo) {
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-
-const elementoTimer = document.getElementById('timer'); const tempoGasto = elementoTimer ? elementoTimer.innerText : "00:00"; 
-
-const partes = tempoGasto.split(':').map(Number);
-
-const restanteSegundos = (partes[0] * 3600) + (partes[1] * 60) + (partes[2] || 0);
-
-const gastoSegundos = 7200 - restanteSegundos;
-
-const min = Math.floor(gastoSegundos / 60);
-const seg = gastoSegundos % 60;
-
-const tempoFinal = `${min}min ${seg}s`;
-
-const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identificado';
-
-        const nota = (acertos / total) * 100;
-
-        const { error } = await supabase
-            .from('historico_simulados')
-            .insert([{
-                user_id: user.id,
-                materia: materia || "Geral", // Ajuste conforme a matéria da prova
-                capitulo: capitulo || "N/A", // Se não tiver capítulo agora, usamos N/A
-                acertos: acertos,
-                erros: total - acertos,
-                total_questoes: total,
-                nota: nota,
-                tipo: tipoExecucao,
-                tempo: tempoFinal,
-                tentativa_n: 1 // Inicia com 1, depois automatizamos
-            }]);
-
-        if (error) throw error;
-        console.log("Histórico registrado com sucesso!");
-    } catch (err) {
-        console.error("Falha ao salvar no banco:", err);
-    }
-}
 
 </script>
 </body>
 </html>
+
+
+
+
+
+
+

@@ -128,319 +128,165 @@ input[type="radio"]:disabled {
 </div>
 
 <script type="module">
-  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { validarAcessoTotal } from './seguranca.js';
 
-import { validarAcessoTotal } from './seguranca.js';
-validarAcessoTotal(false);
+    validarAcessoTotal(false);
+    validarAcessoTotal();
 
-// Executa a validação assim que carregar
-validarAcessoTotal();
+    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
-  const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
-  const supabase = createClient(supabaseUrl, supabaseKey)
+    let perguntasSorteador = [];
+    let intervaloTimer;
+    let tempoRestante;
+    let tempoInicio;
 
-  let perguntasSorteador = [];
-  let intervaloTimer;
-  let tempoRestante;
-  let tempoInicio;
-
-  async function montarSimulado() {
-    const materiaAlvo = sessionStorage.getItem('config_materia');
-    const capituloAlvo = sessionStorage.getItem('config_capitulo'); // NOVO: Capítulo recuperado
-    const qtdAlvo = parseInt(sessionStorage.getItem('config_qtd'));
-    
-    if(!materiaAlvo) {
-        window.location.href = 'alunos.html';
-        return;
-    }
-
-    // Atualiza o título. Se houver capítulo, mostra o nome dele.
-    const tituloTexto = (capituloAlvo && capituloAlvo !== "todos") ? capituloAlvo : materiaAlvo;
-    document.getElementById('titulo-prova').innerText = "Simulado: " + tituloTexto;
-
-    try {
-        // BUSCA BASEADA NA MATÉRIA
-        let query = supabase.from('questoes').select('*').eq('materia', materiaAlvo);
-
-        // APLICA FILTRO DE CAPÍTULO APENAS SE NÃO FOR "TODOS"
-        if (capituloAlvo && capituloAlvo !== "todos") {
-            query = query.eq('capitulo', capituloAlvo);
-        }
-
-        const { data, error } = await query;
-
-        if (error) throw error;
-
-        let todasDaSelecao = data;
-
-        // EMBARALHAR ALEATORIAMENTE (Lógica original preservada)
-        todasDaSelecao.sort(() => Math.random() - 0.5);
-        
-        // CORTAR PELA QUANTIDADE ESCOLHIDA
-        perguntasSorteador = todasDaSelecao.slice(0, qtdAlvo);
-
-        if(perguntasSorteador.length === 0) {
-            document.getElementById('questoes-container').innerHTML = "Nenhuma questão encontrada para esta seleção.";
-            return;
-        }
-
-        exibirQuestoes();
-tempoInicio = Date.now();
-iniciarTimer(qtdAlvo);
-    } catch (e) {
-        window.mostrarMensagem("Erro ao carregar banco: " + e.message);
-    }
-  }
-
-function iniciarTimer(qtdQuestoes) {
-    let minutos =  (qtdQuestoes <= 10) ? 15 : (qtdQuestoes <= 20) ? 25 : (qtdQuestoes <= 30) ? 35 : (qtdQuestoes <= 50) ? 60 : 120;
-    
-    // Guardamos o MOMENTO EXATO em que a prova deve terminar
-    const momentoTermino = Date.now() + (minutos * 60 * 1000);
-
-    intervaloTimer = setInterval(() => {
-        const agora = Date.now();
-        const milissegundosRestantes = momentoTermino - agora;
-        tempoRestante = Math.floor(milissegundosRestantes / 1000);
-
-       if (tempoRestante <= 0) {
-            clearInterval(intervaloTimer);
-            
-            // 1. Ajuste visual do Timer
-            const display = document.getElementById('contagem');
-            const containerTimer = document.getElementById('timer-display');
-            
-            display.innerText = "00:00";
-            containerTimer.classList.remove('tempo-critico'); // Para de piscar
-            
-            // Muda o texto de "Tempo: 00:00 Min" para "TEMPO ESGOTADO"
-            containerTimer.innerHTML = "<strong>TEMPO ESGOTADO</strong>"; 
-            
-            window.mostrarMensagem("O tempo acabou! Sua prova será finalizada agora.");
-            
-            // 2. Força o encerramento passando um sinal de que o tempo esgotou
-            window.finalizarProva(true); 
-            return;
-        }
-
-        let m = Math.floor(tempoRestante / 60);
-        let s = tempoRestante % 60;
-        const display = document.getElementById('contagem');
-        const containerTimer = document.getElementById('timer-display');
-
-        display.innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
-
-        // Alerta de tempo esgotando (abaixo de 5 min)
-      
-if (tempoRestante <= 300) {
-    containerTimer.classList.add('tempo-critico');
-    if (!document.getElementById('aviso-msg')) { 
-        containerTimer.insertAdjacentHTML('beforeend', '<br><small id="aviso-msg">TEMPO ESGOTANDO!</small>'); 
-    }
-}
-    }, 1000);
-}
-
-  // FUNÇÃO EXIBIR QUESTÕES: INTEGRALMENTE PRESERVADA (FOTOS E R4)
-  function exibirQuestoes() {
-    const container = document.getElementById('questoes-container');
-    container.innerHTML = "";
-    
-    perguntasSorteador.forEach((q, index) => {
-        const displayR4 = (q.r4 === "N/A") ? 'none' : 'flex';
-
-        container.innerHTML += `
-<div class="pergunta-card" id="card-${index}" data-id="${q.id}">
-
-<span class="texto-enunciado">${index + 1}) ${q.pergunta}</span>
-
-${q.foto ? `<img src="${q.foto}" style="max-width:100%; border-radius:10px; margin-bottom:15px; display:block;">` : ''}
-
-<label class="opcao"><input type="radio" name="p${index}" value="1"> ${q.r1}</label>
-<label class="opcao"><input type="radio" name="p${index}" value="2"> ${q.r2}</label>
-<label class="opcao"><input type="radio" name="p${index}" value="3"> ${q.r3}</label>
-<label class="opcao" style="display:${displayR4};"><input type="radio" name="p${index}" value="4"> ${q.r4}</label>
-
-<button class="btn-flag" onclick="toggleFlag(this)">
-🚩 FLAG
-</button>
-
-<div id="feedback-${index}" style="margin-top:10px; font-weight:bold; display:none;"></div>
-</div>
- `;
-
-     });
-}
-
-window.toggleFlag = function(botao){
-
-    botao.classList.toggle('active');
-
-    if(botao.classList.contains('active')){
-        botao.innerText = '🚩 FLAGGED';
-    }else{
-        botao.innerText = '🚩 FLAG';
-    }
-
-}
-
-  // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
-
-window.finalizarProva = function(foiPorTempo = false) {
-clearInterval(intervaloTimer);
-    let acertos = 0;
-    let tempoFim = Date.now();
-    let totalSegundos;
-
-    if (foiPorTempo) {
+    async function montarSimulado() {
+        const materiaAlvo = sessionStorage.getItem('config_materia');
+        const capituloAlvo = sessionStorage.getItem('config_capitulo');
         const qtdAlvo = parseInt(sessionStorage.getItem('config_qtd'));
-        const limiteMinutos = (qtdAlvo <= 10) ? 15 : (qtdAlvo <= 20) ? 25 : (qtdAlvo <= 30) ? 35 : (qtdAlvo <= 50) ? 60 : 120;
-        totalSegundos = limiteMinutos * 60;
-    } else {
-        totalSegundos = Math.floor((tempoFim - tempoInicio) / 1000);
+        
+        if(!materiaAlvo) { window.location.href = 'alunos.html'; return; }
+
+        const tituloTexto = (capituloAlvo && capituloAlvo !== "todos") ? capituloAlvo : materiaAlvo;
+        document.getElementById('titulo-prova').innerText = "Simulado: " + tituloTexto;
+
+        try {
+            let query = supabase.from('questoes').select('*').eq('materia', materiaAlvo);
+            if (capituloAlvo && capituloAlvo !== "todos") { query = query.eq('capitulo', capituloAlvo); }
+            const { data, error } = await query;
+            if (error) throw error;
+
+            let todasDaSelecao = data;
+            todasDaSelecao.sort(() => Math.random() - 0.5);
+            perguntasSorteador = todasDaSelecao.slice(0, qtdAlvo);
+
+            if(perguntasSorteador.length === 0) {
+                document.getElementById('questoes-container').innerHTML = "Nenhuma questão encontrada.";
+                return;
+            }
+            exibirQuestoes();
+            tempoInicio = Date.now();
+            iniciarTimer(qtdAlvo);
+        } catch (e) { window.mostrarMensagem("Erro ao carregar banco: " + e.message); }
     }
 
-    let min = Math.floor(totalSegundos / 60);
-    let seg = totalSegundos % 60;
-    let tempoFormatado = `${min}min ${seg}s`;
+    function iniciarTimer(qtdQuestoes) {
+        let minutos = (qtdQuestoes <= 10) ? 15 : (qtdQuestoes <= 20) ? 25 : (qtdQuestoes <= 30) ? 35 : (qtdQuestoes <= 50) ? 60 : 120;
+        const momentoTermino = Date.now() + (minutos * 60 * 1000);
 
-perguntasSorteador.forEach((q, index) => {
-        const selecionado = document.querySelector(`input[name="p${index}"]:checked`);
-        const card = document.getElementById(`card-${index}`);
-        const feedback = document.getElementById(`feedback-${index}`);
-        const valorMarcado = selecionado ? selecionado.value : "nenhum";
+        intervaloTimer = setInterval(() => {
+            const agora = Date.now();
+            const milissegundosRestantes = momentoTermino - agora;
+            tempoRestante = Math.floor(milissegundosRestantes / 1000);
 
-        feedback.style.display = "block";
+            if (tempoRestante <= 0) {
+                clearInterval(intervaloTimer);
+                document.getElementById('contagem').innerText = "00:00";
+                document.getElementById('timer-display').innerHTML = "<strong>TEMPO ESGOTADO</strong>"; 
+                window.mostrarMensagem("O tempo acabou!");
+                window.finalizarProva(true); 
+                return;
+            }
 
-        if(valorMarcado == q.correta) {
-            acertos++;
-            card.className = "pergunta-card correta";
-            feedback.innerHTML = "✅ Você acertou!";
-            feedback.style.color = "#27ae60";
-        } else {
-            card.className = "pergunta-card errada";
-            feedback.innerHTML = `❌ Errou. A resposta correta era a Opção ${q.correta}`;
-            feedback.style.color = "#e74c3c";
+            let m = Math.floor(tempoRestante / 60);
+            let s = tempoRestante % 60;
+            document.getElementById('contagem').innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+
+            if (tempoRestante <= 300) {
+                document.getElementById('timer-display').classList.add('tempo-critico');
+            }
+        }, 1000);
+    }
+
+    function exibirQuestoes() {
+        const container = document.getElementById('questoes-container');
+        container.innerHTML = "";
+        perguntasSorteador.forEach((q, index) => {
+            const displayR4 = (q.r4 === "N/A") ? 'none' : 'flex';
+            container.innerHTML += `
+                <div class="pergunta-card" id="card-${index}" data-id="${q.id}">
+                    <span class="texto-enunciado">${index + 1}) ${q.pergunta}</span>
+                    ${q.foto ? `<img src="${q.foto}" style="max-width:100%; border-radius:10px; margin-bottom:15px; display:block;">` : ''}
+                    <label class="opcao"><input type="radio" name="p${index}" value="1"> ${q.r1}</label>
+                    <label class="opcao"><input type="radio" name="p${index}" value="2"> ${q.r2}</label>
+                    <label class="opcao"><input type="radio" name="p${index}" value="3"> ${q.r3}</label>
+                    <label class="opcao" style="display:${displayR4};"><input type="radio" name="p${index}" value="4"> ${q.r4}</label>
+                    <button class="btn-flag" onclick="toggleFlag(this)">🚩 FLAG</button>
+                    <div id="feedback-${index}" style="margin-top:10px; font-weight:bold; display:none;"></div>
+                </div>`;
+        });
+    }
+
+    window.toggleFlag = function(botao) {
+        botao.classList.toggle('active');
+        botao.innerText = botao.classList.contains('active') ? '🚩 FLAGGED' : '🚩 FLAG';
+    }
+
+    window.finalizarProva = async function(foiPorTempo = false) {
+        clearInterval(intervaloTimer);
+        let acertos = 0;
+        
+        // --- LÓGICA DE SALVAMENTO DE FAVORITOS (INTEGRADA) ---
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const flags = document.querySelectorAll('.btn-flag.active');
+            for (const flag of flags) {
+                const card = flag.closest('.pergunta-card');
+                await supabase.from('favoritos').insert([{
+                    user_id: user.id,
+                    materia: sessionStorage.getItem('config_materia'),
+                    pergunta: card.querySelector('.texto-enunciado').innerText,
+                    resposta_correta: "N/A"
+                }]);
+            }
         }
-    }); // <--- Aqui termina o loop de checagem
+        // ------------------------------------------------------
 
-    // AGORA SIM: Trava todos de uma vez, independente de acerto ou erro
-    document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+        perguntasSorteador.forEach((q, index) => {
+            const selecionado = document.querySelector(`input[name="p${index}"]:checked`);
+            const card = document.getElementById(`card-${index}`);
+            const feedback = document.getElementById(`feedback-${index}`);
+            const valorMarcado = selecionado ? selecionado.value : "nenhum";
 
-    // E continua o código...
-    document.getElementById('btn-concluir').style.display = "none";
-    const caixaRes = document.getElementById('resultado-caixa');
-    caixaRes.style.display = "block";
-     document.getElementById('res-acertos').innerText = `Acertos: ${acertos} de ${perguntasSorteador.length}`;
-    document.getElementById('res-porcentagem').innerText = `Desempenho: ${((acertos/perguntasSorteador.length)*100).toFixed(1)}%`;
-    document.getElementById('res-tempo').innerText = `Tempo gasto: ${tempoFormatado}`;
+            feedback.style.display = "block";
+            if(valorMarcado == q.correta) {
+                acertos++;
+                card.className = "pergunta-card correta";
+                feedback.innerHTML = "✅ Você acertou!";
+                feedback.style.color = "#27ae60";
+            } else {
+                card.className = "pergunta-card errada";
+                feedback.innerHTML = `❌ Errou. Correta: ${q.correta}`;
+                feedback.style.color = "#e74c3c";
+            }
+        });
 
-const materia = sessionStorage.getItem('config_materia');
-let capitulo = sessionStorage.getItem('config_capitulo');
+        document.querySelectorAll('input[type="radio"]').forEach(r => r.disabled = true);
+        document.getElementById('btn-concluir').style.display = "none";
+        document.getElementById('resultado-caixa').style.display = "block";
+        
+        registrarResultadoNoBanco(sessionStorage.getItem('config_materia'), "N/A", acertos, perguntasSorteador.length, "00:00");
+    };
 
-if (capitulo === "todos") {
+    window.mostrarMensagem = (texto) => {
+        document.getElementById('alert-message').innerText = texto;
+        document.getElementById('custom-alert').style.display = 'flex';
+    };
 
-    const contagem = {};
+    window.fecharAlerta = () => { document.getElementById('custom-alert').style.display = 'none'; };
 
-    perguntasSorteador.forEach(q => {
-        const cap = q.capitulo || "Outros";
-        contagem[cap] = (contagem[cap] || 0) + 1;
-    });
-
-    capitulo = Object.keys(contagem).reduce((a, b) =>
-        contagem[a] > contagem[b] ? a : b
-    );
-}
-registrarResultadoNoBanco(
-    materia,
-    capitulo,
-    acertos,
-    perguntasSorteador.length,
-    tempoFormatado
-);
-
-    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
-  };
-
-  montarSimulado();
-
-// Funções de Alerta Padronizadas
-window.mostrarMensagem = (texto) => {
-    document.getElementById('alert-message').innerText = texto;
-    document.getElementById('custom-alert').style.display = 'flex';
-};
-
-window.fecharAlerta = () => {
-    document.getElementById('custom-alert').style.display = 'none';
-};
-
-// Ativa o alerta de "Deseja sair?" do navegador
-window.addEventListener('beforeunload', (event) => {
-    // Só mostra o alerta se a prova NÃO tiver sido finalizada ainda
-    if (document.getElementById('btn-concluir').style.display !== "none") {
-        event.preventDefault();
-        event.returnValue = ''; // Padrão para navegadores modernos
-    }
-});
-
-// Função exclusiva para salvar no Supabase (não interfere no restante)
-
-async function registrarResultadoNoBanco(materia, capitulo, acertos, total, tempo) {
-    try {
+    async function registrarResultadoNoBanco(materia, capitulo, acertos, total, tempo) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
-
- const tempoGasto = tempo;
-
-const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identificado';
-
-        const nota = (acertos / total) * 100;
-
-        const { error } = await supabase
-            .from('historico_simulados')
-            .insert([{
-                user_id: user.id,
-                materia: materia || "Geral", // Ajuste conforme a matéria da prova
-                capitulo: capitulo || "N/A", // Se não tiver capítulo agora, usamos N/A
-                acertos: acertos,
-                erros: total - acertos,
-                total_questoes: total,
-                nota: nota,
-                tipo: tipoExecucao,
-                tempo: tempoGasto,
-                tentativa_n: 1 // Inicia com 1, depois automatizamos
-            }]);
-
-        if (error) throw error;
-        console.log("Histórico registrado com sucesso!");
-    } catch (err) {
-        console.error("Falha ao salvar no banco:", err);
+        await supabase.from('historico_simulados').insert([{
+            user_id: user.id, materia, acertos, total_questoes: total, nota: (acertos/total)*100
+        }]);
     }
-}
 
-// Dentro da sua função que finaliza a prova
-async function finalizarProva() {
-    const { data: { user } } = await supabase.auth.getUser();
-if (!user) return;
-
-const flags = document.querySelectorAll('.btn-flag.active');
-
-for (const flag of flags) {
-
-    const card = flag.closest('.pergunta-card');
-
-    const pergunta = card.querySelector('.texto-enunciado').innerText;
-
-    await supabase.from('favoritos').insert([
-        {
-            user_id: user.id,
-            materia: materia,
-            pergunta: pergunta,
-            resposta_correta: "N/A"
-        }
-    ]);
-}
+    montarSimulado();
 
 </script>
 </body>
