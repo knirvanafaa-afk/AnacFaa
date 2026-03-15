@@ -84,6 +84,12 @@ display: flex; flex-direction: column; box-sizing: border-box;
         <div class="nav-bar">
             <button onclick="changeQuestion(-1)">BACK</button>
             <button id="btn-flag" onclick="toggleFlag()">🚩 FLAG</button>
+
+document.getElementById("flag-btn").addEventListener("click", () => {
+    const questaoAtual = questoes[indiceAtual];
+    salvarFavorito(questaoAtual);
+});
+
             <button onclick="changeQuestion(1)">NEXT</button>
             <button id="btn-finish" onclick="finishExam()">FINISH</button>
         </div>
@@ -174,7 +180,7 @@ display: flex; flex-direction: column; box-sizing: border-box;
         
         const { data, error } = await supabase
             .from('questoes')
-            .select('pergunta, r1, r2, r3, r4, correta, foto, capitulo')
+            .select('id, num, materia, pergunta, r1, r2, r3, r4, correta, foto, capitulo')
             .eq('materia', subject);
 
         if (error) { window.mostrarMensagem("Erro: " + error.message); return; }
@@ -351,6 +357,31 @@ const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identifica
         console.log("Histórico registrado com sucesso!");
     } catch (err) {
         console.error("Falha ao salvar no banco:", err);
+    }
+}
+
+async function salvarFavorito(questao) {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { error } = await supabase
+            .from('favoritos')
+            .insert({
+                user_id: user.id,
+                questao_id: questao.num,
+                materia: questao.materia,
+                pergunta: questao.pergunta,
+                resposta_correta: questao.correta,
+                origem: "simulado"
+            });
+
+        if (error) throw error;
+
+        alert("Questão adicionada aos favoritos");
+
+    } catch (err) {
+        console.error("Erro ao salvar favorito:", err);
     }
 }
 

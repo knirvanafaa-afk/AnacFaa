@@ -469,6 +469,40 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
         span.style.display = 'inline-block';
     };
 
+async function carregarFavoritos() {
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    const { data, error } = await supabase
+        .from('favoritos')
+        .select('questao_id, pergunta, resposta_correta')
+        .eq('user_id', user.id)
+        .order('data_flag', { ascending: false })
+        .limit(3);
+
+    if (error) {
+        console.error(error);
+        return;
+    }
+
+    const container = document.getElementById("lista-favoritos");
+    container.innerHTML = "";
+
+    data.forEach(q => {
+
+        const div = document.createElement("div");
+        div.className = "favorito-item";
+
+        div.innerHTML = `
+            <strong>Q#${q.questao_id}:</strong> ${q.pergunta}
+            <div class="explica-asa">${q.resposta_correta}</div>
+        `;
+
+        container.appendChild(div);
+    });
+}
+
     // 4. Outras Funções do Sistema (Preservadas)
     window.tentarSair = async () => {
         if (confirm("Deseja sair?")) {
@@ -627,6 +661,8 @@ async function alimentarLogBookReal() {
     }
 }
 alimentarLogBookReal();
+
+carregarFavoritos();
 
 </script>
 </body>
