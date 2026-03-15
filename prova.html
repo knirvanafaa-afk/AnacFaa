@@ -287,7 +287,7 @@ window.toggleFlag = function(botao){
 
   // FUNÇÃO FINALIZAR PROVA: INTEGRALMENTE PRESERVADA (CÁLCULO E FEEDBACK)
 
-window.finalizarProva = function(foiPorTempo = false) {
+window.finalizarProva = async function(foiPorTempo = false) {
 
 // --- LÓGICA DE FAVORITOS CORRIGIDA ---
 const { data: { user } } = await supabase.auth.getUser();
