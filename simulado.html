@@ -258,7 +258,10 @@ window.hideReview = () => { document.getElementById('review-screen').style.displ
         });
     }
 
-    function processFinalResult() {
+  async function processFinalResult() {
+
+// --- INÍCIO DA LÓGICA DE FAVORITOS --- const { data: { user } } = await supabase.auth.getUser(); if (user) { // Itera sobre o seu array 'flags' (que você já usa no simulado) for (let i = 0; i < flags.length; i++) { if (flags[i]) { // Se o flag desta questão i está ativo await supabase.from('favoritos').insert([{ user_id: user.id, materia: questions[i].materia, pergunta: questions[i].pergunta, resposta_correta: questions[i].correta }]); } } } // --- FIM DA LÓGICA DE FAVORITOS ---
+
         clearInterval(timerInterval);
         let score = 0;
         questions.forEach((q, i) => { 
