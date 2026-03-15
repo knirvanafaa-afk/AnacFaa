@@ -290,28 +290,19 @@ window.toggleFlag = function(botao){
 window.finalizarProva = async function(foiPorTempo = false) {
 
 // --- LÓGICA DE FAVORITOS CORRIGIDA ---
-const { data: { user } } = await supabase.auth.getUser();
-if (user) {
-    const flags = document.querySelectorAll('.btn-flag.active');
-    const materia = sessionStorage.getItem('config_materia');
+const { data: { user } } = await supabase.auth.getUser(); 
 
-    for (const flag of flags) {
-        const card = flag.closest('.pergunta-card');
-        const idQuestao = card.getAttribute('data-id'); // Pega o ID da questão
-        const perguntaTexto = card.querySelector('.texto-enunciado').innerText;
+if (user) { const flags = document.querySelectorAll('.btn-flag.active'); const materia = sessionStorage.getItem('config_materia') || "Geral"; 
 
-        // Procura a questão original no array para pegar o valor correto
-        const questaoOriginal = perguntasSorteador.find(q => q.id == idQuestao);
-        const respostaReal = questaoOriginal ? questaoOriginal.correta : "N/A";
+for (const flag of flags) { const card = flag.closest('.pergunta-card'); const idQuestao = card.getAttribute('data-id');
 
-        await supabase.from('favoritos').insert([{
-            user_id: user.id,
-            materia: materia || "Geral",
-            pergunta: perguntaTexto,
-            resposta_correta: respostaReal // Agora salva o número ou texto da resposta correta
-        }]);
-    }
-}
+const perguntaTexto = card.querySelector('.texto-enunciado').innerText; 
+
+const questaoOriginal = perguntasSorteador.find(q => q.id == idQuestao); 
+
+let textoDaResposta = "N/A"; if (questaoOriginal) { const indiceCorreto = questaoOriginal.correta; textoDaResposta = questaoOriginal[`r${indiceCorreta}`] || "N/A"; } await supabase.from('favoritos').insert([{ user_id: user.id, materia: materia, pergunta: perguntaTexto, resposta_correta: textoDaResposta }]); } }
+
+
 // --- FIM DA LOGICA DE FAVORITOS ---
 
 
