@@ -160,6 +160,10 @@ display: flex; flex-direction: column; box-sizing: border-box;
 
     // Função necessária para o botão YES
     window.executarFinalizacao = () => {
+
+const btnFlag = document.getElementById('btn-flag'); const isFlagged = btnFlag && btnFlag.classList.contains('active'); 
+
+if (isFlagged) { await supabase.from('favoritos').insert([ { user_id: user.id, materia: materiaAtual, pergunta: perguntaAtual, resposta_correta: respostaAtual } ]); }
         document.getElementById('custom-alert').style.display = 'none';
         processFinalResult();
     };
