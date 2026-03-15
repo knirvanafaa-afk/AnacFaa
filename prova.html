@@ -290,18 +290,37 @@ window.toggleFlag = function(botao){
 window.finalizarProva = async function(foiPorTempo = false) {
 
 // --- LÓGICA DE FAVORITOS CORRIGIDA ---
-const { data: { user } } = await supabase.auth.getUser(); 
+const { data: { user } } = await supabase.auth.getUser();
+if (user) {
+    const flags = document.querySelectorAll('.btn-flag.active');
+    const materia = sessionStorage.getItem('config_materia');
 
-if (user) { const flags = document.querySelectorAll('.btn-flag.active'); const materia = sessionStorage.getItem('config_materia') || "Geral"; 
+    for (const flag of flags) {
+        const card = flag.closest('.pergunta-card');
+        const idQuestao = card.getAttribute('data-id');
+        const perguntaTexto = card.querySelector('.texto-enunciado').innerText;
 
-for (const flag of flags) { const card = flag.closest('.pergunta-card'); const idQuestao = card.getAttribute('data-id');
+        // Procura a questão no seu array original
+        const questaoOriginal = perguntasSorteador.find(q => q.id == idQuestao);
+        
+        // Define o texto da resposta com segurança
+        let textoDaResposta = "N/A";
+        if (questaoOriginal && questaoOriginal.correta) {
+            const indice = questaoOriginal.correta; // Ex: "1"
+            // Busca o campo r1, r2, r3 ou r4 dinamicamente
+            const campoResposta = `r${indice}`; 
+            textoDaResposta = questaoOriginal[campoResposta] || "N/A";
+        }
 
-const perguntaTexto = card.querySelector('.texto-enunciado').innerText; 
-
-const questaoOriginal = perguntasSorteador.find(q => q.id == idQuestao); 
-
-let textoDaResposta = "N/A"; if (questaoOriginal) { const indiceCorreto = questaoOriginal.correta; textoDaResposta = questaoOriginal[`r${indiceCorreta}`] || "N/A"; } await supabase.from('favoritos').insert([{ user_id: user.id, materia: materia, pergunta: perguntaTexto, resposta_correta: textoDaResposta }]); } }
-
+        // Insere no banco
+        await supabase.from('favoritos').insert([{
+            user_id: user.id,
+            materia: materia || "Geral",
+            pergunta: perguntaTexto,
+            resposta_correta: textoDaResposta // Agora salva o TEXTO (ex: "Velocidade")
+        }]);
+    }
+}
 
 // --- FIM DA LOGICA DE FAVORITOS ---
 
