@@ -421,22 +421,27 @@ const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identifica
 
 // Dentro da sua função que finaliza a prova
 async function finalizarProva() {
-    // 1. Pega o estado do botão de flag
-    const btnFlag = document.getElementById('btn-flag');
-    const isFlagged = btnFlag && btnFlag.classList.contains('active'); 
+    const { data: { user } } = await supabase.auth.getUser();
+if (!user) return;
 
-    // 2. Se estiver marcado, grava no Supabase
-    if (isFlagged) {
-        await supabase.from('favoritos').insert([
-            {
-                user_id: user.id,
-                materia: materiaAtual,
-                pergunta: perguntaAtual,
-                resposta_correta: respostaAtual
-            }
-        ]);
-    }
+const flags = document.querySelectorAll('.btn-flag.active');
+
+for (const flag of flags) {
+
+    const card = flag.closest('.pergunta-card');
+
+    const pergunta = card.querySelector('.texto-enunciado').innerText;
+
+    await supabase.from('favoritos').insert([
+        {
+            user_id: user.id,
+            materia: materia,
+            pergunta: pergunta,
+            resposta_correta: "N/A"
+        }
+    ]);
 }
+
 </script>
 </body>
 </html>
