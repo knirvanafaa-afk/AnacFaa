@@ -45,7 +45,7 @@
 
 <div class="header">
     <h2 style="margin:0">Diagnóstico de Performance</h2>
-    <p style="margin:5px 0 0; font-weight:bold; color: #7f8c8d;">Análise em tempo real do seu banco de dados</p>
+    <p style="margin:5px 0 0; font-weight:bold; color: #7f8c8d;">Análise em tempo real de Simulados e Provas realizados</p>
 </div>
 
 <div class="card">
@@ -197,36 +197,65 @@ async function carregarAnalise() {
         options: { indexAxis: 'y', scales: { x: { max: 100 } }, plugins: { legend: { display: false } } }
     });
 
-    // TOP 7 CAPÍTULOS
-    // Ordenamos do menor para o maior pelo total de questões (a + e)
-    // Depois usamos .reverse() para que o maior fique no topo do gráfico
-    const capOrdenados = Object.keys(capDados)
-        .sort((a, b) => (capDados[a].a + capDados[a].e) - (capDados[b].a + capDados[b].e))
-        .reverse(); 
+ // --- TOP 7 CAPÍTULOS ACERTOS ---
+// Ordenamos pelo número de acertos (a) do maior para o menor e pegamos os 7 primeiros
+const top7Acertos = Object.keys(capDados)
+    .sort((a, b) => capDados[b].a - capDados[a].a)
+    .slice(0, 7);
 
-    new Chart(document.getElementById('chartAcertos'), {
-        type: 'bar',
-        data: { 
-            labels: capOrdenados, 
-            datasets: [{ label: 'N° de Questões Corretas', data: capOrdenados.map(c => capDados[c].a), backgroundColor: '#27ae60' }] 
-        },
-        options: { 
-            indexAxis: 'y', 
-            plugins: { legend: { display: false } } 
+new Chart(document.getElementById('chartAcertos'), {
+    type: 'bar',
+    data: { 
+        labels: top7Acertos, 
+        datasets: [{ 
+            label: 'N° de Questões Corretas', 
+            data: top7Acertos.map(c => capDados[c].a), 
+            backgroundColor: '#27ae60',
+            barPercentage: 0.8, // Ajusta a largura da barra para evitar o "gap"
+            categoryPercentage: 0.9
+        }] 
+    },
+    options: { 
+        indexAxis: 'y', 
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                ticks: { autoSkip: false } // Garante que todos os 7 nomes apareçam alinhados
+            }
         }
-    });
+    }
+});
 
-    new Chart(document.getElementById('chartErros'), {
-        type: 'bar',
-        data: { 
-            labels: capOrdenados, 
-            datasets: [{ label: 'N° de Questões Erradas', data: capOrdenados.map(c => capDados[c].e), backgroundColor: '#e74c3c' }] 
-        },
-        options: { 
-            indexAxis: 'y', 
-            plugins: { legend: { display: false } } 
+// --- TOP 7 CAPÍTULOS ERROS ---
+// Ordenamos pelo número de erros (e) do maior para o menor e pegamos os 7 primeiros
+const top7Erros = Object.keys(capDados)
+    .sort((a, b) => capDados[b].e - capDados[a].e)
+    .slice(0, 7);
+
+new Chart(document.getElementById('chartErros'), {
+    type: 'bar',
+    data: { 
+        labels: top7Erros, 
+        datasets: [{ 
+            label: 'N° de Questões Erradas', 
+            data: top7Erros.map(c => capDados[c].e), 
+            backgroundColor: '#e74c3c',
+            barPercentage: 0.8,
+            categoryPercentage: 0.9
+        }] 
+    },
+    options: { 
+        indexAxis: 'y', 
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+            y: {
+                ticks: { autoSkip: false }
+            }
         }
-    });
+    }
+});
 
   // EVOLUÇÃO
     const datasets = ['General', 'Airframe', 'Powerplant'].map((mat, i) => ({
