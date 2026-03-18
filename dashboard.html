@@ -796,7 +796,7 @@ async function carregarDadosCertificados() {
             img.onclick = () => {
 
 // Pega o nome que está aparecendo no seu Dashboard agora 
-const nomeAluno = document.getElementById('user-name').innerText;
+const nomeAluno = document.getElementById('user-display-name').innerText;
 
                 // Abre o certificado passando os dados via URL
                 window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}`;
