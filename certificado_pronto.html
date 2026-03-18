@@ -60,6 +60,8 @@
             z-index: 10;
         }
 
+.selo-imagem { width: 110px; height: auto; /* TRUQUE: Faz o branco da imagem ficar transparente */ mix-blend-mode: multiply; filter: none !important; /* Remove qualquer filtro anterior */ z-index: 2; } /* 3. O círculo de cor que fica ATRÁS do selo */ .selo-circulo-cor { position: absolute; width: 100px; height: 100px; border-radius: 50%; z-index: 1; transition: background-color 0.3s; }
+
         .moldura-interna::before {
             content: "";
             position: absolute;
@@ -93,7 +95,7 @@
 
 .tema-Airframe .linha-azul { background-color: #e74c3c !important; }
 
-.tema-Airframe .selo-imagem { filter: hue-rotate(340deg) saturate(5) brightness(0.8); }
+.tema-Airframe .selo-imagem { filter: hue-rotate(90deg) saturate(3) brightness(0.8); }
 
 
 /* TEMA POWERPLANT (Verde) */
@@ -109,7 +111,7 @@
 
 .tema-Powerplant .linha-azul { background-color: #27ae60 !important; }
 
-.tema-Powerplant .selo-imagem { filter: hue-rotate(90deg) saturate(3) brightness(0.8); }
+.tema-Powerplant .selo-imagem { filter: hue-rotate(180deg) saturate(3) brightness(0.8); }
 
         h1 {
             font-family: 'Cinzel', serif;
