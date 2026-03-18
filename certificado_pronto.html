@@ -236,23 +236,6 @@ campoNome.innerText = "Estudante WXR";
     const hoje = new Date();
     document.getElementById('cert-data').innerText = hoje.toLocaleDateString('pt-BR');
 
-    // 4. Busca o nome do aluno via Supabase (opcional, ou pode passar via URL também)
-    // Se você já tiver o nome no Dashboard, é melhor passar via URL. 
-    // Mas aqui vou buscar do Auth do Supabase para garantir:
-    import { createClient } from 'https://jspm.dev/@supabase/supabase-js';
-    
-    // Configure seu Supabase aqui ou pegue do seu arquivo de config
-    const supabase = createClient('SUA_URL', 'SUA_KEY');
-
-    async function carregarNome() {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user && user.user_metadata && user.user_metadata.full_name) {
-            document.getElementById('cert-nome-aluno').innerText = user.user_metadata.full_name;
-        } else {
-            document.getElementById('cert-nome-aluno').innerText = "Estudante WXR";
-        }
-    }
-    carregarNome();
 </script>
 
 </body>
