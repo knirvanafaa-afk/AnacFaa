@@ -22,34 +22,34 @@
             overflow: hidden;
         }
 
-       /* Procure estas classes e mude a cor do border e do background-color */
+        .moldura-tripla {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #002366;
+            padding: 4px;
+            box-sizing: border-box;
+            position: relative;
+        }
 
-.moldura-tripla {
-    border: 2px solid var(--cor-principal); /* Troque o #002366 por isso */
-}
+        .moldura-meio {
+            width: 100%;
+            height: 100%;
+            border: 8px solid #002366;
+            padding: 4px;
+            box-sizing: border-box;
+        }
 
-.moldura-meio {
-    border: 8px solid var(--cor-principal); /* Troque aqui também */
-}
-
-.moldura-interna {
-    border: 2px solid var(--cor-principal); /* E aqui */
-}
-
-.linha-azul {
-    background-color: var(--cor-principal); /* A linha embaixo do nome */
-}
-
-/* Os enfeites dos cantos também! */
-.moldura-interna::before {
-    border-top: 15px solid var(--cor-principal);
-    border-right: 15px solid var(--cor-principal);
-}
-
-.moldura-interna::after {
-    border-bottom: 15px solid var(--cor-principal);
-    border-left: 15px solid var(--cor-principal);
-}
+        .moldura-interna {
+            width: 100%;
+            height: 100%;
+            border: 2px solid #002366;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 60px;
+            box-sizing: border-box;
+            position: relative;
+        }
 
         .selo-imagem {
             position: absolute;
@@ -58,10 +58,7 @@
             width: 110px;
             height: auto;
             z-index: 10;
-            transition: filter 0.3s;
         }
-
-/* Cores específicas por matéria */ .tema-General { --cor-principal: #002366; } .tema-Airframe { --cor-principal: #e74c3c; /* Vermelho */ } .tema-Powerplant { --cor-principal: #27ae60; /* Verde */ } /* Aplica a cor dinâmica nas bordas e textos */ .moldura-tripla, .moldura-meio, .moldura-interna, .linha-azul { border-color: var(--cor-principal) !important; } .moldura-interna::before, .moldura-interna::after { border-color: var(--cor-principal) !important; } h1, .materia-destaque { color: var(--cor-principal) !important; } /* Filtros para o selo.jpg (Transforma o tom da imagem) */ .selo-vermelho { filter: hue-rotate(340deg) saturate(5) brightness(0.8); } .selo-verde { filter: hue-rotate(90deg) saturate(3) brightness(0.8); }
 
         .moldura-interna::before {
             content: "";
@@ -202,18 +199,12 @@
 
 <script type="module">
     // 1. Pega os parâmetros da URL (materia e media)
-    const urlParams = new URLSearchParams(window.location.search); 
-const materiaRaw = urlParams.get('materia') || 'General'; const seloImg = document.querySelector('.selo-imagem'); const container = document.querySelector('.certificado-container');
-   
- const media = urlParams.get('media') || '0';
+    const urlParams = new URLSearchParams(window.location.search);
+    const materiaRaw = urlParams.get('materia') || 'General';
+    const media = urlParams.get('media') || '0';
 const nomeURL = urlParams.get('nome');
 
-container.classList.add('tema-' + materiaRaw);
-
     // 2. Formata o nome da matéria para o destaque
-
-if (materiaRaw === 'Airframe') { seloImg.classList.add('selo-vermelho'); } else if (materiaRaw === 'Powerplant') { seloImg.classList.add('selo-verde'); }
-
     const materiasFormatadas = {
         'General': 'FAA Aviation Mechanic — GENERAL',
         'Airframe': 'FAA Aviation Mechanic — AIRFRAME',
