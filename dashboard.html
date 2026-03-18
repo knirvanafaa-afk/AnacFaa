@@ -792,7 +792,7 @@ async function carregarDadosCertificados() {
         if (parseFloat(media) >= 10 && totalQts >= 50)
  {
             const img = document.getElementById(`img-cert-${idHtml}`);
-            img.classList.add('diploma-liberado'); // Ativa a cor e o ponteiro
+            img.classList.add('diploma-ativo'); // Ativa a cor e o ponteiro
             img.onclick = () => {
                 // Abre o certificado passando os dados via URL
                 window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}`;
