@@ -289,15 +289,15 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     width: 35px;
     height: auto;
     cursor: not-allowed;
-    transition: 0.5s ease-in-out; 
-    filter: brightness(0) invert(0.5);
+    filter: grayscale(100%); /* Cinza por padrão */
     opacity: 0.3;
+    transition: 0.3s;
 }
 
 /* Classes para quando o diploma for ATIVADO */
 .diploma-ativo {
     cursor: pointer !important;
-    filter: none !important; 
+    filter: grayscale(0%) !important;
     opacity: 1 !important;
 }
 
