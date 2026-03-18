@@ -1,0 +1,185 @@
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Pinyon+Script&display=swap" rel="stylesheet">
+
+<style>
+    .certificado-container {
+        width: 1000px;
+        height: 700px;
+        background-color: #fff;
+        padding: 20px;
+        margin: 20px auto;
+        border: 1px solid #ccc;
+        box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        position: relative;
+        box-sizing: border-box;
+        overflow: hidden; /* Garante que os enfeites não saiam do container */
+    }
+
+    /* --- ITEM 2: TRÊS BORDAS (Fina, Grossa 4x, Fina) --- */
+    .moldura-tripla {
+        width: 100%;
+        height: 100%;
+        border: 2px solid #002366; /* Borda externa */
+        padding: 4px; /* Espaço para a borda do meio */
+        box-sizing: border-box;
+        position: relative;
+    }
+
+    .moldura-meio {
+        width: 100%;
+        height: 100%;
+        border: 8px solid #002366; /* Borda 4x a espessura (2px * 4 = 8px) */
+        padding: 4px; /* Espaço para a borda interna */
+        box-sizing: border-box;
+    }
+
+    .moldura-interna {
+        width: 100%;
+        height: 100%;
+        border: 2px solid #002366; /* Borda interna */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 40px 60px; /* Ajustado para dar mais espaço no topo (ITEM 9) */
+        box-sizing: border-box;
+        position: relative;
+    }
+
+/* Estilo para a imagem do selo */
+.selo-imagem {
+    position: absolute;
+    top: 20px;       /* Distância do topo */
+    left: 20px;      /* Distância da esquerda */
+    width: 110px;    /* Ajuste o tamanho conforme preferir */
+    height: auto;
+    z-index: 10;
+    /* Se a imagem tiver fundo branco e você quiser tirar: */
+    /* mix-blend-mode: multiply; */ 
+}
+
+    /* --- ITEM 11: ENFEITES SÓLIDOS NOS CANTOS (Linhas geométricas) --- */
+    /* Superior Direito */
+    .moldura-interna::before {
+        content: "";
+        position: absolute;
+        top: 0; right: 0;
+        width: 100px; height: 100px;
+        border-top: 15px solid #002366;
+        border-right: 15px solid #002366;
+    }
+    /* Inferior Esquerdo */
+    .moldura-interna::after {
+        content: "";
+        position: absolute;
+        bottom: 0; left: 0;
+        width: 100px; height: 100px;
+        border-bottom: 15px solid #002366;
+        border-left: 15px solid #002366;
+    }
+
+    .logo-espaco {
+        height: 60px;
+        margin-bottom: 10px;
+    }
+
+    h1 {
+        font-family: 'Cinzel', serif;
+        font-size: 38px;
+        letter-spacing: 8px;
+        color: #002366;
+        margin: 0;
+        text-transform: uppercase;
+        /* ITEM 1: PORTUGUÊS */
+    }
+
+    .subtitulo {
+        font-family: 'Libre Baskerville', serif;
+        font-size: 16px;
+        margin-top: 20px; /* ITEM 9: Subiu o texto */
+        color: #333;
+    }
+
+    /* --- ITEM 3: COR PRETA NO NOME --- */
+    .nome-aluno {
+        font-family: 'Pinyon Script', cursive;
+        font-size: 65px;
+        color: #000; /* Preto */
+        margin: 10px 0 5px 0;
+    }
+
+    /* --- ITEM 4: LINHA RETA AZUL ABAIXO DO NOME --- */
+    .linha-azul {
+        width: 80%;
+        height: 2px;
+        background-color: #002366;
+        margin-bottom: 30px;
+    }
+
+    /* --- ITEM 5: TEXTO JUSTIFICADO AO CENTRO --- */
+    .texto-conclusao {
+        font-family: 'Libre Baskerville', serif;
+        font-size: 18px;
+        text-align: center; /* Alinha o bloco ao centro */
+        max-width: 800px;
+        line-height: 1.6;
+        color: #333;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    /* --- ITEM 10: ALINHADO À DIREITA --- */
+    .materia-destaque {
+        font-family: 'Cinzel', serif;
+        font-weight: 700;
+        font-size: 22px;
+        display: block;
+        width: 100%;
+        text-align: right; /* Alinhado à direita */
+        margin-top: 20px;
+        color: #002366;
+    }
+
+    .footer-dados {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        margin-top: auto;
+        font-family: 'Libre Baskerville', serif;
+        font-size: 14px;
+        border-top: 1px solid #eee;
+        padding-top: 20px;
+    }
+</style>
+
+<div class="certificado-container">
+    <div class="moldura-tripla">
+        <div class="moldura-meio">
+            <div class="moldura-interna">
+
+<img src="selo.jpg" class="selo-imagem"> 
+
+                <div class="logo-espaco">
+                    </div>
+                
+                <h1>Certificado de Estudos</h1>
+                
+                <p class="subtitulo">Certificamos que</p>
+                
+                <div class="nome-aluno">Nome do Aluno Aqui</div>
+                
+                <div class="linha-azul"></div>
+                
+                <div class="texto-conclusao">
+                    demonstrou com sucesso proficiência profissional ao concluir todos os exames e simulações práticas exigidas para o módulo de:
+                    
+                    <span class="materia-destaque">FAA Aviation Mechanic—General</span>
+                </div>
+
+                <div class="footer-dados">
+                    <div><strong>EMITIDO EM:</strong> 15/03/2026</div>
+                    <div><strong>MÉDIA FINAL:</strong> 94%</div>
+                    </div>
+            </div>
+        </div>
+    </div>
+</div>
