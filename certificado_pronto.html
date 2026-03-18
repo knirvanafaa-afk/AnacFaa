@@ -8,7 +8,25 @@
     <style>
         /* MANTENDO TODO O SEU ESTILO ORIGINAL */
         body { background-color: #f4f4f4; margin: 0; padding: 0; }
-        
+
+/* AJUSTE DE TELA AUTOMÁTICO */
+@media screen and (max-width: 1050px) {
+    body {
+        /* Faz o certificado se ajustar à largura da tela */
+        zoom: 0.8; /* Diminui para 80% em telas menores */
+        -moz-transform: scale(0.8); /* Ajuste para Firefox */
+        -moz-transform-origin: top center;
+    }
+}
+
+@media screen and (max-width: 850px) {
+    body {
+        zoom: 0.6; /* Diminui para 60% em telas de celular/tablets */
+        -moz-transform: scale(0.6);
+        -moz-transform-origin: top center;
+    }
+}
+
         .certificado-container {
             width: 1000px;
             height: 700px;
