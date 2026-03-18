@@ -497,6 +497,12 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 
     // 2. Funções de Carregamento
     async function carregarDadosIniciais() {
+
+await alimentarFavoritos();
+alimentarLogBookReal(); 
+carregarDadosParaTeia();
+carregarDadosCertificados();  
+
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (!session) return;
@@ -662,7 +668,7 @@ display: false
     });
 }
 
-carregarDadosParaTeia();
+
 
 async function alimentarLogBookReal() {
     try {
@@ -709,7 +715,7 @@ async function alimentarLogBookReal() {
         console.error("Erro ao carregar LogBook:", err);
     }
 }
-alimentarLogBookReal();
+
 
 async function alimentarFavoritos() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -738,8 +744,7 @@ async function alimentarFavoritos() {
     });
 }
 
-// O gatilho que inicia a função:
-alimentarFavoritos();
+
 
 async function carregarDadosCertificados() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -799,9 +804,7 @@ async function carregarDadosCertificados() {
     atualizarLinha('general', 'General');
     atualizarLinha('airframe', 'Airframe');
     atualizarLinha('powerplant', 'Powerplant');
-}
-
-carregarDadosCertificados(); 
+} 
 
 </script>
 </body>
