@@ -787,9 +787,9 @@ async function carregarDadosCertificados() {
         // Atualiza o texto da média na sua coluna centralizada
         document.getElementById(`cert-media-${idHtml}`).innerText = media;
 
-        // REGRA: Média >= 50 E questões >= 50
+        // REGRA: Média >= 70 E questões >= 500
 
-        if (parseFloat(media) >= 70 && totalQts >= 500)
+        if (parseFloat(media) >= 50 && totalQts >= 50)
  {
             const img = document.getElementById(`img-cert-${idHtml}`);
             img.classList.add('diploma-ativo'); // Ativa a cor e o ponteiro
