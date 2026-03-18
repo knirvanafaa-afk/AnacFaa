@@ -716,7 +716,6 @@ async function alimentarLogBookReal() {
     }
 }
 
-
 async function alimentarFavoritos() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
@@ -743,8 +742,6 @@ async function alimentarFavoritos() {
         tbody.appendChild(tr);
     });
 }
-
-
 
 async function carregarDadosCertificados() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -799,11 +796,12 @@ async function carregarDadosCertificados() {
 
 const elementoNome = document.getElementById('user-display-name'); 
 
-const nomeAluno = elementoNome ? elementoNome.innerText : "Estudante";
+const nomeAluno = elementoNome ? elementoNome.innerText : "Estudante"; 
 
-                // Abre o certificado passando os dados via URL
-
-                window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}&nome=${encodeURIComponent(nomeAluno)}`; }; } } };
+window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}&nome=${encodeURIComponent(nomeAluno)}`; 
+           }; 
+       } 
+ };
 
     // Executa a atualização para cada uma
     atualizarLinha('general', 'General');
