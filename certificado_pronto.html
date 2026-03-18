@@ -51,7 +51,16 @@
             position: relative;
         }
 
-.selo-container { position: absolute; top: 20px; left: 20px; width: 120px; /* Um pouco maior que o selo */ height: 120px; display: flex; align-items: center; justify-content: center; z-index: 10; } /* 2. O selo.jpg original (sem fundo branco e com transparência) */ .selo-imagem { width: 110px; height: auto; /* TRUQUE: Faz o branco da imagem ficar transparente */ mix-blend-mode: multiply; filter: none !important; /* Remove qualquer filtro anterior */ z-index: 2; } /* 3. O círculo de cor que fica ATRÁS do selo */ .selo-circulo-cor { position: absolute; width: 100px; height: 100px; border-radius: 50%; z-index: 1; transition: background-color 0.3s; } 
+.selo-imagem {
+     position: absolute;
+     top: 20px;
+     left: 20px;
+     width: 110px;
+     height: auto;
+     z-index: 10;
+} 
+
+ .selo-imagem { width: 110px; height: auto; /* TRUQUE: Faz o branco da imagem ficar transparente */ mix-blend-mode: multiply; filter: none !important; /* Remove qualquer filtro anterior */ z-index: 2; } /* 3. O círculo de cor que fica ATRÁS do selo */ .selo-circulo-cor { position: absolute; width: 100px; height: 100px; border-radius: 50%; z-index: 1; transition: background-color 0.3s; } 
 
         .moldura-interna::before {
             content: "";
