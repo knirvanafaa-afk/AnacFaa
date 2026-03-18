@@ -22,34 +22,34 @@
             overflow: hidden;
         }
 
-        .moldura-tripla {
-            width: 100%;
-            height: 100%;
-            border: 2px solid #002366;
-            padding: 4px;
-            box-sizing: border-box;
-            position: relative;
-        }
+       /* Procure estas classes e mude a cor do border e do background-color */
 
-        .moldura-meio {
-            width: 100%;
-            height: 100%;
-            border: 8px solid #002366;
-            padding: 4px;
-            box-sizing: border-box;
-        }
+.moldura-tripla {
+    border: 2px solid var(--cor-principal); /* Troque o #002366 por isso */
+}
 
-        .moldura-interna {
-            width: 100%;
-            height: 100%;
-            border: 2px solid #002366;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 40px 60px;
-            box-sizing: border-box;
-            position: relative;
-        }
+.moldura-meio {
+    border: 8px solid var(--cor-principal); /* Troque aqui também */
+}
+
+.moldura-interna {
+    border: 2px solid var(--cor-principal); /* E aqui */
+}
+
+.linha-azul {
+    background-color: var(--cor-principal); /* A linha embaixo do nome */
+}
+
+/* Os enfeites dos cantos também! */
+.moldura-interna::before {
+    border-top: 15px solid var(--cor-principal);
+    border-right: 15px solid var(--cor-principal);
+}
+
+.moldura-interna::after {
+    border-bottom: 15px solid var(--cor-principal);
+    border-left: 15px solid var(--cor-principal);
+}
 
         .selo-imagem {
             position: absolute;
