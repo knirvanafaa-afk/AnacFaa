@@ -51,16 +51,14 @@
             position: relative;
         }
 
-.selo-imagem {
-     position: absolute;
-     top: 20px;
-     left: 20px;
-     width: 110px;
-     height: auto;
-     z-index: 10;
-} 
-
- .selo-imagem { width: 110px; height: auto; /* TRUQUE: Faz o branco da imagem ficar transparente */ mix-blend-mode: multiply; filter: none !important; /* Remove qualquer filtro anterior */ z-index: 2; } /* 3. O círculo de cor que fica ATRÁS do selo */ .selo-circulo-cor { position: absolute; width: 100px; height: 100px; border-radius: 50%; z-index: 1; transition: background-color 0.3s; } 
+        .selo-imagem {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 110px;
+            height: auto;
+            z-index: 10;
+        }
 
         .moldura-interna::before {
             content: "";
@@ -82,118 +80,36 @@
 
 /* --- APENAS CORES (Sem mexer em posição) --- */
 
+/* TEMA AIRFRAME (Vermelho) */
+.tema-Airframe .moldura-tripla, 
+.tema-Airframe .moldura-meio, 
+.tema-Airframe .moldura-interna { border-color: #e74c3c !important; }
+
+.tema-Airframe .moldura-interna::before, 
+.tema-Airframe .moldura-interna::after { border-color: #e74c3c !important; }
+
+.tema-Airframe h1, 
+.tema-Airframe .materia-destaque { color: #e74c3c !important; }
+
+.tema-Airframe .linha-azul { background-color: #e74c3c !important; }
+
+.tema-Airframe .selo-imagem { filter: hue-rotate(340deg) saturate(5) brightness(0.8); }
 
 
-Conversa com o Gemini
+/* TEMA POWERPLANT (Verde) */
+.tema-Powerplant .moldura-tripla, 
+.tema-Powerplant .moldura-meio, 
+.tema-Powerplant .moldura-interna { border-color: #27ae60 !important; }
 
-Você disse
+.tema-Powerplant .moldura-interna::before, 
+.tema-Powerplant .moldura-interna::after { border-color: #27ae60 !important; }
 
-A nota e data estão.ok mas o nome aparece somente Carregando
+.tema-Powerplant h1, 
+.tema-Powerplant .materia-destaque { color: #27ae60 !important; }
 
+.tema-Powerplant .linha-azul { background-color: #27ae60 !important; }
 
-Tem q ser o nome q edita no ícone de lápis
-
-O Gemini disse
-
-Para que o nome no certificado seja exatamente o mesmo que você edita no ícone de lápis do Dashboard, não precisamos buscar do Auth do Supabase (que às vezes demora ou está desatualizado), mas sim pegar o texto que já está preenchido na tela do seu Dashboard.
-
-O jeito mais seguro é passar esse nome pela URL, assim como fizemos com a média e a matéria.
-
-Passo 1: Ajuste no dashboard.html
-
-No seu arquivo de Dashboard, procure a função atualizarLinha onde configuramos o onclick. Vamos adicionar o nome do aluno no link.
-
-Substitua o bloco do img.onclick por este:
-
-JavaScript
-
-img.onclick = () => { // Pega o nome que está aparecendo no seu Dashboard agora const nomeAluno = document.getElementById('user-name').innerText; // Envia matéria, média e também o nome pela URL window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}&nome=${encodeURIComponent(nomeAluno)}`; }; 
-
-Passo 2: Ajuste no certificado_pronto.html
-
-Agora, vamos fazer o certificado ler esse nome que chegou pela URL. No seu arquivo do certificado, altere a parte do <script> para isso:
-
-JavaScript
-
-<script> // 1. Pega os parâmetros da URL const urlParams = new URLSearchParams(window.location.search); const materiaRaw = urlParams.get('materia') || 'General'; const media = urlParams.get('media') || '0'; const nomeURL = urlParams.get('nome'); // Pega o nome vindo do Dashboard // 2. Formata a Matéria const materiasFormatadas = { 'General': 'FAA Aviation Mechanic — GENERAL', 'Airframe': 'FAA Aviation Mechanic — AIRFRAME', 'Powerplant': 'FAA Aviation Mechanic — POWERPLANT' }; document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw; document.getElementById('cert-media').innerText = media; // 3. Define o Nome do Aluno const campoNome = document.getElementById('cert-nome-aluno'); if (nomeURL && nomeURL !== "Carregando...") { campoNome.innerText = decodeURIComponent(nomeURL); } else { campoNome.innerText = "Estudante WXR"; } // 4. Data Atual const hoje = new Date(); document.getElementById('cert-data').innerText = hoje.toLocaleDateString('pt-BR'); </script> 
-
-Por que isso resolve?
-
-Sincronia Total: Se você mudar o nome no Dashboard com o lápis e clicar no certificado em seguida, ele já leva o nome novo na hora.
-
-Sem Erro de "Carregando": Como o nome já existe na tela do Dashboard antes de você clicar no ícone do diploma, ele nunca chegará vazio ao certificado.
-
-Velocidade: Não precisa fazer uma nova consulta ao banco de dados, o que elimina o delay.
-
-Dica: Verifique se o ID do nome no seu Dashboard é realmente user-name (é o padrão que vi no seu arquivo). Se for outro, basta trocar no Passo 1.
-
-Você disse
-
-campoNome.innerText = "Estudante WXR
-
-
-Não entendi isso de ELSE Estudante wxr qd entra esse else?
-
-O Gemini disse
-
-O else { campoNome.innerText = "Estudante WXR"; } é o que chamamos de "Fallback" (ou Plano B).
-
-Ele só entra em ação se algo der errado na comunicação entre o Dashboard e o Certificado. Imagine que o "else" é uma rede de segurança para o seu código não quebrar ou não mostrar um campo vazio.
-
-Aqui estão as situações em que o else seria ativado:
-
-Acesso Direto: Se alguém tentar abrir o link certificado_pronto.html diretamente pelo navegador, sem passar pelo Dashboard. Como não houve o clique no ícone, a URL não terá o nome do aluno.
-
-Erro de Carregamento: Se por um milésimo de segundo o JavaScript do Dashboard não conseguir ler o texto do campo #user-name antes de enviar o aluno para a página do certificado.
-
-Campo de Nome Vazio: Se o aluno apagou o nome no Dashboard e deixou em branco antes de clicar no diploma.
-
-O que acontece na prática:
-
-Se tudo estiver certo: O link leva o nome (Ex: ?nome=João Silva). O código ignora o else e escreve João Silva.
-
-Se o nome sumir no caminho: O código vê que a variável nomeURL está vazia e, em vez de deixar um buraco branco no meio do diploma, ele escreve Estudante WXR para manter o visual profissional.
-
-Dica: Se você não gosta do nome "Estudante WXR", você pode trocar o texto dentro das aspas para qualquer outra coisa, como "Mecânico de Aeronaves" ou "Aluno Registrado".
-
-Ficou claro? É apenas uma garantia para o certificado nunca aparecer "pelado" sem nome nenhum!
-
-Você disse
-
-Como faço p apenas o texto entre "certificado de Estudos" e "FAA Aviation Mechanic — GENERAL"
-
-
-Tem como mover apenas esse texto p baixo?
-
-O Gemini disse
-
-Com certeza, sócio! Como o seu layout usa Flexbox (através da classe moldura-interna que tem display: flex e flex-direction: column), todos os elementos estão "empilhados" um em cima do outro.
-
-Para mover apenas aquele bloco central para baixo sem afetar o título ou o rodapé, a forma mais limpa é aplicar uma margem superior (margin-top) especificamente no elemento que você quer empurrar.
-
-Aqui estão as duas formas de fazer isso:
-
-Opção 1: Ajuste no CSS (Recomendado)
-
-Adicione ou edite a regra .subtitulo no seu <style>. Ao dar um margin-top alto, ele vai empurrar a si mesmo e tudo o que vem abaixo dele (o nome do aluno, a linha e o texto de conclusão) para baixo.
-
-CSS
-
-.subtitulo { font-family: 'Libre Baskerville', serif; font-size: 16px; margin-top: 80px; /* Aumente este valor (ex: 100px, 120px) para descer mais */ color: #333; } 
-
-Opção 2: Ajuste direto no HTML (Mais rápido)
-
-Se você não quiser mexer no CSS, pode adicionar uma "margem" invisível usando uma div de espaçamento ou estilo direto na tag do subtítulo:
-
-HTML
-
-<p class="subtitulo" style="margin-top: 100px;">Certificamos que</p> 
-
-Por que isso funciona?
-
-Como o container pai (moldura-interna) tem as seguintes propriedades:
-
-display: flex;
+.tema-Powerplant .selo-imagem { filter: hue-rotate(90deg) saturate(3) brightness(0.8); }
 
         h1 {
             font-family: 'Cinzel', serif;
