@@ -783,7 +783,9 @@ async function carregarDadosCertificados() {
         document.getElementById(`cert-media-${idHtml}`).innerText = media;
 
         // REGRA: Média >= 70 E questões >= 500
-        if (media >= 70 && totalQts >= 500) {
+
+        if (parseFloat(media) >= 10 && totalQts >= 50)
+ {
             const img = document.getElementById(`img-cert-${idHtml}`);
             img.classList.add('diploma-liberado'); // Ativa a cor e o ponteiro
             img.onclick = () => {
