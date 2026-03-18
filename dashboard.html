@@ -796,13 +796,15 @@ async function carregarDadosCertificados() {
             img.onclick = () => {
 
 // Pega o nome que está aparecendo no seu Dashboard agora 
-const nomeAluno = document.getElementById('user-display-name').innerText;
+
+const elementoNome = document.getElementById('user-display-name'); 
+
+const nomeAluno = elementoNome ? elementoNome.innerText : "Estudante";
 
                 // Abre o certificado passando os dados via URL
-                window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}`;
-            };
-        }
-    };
+                window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}&nome=${encodeURIComponent(nomeAluno)
+     }`; 
+};
 
     // Executa a atualização para cada uma
     atualizarLinha('general', 'General');
