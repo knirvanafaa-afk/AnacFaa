@@ -741,6 +741,66 @@ async function alimentarFavoritos() {
 // O gatilho que inicia a função:
 alimentarFavoritos();
 
+async function carregarDadosCertificados() {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+
+    // Busca o histórico (igualzinho na sua página de análise)
+    const { data: historico, error } = await supabase
+        .from('historico_simulados')
+        .select('*')
+        .eq('user_id', user.id);
+
+    if (error) {
+        console.error("Erro ao carregar dados:", error);
+        return;
+    }
+
+    // Criamos o acumulador para as 3 matérias
+    const acumulador = {
+        'General': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 },
+        'Airframe': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 },
+        'Powerplant': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 }
+    };
+
+    // Percorre o histórico e soma os valores
+    historico.forEach(item => {
+        const mat = item.materia; // 'General', 'Airframe' ou 'Powerplant'
+        if (acumulador[mat]) {
+            acumulador[mat].somaNotas += parseFloat(item.nota || 0);
+            acumulador[mat].totalQuestoes += parseInt(item.total_questoes || 0);
+            acumulador[mat].qtdSimulados++;
+        }
+    });
+
+    // Função para aplicar a regra visual em cada linha
+    const atualizarLinha = (idHtml, chaveBanco) => {
+        const dados = acumulador[chaveBanco];
+        const media = dados.qtdSimulados > 0 ? (dados.somaNotas / dados.qtdSimulados).toFixed(1) : 0;
+        const totalQts = dados.totalQuestoes;
+
+        // Atualiza o texto da média na sua coluna centralizada
+        document.getElementById(`cert-media-${idHtml}`).innerText = media;
+
+        // REGRA: Média >= 10 E questões >= 500
+        if (media >= 70 && totalQts >= 500) {
+            const img = document.getElementById(`img-cert-${idHtml}`);
+            img.classList.add('diploma-liberado'); // Ativa a cor e o ponteiro
+            img.onclick = () => {
+                // Abre o certificado passando os dados via URL
+                window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}`;
+            };
+        }
+    };
+
+    // Executa a atualização para cada uma
+    atualizarLinha('general', 'General');
+    atualizarLinha('airframe', 'Airframe');
+    atualizarLinha('powerplant', 'Powerplant');
+}
+
+carregarDadosCertificados(); 
+
 </script>
 </body>
 </html>
