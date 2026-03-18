@@ -794,6 +794,10 @@ async function carregarDadosCertificados() {
             const img = document.getElementById(`img-cert-${idHtml}`);
             img.classList.add('diploma-ativo'); // Ativa a cor e o ponteiro
             img.onclick = () => {
+
+// Pega o nome que está aparecendo no seu Dashboard agora 
+const nomeAluno = document.getElementById('user-name').innerText;
+
                 // Abre o certificado passando os dados via URL
                 window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}`;
             };

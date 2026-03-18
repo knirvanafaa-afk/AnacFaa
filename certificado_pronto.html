@@ -201,6 +201,7 @@
     const urlParams = new URLSearchParams(window.location.search);
     const materiaRaw = urlParams.get('materia') || 'General';
     const media = urlParams.get('media') || '0';
+const nomeURL = urlParams.get('nome');
 
     // 2. Formata o nome da matéria para o destaque
     const materiasFormatadas = {
@@ -208,11 +209,20 @@
         'Airframe': 'FAA Aviation Mechanic — AIRFRAME',
         'Powerplant': 'FAA Aviation Mechanic — POWERPLANT'
     };
-    
-    document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
+        document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
     document.getElementById('cert-media').innerText = media;
     
-    // 3. Define a data atual
+// 3. Define o Nome do Aluno 
+
+const campoNome = document.getElementById('cert-nome-aluno'); 
+if (nomeURL && nomeURL !== "Carregando...") { 
+
+campoNome.innerText = decodeURIComponent(nomeURL); 
+} else { 
+campoNome.innerText = "Estudante WXR"; 
+}
+
+    // 4. Define a data atual
     const hoje = new Date();
     document.getElementById('cert-data').innerText = hoje.toLocaleDateString('pt-BR');
 
