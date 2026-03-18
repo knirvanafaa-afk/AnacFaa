@@ -255,6 +255,54 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     box-shadow: 0px 1px 0px #1e8449; /* A SOMBRA DIMINUI */
 }
 
+.linha-certificado {
+    display: grid;
+    grid-template-columns: 130px 1fr 80px;
+ /* Matéria | Média | Ícone */
+    align-items: center;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.linha-certificado:last-child { border-bottom: none; }
+
+.nome-materia-cert {
+    text-align: left;
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+.status-media-cert {
+    color: #7f8c8d;
+    font-size: 14px;
+    text-align: center;
+}
+
+.icone-diploma-wrapper {
+    text-align: right;
+}
+
+.icone-diploma-cert {
+    width: 35px;
+    height: auto;
+    cursor: not-allowed;
+    filter: grayscale(100%); /* Cinza por padrão */
+    opacity: 0.3;
+    transition: 0.3s;
+}
+
+/* Classes para quando o diploma for ATIVADO */
+.diploma-ativo {
+    cursor: pointer !important;
+    filter: grayscale(0%) !important;
+    opacity: 1 !important;
+}
+
+.diploma-ativo:hover { transform: scale(1.1); }
+
     </style>
 </head>
 <body>
@@ -388,14 +436,47 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
         <div id="lista-certificados">
             <div class="favorito-item" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <strong style="color: #2c3e50;">Certificados Gerais de Estudos</strong>
-                    <div style="font-size: 12px; color: #888;">Emitido em: 15/01/2024</div>
+                    <strong style="color: #2c3e50; display:block; margin-bottom:10px;">Certificados Gerais de Estudos</strong>
+
+<div id="container-certificados-lista" style="margin-top: 10px;">
+    
+    <div class="linha-certificado">
+        <div class="nome-materia-cert">GENERAL</div>
+        <div class="status-media-cert">Média: <span id="cert-media-general">--</span>% </div>
+        <div class="icone-diploma-wrapper">
+            <img src="126711622-certificate-seal-vector-icon-on-a-white-background-an-isolated-flat-icon-illustration-of.jpg" 
+                 id="img-cert-general" class="icone-diploma-cert">
+        </div>
+    </div>
+
+    <div class="linha-certificado">
+        <div class="nome-materia-cert">AIRFRAME</div>
+        <div class="status-media-cert">Média: <span id="cert-media-airframe">--</span>% </div>
+        <div class="icone-diploma-wrapper">
+            <img src="126711622-certificate-seal-vector-icon-on-a-white-background-an-isolated-flat-icon-illustration-of.jpg" 
+                 id="img-cert-airframe" class="icone-diploma-cert" style="filter: grayscale(100%) hue-rotate(140deg);">
+        </div>
+    </div>
+
+    <div class="linha-certificado">
+        <div class="nome-materia-cert">POWERPLANT</div>
+        <div class="status-media-cert">Média: <span id="cert-media-powerplant">--</span>% </div>
+        <div class="icone-diploma-wrapper">
+            <img src="126711622-certificate-seal-vector-icon-on-a-white-background-an-isolated-flat-icon-illustration-of.jpg" 
+                 id="img-cert-powerplant" class="icone-diploma-cert" style="filter: grayscale(100%) hue-rotate(260deg);">
+        </div>
+    </div>
+
+</div>
+
+
+               
                 </div>
             </div>
             
             <div class="favorito-item" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
-                    <strong style="color: #2c3e50;">Certificados Especiais de Mérito</strong>
+                    <strong style="color: #2c3e50; display:block; margin-bottom:10px;">Certificados Especiais de Mérito</strong>
                     <div style="font-size: 12px; color: #888;">Emitido em: 10/12/2023</div>
                 </div>
             </div>
