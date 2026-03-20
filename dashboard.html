@@ -468,16 +468,43 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     </div>
 
 </div>
-
-
-               
+  
                 </div>
-            </div>
+          </div>
             
+ 
+        <div class="secao-titulo">Itens de Inspeção Obrigatória(Certificados)</div>
+        <div id="lista-certificados">
             <div class="favorito-item" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <strong style="color: #2c3e50; display:block; margin-bottom:10px;">Certificados Especiais de Mérito</strong>
-                    <div style="font-size: 12px; color: #888;">Emitido em: 10/12/2023</div>
+
+<div id="container-certificados-lista" style="margin-top: 10px;">
+    
+    <div class="linha-certificado">
+    <div class="nome-materia-cert">BRONZE</div>
+    <div class="status-media-cert">Média Global: <span id="cert-media-bronze">--</span>% </div>
+    <div class="icone-diploma-wrapper">
+       <img src="bronze.jpg" id="img-cert-bronze" class="icone-diploma-cert">
+    </div>
+</div>
+
+<div class="linha-certificado">
+    <div class="nome-materia-cert">SILVER</div>
+    <div class="status-media-cert">Média Global: <span id="cert-media-silver">--</span>% </div>
+    <div class="icone-diploma-wrapper">
+      <img src="silver.jpg" id="img-cert-silver" class="icone-diploma-cert">
+    </div>
+</div>
+
+<div class="linha-certificado">
+    <div class="nome-materia-cert">GOLD</div>
+    <div class="status-media-cert">Média Global: <span id="cert-media-gold">--</span>% </div>
+    <div class="icone-diploma-wrapper">
+        <img src="gold.jpg" id="img-cert-gold" class="icone-diploma-cert">
+    </div>
+</div>
+                         
                 </div>
             </div>
         </div>
@@ -747,27 +774,21 @@ async function carregarDadosCertificados() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Busca o histórico (igualzinho na sua página de análise)
     const { data: historico, error } = await supabase
         .from('historico_simulados')
         .select('*')
         .eq('user_id', user.id);
 
-    if (error) {
-        console.error("Erro ao carregar dados:", error);
-        return;
-    }
+    if (error) return;
 
-    // Criamos o acumulador para as 3 matérias
     const acumulador = {
         'General': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 },
         'Airframe': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 },
         'Powerplant': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 }
     };
 
-    // Percorre o histórico e soma os valores
     historico.forEach(item => {
-        const mat = item.materia; // 'General', 'Airframe' ou 'Powerplant'
+        const mat = item.materia;
         if (acumulador[mat]) {
             acumulador[mat].somaNotas += parseFloat(item.nota || 0);
             acumulador[mat].totalQuestoes += parseInt(item.total_questoes || 0);
@@ -775,39 +796,69 @@ async function carregarDadosCertificados() {
         }
     });
 
-    // Função para aplicar a regra visual em cada linha
-    const atualizarLinha = (idHtml, chaveBanco) => {
-        const dados = acumulador[chaveBanco];
-        const media = dados.qtdSimulados > 0 ? (dados.somaNotas / dados.qtdSimulados).toFixed(1) : 0;
-        const totalQts = dados.totalQuestoes;
-
-        // Atualiza o texto da média na sua coluna centralizada
+    // 1. ATUALIZA OS INDIVIDUAIS (Igual você já tinha)
+    const atualizarLinhaNormal = (idHtml, chaveBanco) => {
+        const d = acumulador[chaveBanco];
+        const media = d.qtdSimulados > 0 ? (d.somaNotas / d.qtdSimulados).toFixed(1) : 0;
         document.getElementById(`cert-media-${idHtml}`).innerText = media;
 
-        // REGRA: Média >= 70 E questões >= 500
+        if (parseFloat(media) >= 70 && d.totalQuestoes >= 500) {
+            ativarBotao(idHtml, chaveBanco, media);
+        }
+    };
 
-        if (parseFloat(media) >= 70 && totalQts >= 500)
- {
-            const img = document.getElementById(`img-cert-${idHtml}`);
-            img.classList.add('diploma-ativo'); // Ativa a cor e o ponteiro
+    // 2. LÓGICA DOS ESPECIAIS (A NOVA IDEIA)
+    const totalQuestoesGeral = acumulador.General.totalQuestoes + acumulador.Airframe.totalQuestoes + acumulador.Powerplant.totalQuestoes;
+    
+    // Cálculo das Médias Individuais para a Média Global
+    const mG = acumulador.General.qtdSimulados > 0 ? (acumulador.General.somaNotas / acumulador.General.qtdSimulados) : 0;
+    const mA = acumulador.Airframe.qtdSimulados > 0 ? (acumulador.Airframe.somaNotas / acumulador.Airframe.qtdSimulados) : 0;
+    const mP = acumulador.Powerplant.qtdSimulados > 0 ? (acumulador.Powerplant.somaNotas / acumulador.Powerplant.qtdSimulados) : 0;
+    
+    const mediaGlobal = ((mG + mA + mP) / 3).toFixed(1);
+
+    // Requisitos mínimos por módulo (Trava de Segurança)
+    const minG = acumulador.General.totalQuestoes;
+    const minA = acumulador.Airframe.totalQuestoes;
+    const minP = acumulador.Powerplant.totalQuestoes;
+
+    // Função Auxiliar para Ativar
+    function ativarBotao(id, materiaNome, mediaValor) {
+        const img = document.getElementById(`img-cert-${id}`);
+        const nomeAl = document.getElementById('user-display-name')?.innerText || "Estudante";
+        if(img) {
+            img.classList.add('diploma-ativo');
             img.onclick = () => {
+                window.location.href = `certificado_pronto.html?materia=${materiaNome}&media=${mediaValor}&nome=${encodeURIComponent(nomeAl)}`;
+            };
+        }
+    }
 
-// Pega o nome que está aparecendo no seu Dashboard agora 
+    // --- VALIDAÇÃO DOS NÍVEIS ESPECIAIS ---
+    
+    // BRONZE: Global >= 70% | Total >= 1500 | Min 500/módulo
+    document.getElementById('cert-media-bronze').innerText = mediaGlobal;
+    if (parseFloat(mediaGlobal) >= 70 && totalQuestoesGeral >= 1500 && minG >= 500 && minA >= 500 && minP >= 500) {
+        ativarBotao('bronze', 'Bronze', mediaGlobal);
+    }
 
-const elementoNome = document.getElementById('user-display-name'); 
+    // SILVER: Global >= 80% | Total >= 3000 | Min 1000/módulo
+    document.getElementById('cert-media-silver').innerText = mediaGlobal;
+    if (parseFloat(mediaGlobal) >= 80 && totalQuestoesGeral >= 3000 && minG >= 1000 && minA >= 1000 && minP >= 1000) {
+        ativarBotao('silver', 'Silver', mediaGlobal);
+    }
 
-const nomeAluno = elementoNome ? elementoNome.innerText : "Estudante"; 
+    // GOLD: Global >= 90% | Total >= 4500 | Min 1500/módulo
+    document.getElementById('cert-media-gold').innerText = mediaGlobal;
+    if (parseFloat(mediaGlobal) >= 90 && totalQuestoesGeral >= 4500 && minG >= 1500 && minA >= 1500 && minP >= 1500) {
+        ativarBotao('gold', 'Gold', mediaGlobal);
+    }
 
-window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}&nome=${encodeURIComponent(nomeAluno)}`; 
-           }; 
-       } 
- };
-
-    // Executa a atualização para cada uma
-    atualizarLinha('general', 'General');
-    atualizarLinha('airframe', 'Airframe');
-    atualizarLinha('powerplant', 'Powerplant');
-} 
+    // Chama as atualizações individuais
+    atualizarLinhaNormal('general', 'General');
+    atualizarLinhaNormal('airframe', 'Airframe');
+    atualizarLinhaNormal('powerplant', 'Powerplant');
+}
 
 </script>
 </body>
