@@ -70,7 +70,7 @@
             const { data: factors } = await supabase.auth.mfa.listFactors();
             
             if (factors && factors.totp && factors.totp.length > 0) {
-                window.location.href = 'verificar-mfa.html'; 
+                window.location.href = 'dashboard.html'; 
             } else {
                 window.location.href = 'ativar-acesso.html';
             }
