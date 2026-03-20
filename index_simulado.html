@@ -56,6 +56,35 @@
         .btn-general { background-color: #3498db; }
         .btn-airframe { background-color: #e74c3c; }
         .btn-powerplant { background-color: #27ae60; }
+
+.btn-voltar {
+    background-color: #27ae60;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; /* Centraliza o texto */
+    gap: 10px;
+    box-shadow: 0px 4px 0px #1e8449;
+    transition: 0.1s;
+    margin-top: 15px; /* Espaço após o botão de cima */
+    margin-bottom: 10px;
+    text-decoration: none;
+    width: 100%; /* Para ocupar a largura do card verde */
+    box-sizing: border-box;
+}
+
+.btn-voltar:active {
+    transform: translateY(3px);
+    box-shadow: 0px 1px 0px #1e8449;
+}
+
     </style>
 </head>
 <body>
@@ -67,6 +96,9 @@
 
     <div class="white-box">
        <div class="btn-grid"> <button class="btn-subject btn-general" onclick="iniciarSimulado('General')">GENERAL</button> <button class="btn-subject btn-airframe" onclick="iniciarSimulado('Airframe')">AIRFRAME</button> <button class="btn-subject btn-powerplant" onclick="iniciarSimulado('Powerplant')">POWERPLANT</button> 
+
+<button class="btn-voltar" onclick="window.location.href='dashboard.html'" style="grid-column: 1 / -1; margin-top: 20px;">⬅ Voltar</button>
+
 </div>
     </div>
 </div>
