@@ -54,36 +54,33 @@
         document.getElementById('custom-alert').style.display = 'flex';
     };
 
-    window.realizarLogin = async () => {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-senha').value;
+    window.realizarLogin = async () => { 
+const email = document.getElementById('login-email').value; 
+const password = document.getElementById('login-senha').value; 
 
-        if(!email || !password) {
-            mostrarMensagem("Preencha e-mail e senha.");
-            return;
-        }
+if(!email || !password) { 
+mostrarMensagem("Preencha e-mail e senha."); 
 
-        try {
-// 1. Verifica se o e-mail existe
-const { data: userExists } = await supabase
-.from('profiles')
-.select('id')
-.eq('email', email)
-.single();
+return; 
+} 
 
-if (!userExists) {
-mostrarMensagem("E-mail não cadastrado.");
-return;
+const { data, error } = await supabase.auth.signInWithPassword({ 
+email, password }); 
+
+if (error) { 
+const { data: checkEmail } = await supabase 
+.from('profiles') 
+.select('id') 
+.eq('email', email) 
+.maybeSingle(); 
+
+if (!checkEmail) { mostrarMensagem("E-mail não cadastrado."); 
+
+} else { 
+mostrarMensagem("Senha inválida."); 
+} 
+return; 
 }
-            // 2. Tenta login
-const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-
-if (error) {
-mostrarMensagem("Senha inválida.");
-return;
-}
-
-
             const { data: factors } = await supabase.auth.mfa.listFactors();
             
             if (factors && factors.totp && factors.totp.length > 0) {
