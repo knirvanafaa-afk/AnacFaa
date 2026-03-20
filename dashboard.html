@@ -838,19 +838,19 @@ async function carregarDadosCertificados() {
     
     // BRONZE: Global >= 70% | Total >= 1500 | Min 500/módulo
     document.getElementById('cert-media-bronze').innerText = mediaGlobal;
-    if (parseFloat(mediaGlobal) >= 70 && totalQuestoesGeral >= 1500 && minG >= 500 && minA >= 500 && minP >= 500) {
+    if (parseFloat(mediaGlobal) >= 10 && totalQuestoesGeral >= 1500 && minG >= 500 && minA >= 500 && minP >= 500) {
         ativarBotao('bronze', 'Bronze', mediaGlobal);
     }
 
     // SILVER: Global >= 80% | Total >= 3000 | Min 1000/módulo
     document.getElementById('cert-media-silver').innerText = mediaGlobal;
-    if (parseFloat(mediaGlobal) >= 80 && totalQuestoesGeral >= 3000 && minG >= 1000 && minA >= 1000 && minP >= 1000) {
+    if (parseFloat(mediaGlobal) >= 10 && totalQuestoesGeral >= 3000 && minG >= 1000 && minA >= 1000 && minP >= 1000) {
         ativarBotao('silver', 'Silver', mediaGlobal);
     }
 
     // GOLD: Global >= 90% | Total >= 4500 | Min 1500/módulo
     document.getElementById('cert-media-gold').innerText = mediaGlobal;
-    if (parseFloat(mediaGlobal) >= 90 && totalQuestoesGeral >= 4500 && minG >= 1500 && minA >= 1500 && minP >= 1500) {
+    if (parseFloat(mediaGlobal) >= 10 && totalQuestoesGeral >= 4500 && minG >= 1500 && minA >= 1500 && minP >= 1500) {
         ativarBotao('gold', 'Gold', mediaGlobal);
     }
 
