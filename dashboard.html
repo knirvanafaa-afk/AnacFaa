@@ -802,7 +802,7 @@ async function carregarDadosCertificados() {
         const media = d.qtdSimulados > 0 ? (d.somaNotas / d.qtdSimulados).toFixed(1) : 0;
         document.getElementById(`cert-media-${idHtml}`).innerText = media;
 
-        if (parseFloat(media) >= 70 && d.totalQuestoes >= 500) {
+        if (parseFloat(media) >= 10 && d.totalQuestoes >= 500) {
             ativarBotao(idHtml, chaveBanco, media);
         }
     };
