@@ -54,44 +54,55 @@
         document.getElementById('custom-alert').style.display = 'flex';
     };
 
-    window.realizarLogin = async () => { 
-const email = document.getElementById('login-email').value; 
-const password = document.getElementById('login-senha').value; 
+    window.realizarLogin = async () => {
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-senha').value;
 
-if(!email || !password) { 
-mostrarMensagem("Preencha e-mail e senha."); 
+    if (!email || !password) {
+        mostrarMensagem("Preencha e-mail e senha.");
+        return;
+    }
 
-return; 
-} 
+    try { // O 'try' precisa começar aqui!
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email,
+            password
+        });
 
-const { data, error } = await supabase.auth.signInWithPassword({ 
-email, password }); 
+        if (error) {
+            // Se der erro de login, verificamos se o e-mail existe
+            // Usamos o 'maybeSingle' para não travar se não encontrar nada
+            const { data: checkEmail, error: errorCheck } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('email', email)
+                .maybeSingle();
 
-if (error) { 
-const { data: checkEmail } = await supabase 
-.from('profiles') 
-.select('id') 
-.eq('email', email) 
-.maybeSingle(); 
-
-if (!checkEmail) { mostrarMensagem("E-mail não cadastrado."); 
-
-} else { 
-mostrarMensagem("Senha inválida."); 
-} 
-return; 
-}
-            const { data: factors } = await supabase.auth.mfa.listFactors();
-            
-            if (factors && factors.totp && factors.totp.length > 0) {
-                window.location.href = 'verificar-mfa.html'; 
+            // Se não encontrar o e-mail OU se der erro de permissão (PGRSTP11),
+            // mas o erro original do login for "Invalid login credentials",
+            // fazemos uma segunda checagem lógica.
+            if (!checkEmail) {
+                mostrarMensagem("E-mail não cadastrado.");
             } else {
-                window.location.href = 'ativar-acesso.html';
+                mostrarMensagem("Senha inválida.");
             }
-        } catch (e) {
-            mostrarMensagem("Erro de Acesso: " + e.message);
+            return;
         }
-    };
+
+        // Se o login passou, verifica MFA
+        const { data: factors } = await supabase.auth.mfa.listFactors();
+
+        if (factors && factors.totp && factors.totp.length > 0) {
+            window.location.href = 'verificar-mfa.html';
+        } else {
+            window.location.href = 'ativar-acesso.html';
+        }
+
+    } catch (e) {
+        mostrarMensagem("Erro de Acesso: " + e.message);
+    }
+};
+
 </script>
 </body>
 </html>
