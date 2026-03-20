@@ -64,8 +64,25 @@
         }
 
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-            if (error) throw error;
+// 1. Verifica se o e-mail existe
+const { data: userExists } = await supabase
+.from('profiles')
+.select('id')
+.eq('email', email)
+.single();
+
+if (!userExists) {
+mostrarMensagem("E-mail não cadastrado.");
+return;
+}
+            // 2. Tenta login
+const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+if (error) {
+mostrarMensagem("Senha inválida.");
+return;
+}
+
 
             const { data: factors } = await supabase.auth.mfa.listFactors();
             
