@@ -404,6 +404,22 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     </table>
 </div>
 
+<div id="custom-confirm" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center;">
+        
+        <p id="confirm-message" style="font-weight: bold; margin-bottom: 20px;"></p>
+
+        <button onclick="confirmarAcao(true)" style="background:#27ae60;color:white;padding:10px 20px;border:none;border-radius:10px;margin-right:10px;cursor:pointer;">
+            SIM
+        </button>
+
+        <button onclick="confirmarAcao(false)" style="background:#e74c3c;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;">
+            NÃO
+        </button>
+
+    </div>
+</div>
+
     <div class="secao-radar-personalizada">
         <div class="radar-header">
             <svg width="40" height="40" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
@@ -902,22 +918,6 @@ window.confirmarAcao = (resposta) => {
     document.getElementById('custom-confirm').style.display = 'none';
     resolverConfirmacao(resposta);
 };
-
-<div id="custom-confirm" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
-    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center;">
-        
-        <p id="confirm-message" style="font-weight: bold; margin-bottom: 20px;"></p>
-
-        <button onclick="confirmarAcao(true)" style="background:#27ae60;color:white;padding:10px 20px;border:none;border-radius:10px;margin-right:10px;cursor:pointer;">
-            SIM
-        </button>
-
-        <button onclick="confirmarAcao(false)" style="background:#e74c3c;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;">
-            NÃO
-        </button>
-
-    </div>
-</div>
 
 </script>
 </body>
