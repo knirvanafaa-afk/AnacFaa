@@ -145,8 +145,7 @@
 .tema-Bronze .moldura-interna::before, .tema-Bronze .moldura-interna::after { border-color: #cd7f32 !important; }
 .tema-Bronze h1, .tema-Bronze .materia-destaque { color: #cd7f32 !important; }
 .tema-Bronze .linha-azul { background-color: #cd7f32 !important; }
-.tema-Bronze .selo-imagem { filter: brightness(0) invert(1) sepia(1) saturate(8) hue-rotate(340deg) brightness(0.8) contrast(1.2) !important; mix-blend-mode: multiply; }
-
+.tema-Bronze .selo-imagem { background-color: #cd7f32 !important; /* Cor do Bronze */ -webkit-mask-image: url('selo_azul.jpg'); mask-image: url('selo_azul.jpg'); -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; filter: none !important; }
 /* TEMA SILVER (Prata) */
 .tema-Silver .moldura-tripla, .tema-Silver .moldura-meio, .tema-Silver .moldura-interna { border-color: #95a5a6 !important; }
 .tema-Silver .moldura-interna::before, .tema-Silver .moldura-interna::after { border-color: #95a5a6 !important; }
@@ -159,7 +158,7 @@
 .tema-Gold .moldura-interna::before, .tema-Gold .moldura-interna::after { border-color: #f1c40f !important; }
 .tema-Gold h1, .tema-Gold .materia-destaque { color: #d4ac0d !important; }
 .tema-Gold .linha-azul { background-color: #f1c40f !important; }
-.tema-Gold .selo-imagem { filter: brightness(0) invert(1) sepia(1) saturate(15) hue-rotate(10deg) brightness(1.1) !important; mix-blend-mode: multiply; }
+.tema-Gold .selo-imagem { background-color: #f1c40f !important; /* Cor do Ouro */ -webkit-mask-image: url('selo_azul.jpg'); /* Usa seu selo como molde */ mask-image: url('selo_azul.jpg'); -webkit-mask-size: contain; mask-size: contain; -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; filter: none !important; /* Remove todos os filtros que deram erro */ }
 
         h1 {
             font-family: 'Cinzel', serif;
