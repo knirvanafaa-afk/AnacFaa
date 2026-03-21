@@ -291,8 +291,10 @@ const nomeURL = urlParams.get('nome');
     const materiasFormatadas = {
         'General': 'FAA Aviation Mechanic — GENERAL',
         'Airframe': 'FAA Aviation Mechanic — AIRFRAME',
-        'Powerplant': 'FAA Aviation Mechanic — POWERPLANT'
-'Bronze': 'FAA Aviation Mechanic — BRONZE MERIT', 'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
+        'Powerplant': 'FAA Aviation Mechanic — POWERPLANT',
+       'Bronze': 'FAA Aviation Mechanic — BRONZE MERIT', 
+       'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 
+      'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
     };
         document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
     document.getElementById('cert-media').innerText = media;
