@@ -210,6 +210,8 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     text-transform: uppercase;
 }
 
+.coluna-remover { width: 40px; text-align: center; padding-left: 10px !important; }
+
 /* Container do Radar com o fundo amarelo e borda */
 .secao-radar-personalizada {
     background-color: #fff9c4; /* O amarelo que você pediu */
@@ -784,7 +786,7 @@ async function alimentarFavoritos() {
             <td class="explica-asa">${f.pergunta}</td>
             <td class="explica-asa">${f.resposta_correta}</td>
 
-            <td style="text-align: right;">
+            <td class="coluna-remover">
                 <img src="Lixeira-aberta.png"
                      style="width:25px; cursor:pointer;"
                      onclick="removerFavorito('${f.id}', this)">
