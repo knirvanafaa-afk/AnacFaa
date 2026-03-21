@@ -210,6 +210,32 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     text-transform: uppercase;
 }
 
+.btn-remover-favorito {
+    background: none;
+    border: none;
+    color: #e74c3c; /* Vermelho erro */
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.btn-remover-favorito:hover {
+    transform: scale(1.2);
+    color: #c0392b;
+}
+
+/* Garante que a linha do favorito seja um flex para o texto ficar na esquerda e a lixeira na direita */
+.linha-favorito {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
 /* Container do Radar com o fundo amarelo e borda */
 .secao-radar-personalizada {
     background-color: #fff9c4; /* O amarelo que você pediu */
@@ -749,9 +775,9 @@ async function alimentarFavoritos() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data: favoritos } = await supabase
+    const { data: favoritos, error } = await supabase
         .from('favoritos')
-        .select('materia, pergunta, resposta_correta')
+        .select('id, materia, pergunta, resposta_correta')
         .eq('user_id', user.id)
      .order('data_flag', { ascending: false })
         .limit(3);
@@ -763,14 +789,34 @@ async function alimentarFavoritos() {
 
     favoritos.forEach(f => {
         const tr = document.createElement('tr');
+    tr.classList.add('linha-favorito-row'); 
         tr.innerHTML = `
             <td class="explica-asa">${f.materia}</td>
             <td class="explica-asa">${f.pergunta}</td>
             <td class="explica-asa">${f.resposta_correta}</td>
+<td style="text-align: right;"> <button class="btn-remover-favorito" onclick="removerFavorito('${f.id}', this)"> 🗑️ </button> </td>
         `;
         tbody.appendChild(tr);
-    });
+       });
+    }
 }
+
+window.removerFavorito = async (idFavorito, elementoHtml) => { 
+if (!confirm("Deseja remover esta questão dos favoritos?")) return; 
+
+const { error } = await supabase 
+    .from('favoritos')
+    .delete() 
+    .eq('id', idFavorito); 
+
+if (error) { 
+alert("Erro ao remover: " + error.message); 
+
+} else { 
+ elementoHtml.closest('tr')
+   .remove();  
+     } 
+};
 
 async function carregarDadosCertificados() {
     const { data: { user } } = await supabase.auth.getUser();
@@ -854,7 +900,8 @@ async function carregarDadosCertificados() {
     document.getElementById('cert-media-gold').innerText = mediaGlobal;
     if (parseFloat(mediaGlobal) >= 90 && totalQuestoesGeral >= 4500 && minG >= 1500 && minA >= 1500 && minP >= 1500) {
         ativarBotao('gold', 'Gold', mediaGlobal);
-    }
+      }
+}
 
     // Chama as atualizações individuais
     atualizarLinhaNormal('general', 'General');
