@@ -872,7 +872,8 @@ async function carregarDadosCertificados() {
         if(img) {
             img.classList.add('diploma-ativo');
             img.onclick = () => {
-                window.location.href = `certificado_pronto.html?materia=${materiaNome}&media=${mediaValor}&nome=${encodeURIComponent(nomeAl)}`;
+                // Adicionamos o parâmetro &tipo para passar a categoria (Bronze, Silver, Gold ou as matérias)
+window.location.href = `certificado_pronto.html?materia=${materiaNome}&media=${mediaValor}&nome=${encodeURIComponent(nomeAl)}&tipo=${materiaNome.toLowerCase()}`;
             };
         }
     }

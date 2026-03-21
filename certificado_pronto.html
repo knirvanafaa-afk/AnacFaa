@@ -140,6 +140,53 @@
 
 .tema-Powerplant .selo-imagem { filter: hue-rotate(255deg) saturate(2.5) brightness(1.2) contrast(1) !important; }
 
+/* TEMA BRONZE (Cobre/Bronze) */
+.tema-Bronze .moldura-tripla, 
+.tema-Bronze .moldura-meio, 
+.tema-Bronze .moldura-interna { border-color: #cd7f32 !important; }
+
+.tema-Bronze .moldura-interna::before, 
+.tema-Bronze .moldura-interna::after { border-color: #cd7f32 !important; }
+
+.tema-Bronze h1, 
+.tema-Bronze .materia-destaque { color: #cd7f32 !important; }
+
+.tema-Bronze .linha-azul { background-color: #cd7f32 !important; }
+
+.tema-Bronze .selo-imagem { filter: hue-rotate(330deg) saturate(1.5) brightness(0.9) !important; }
+
+
+/* TEMA SILVER (Prateado) */
+.tema-Silver .moldura-tripla, 
+.tema-Silver .moldura-meio, 
+.tema-Silver .moldura-interna { border-color: #95a5a6 !important; }
+
+.tema-Silver .moldura-interna::before, 
+.tema-Silver .moldura-interna::after { border-color: #95a5a6 !important; }
+
+.tema-Silver h1, 
+.tema-Silver .materia-destaque { color: #7f8c8d !important; }
+
+.tema-Silver .linha-azul { background-color: #95a5a6 !important; }
+
+.tema-Silver .selo-imagem { filter: grayscale(1) brightness(1.2) !important; }
+
+
+/* TEMA GOLD (Dourado) */
+.tema-Gold .moldura-tripla, 
+.tema-Gold .moldura-meio, 
+.tema-Gold .moldura-interna { border-color: #f1c40f !important; }
+
+.tema-Gold .moldura-interna::before, 
+.tema-Gold .moldura-interna::after { border-color: #f1c40f !important; }
+
+.tema-Gold h1, 
+.tema-Gold .materia-destaque { color: #d4ac0d !important; }
+
+.tema-Gold .linha-azul { background-color: #f1c40f !important; }
+
+.tema-Gold .selo-imagem { filter: hue-rotate(10deg) saturate(5) brightness(1.1) !important; }
+
         h1 {
             font-family: 'Cinzel', serif;
             font-size: 38px;
@@ -265,6 +312,7 @@
     const materiaRaw = urlParams.get('materia') || 'General';
     const media = urlParams.get('media') || '0';
 const nomeURL = urlParams.get('nome');
+const tipo = params.get('tipo');
 
     // 2. Formata o nome da matéria para o destaque
     const materiasFormatadas = {
@@ -291,7 +339,14 @@ campoNome.innerText = "Estudante WXR";
 
     // 5. muda a cor do certificado
 const container = document.querySelector('.certificado-container');
-container.classList.add('tema-' + materiaRaw);
+
+// Se for um dos níveis especiais, usamos o nome da matéria que virá como 'Bronze', 'Silver' ou 'Gold'
+if (materiaRaw === 'Bronze' || materiaRaw === 'Silver' || materiaRaw === 'Gold') {
+    container.classList.add('tema-' + materiaRaw);
+} else {
+    // Mantém o comportamento original para as matérias técnicas
+    container.classList.add('tema-' + materiaRaw);
+}
 
 </script>
 
