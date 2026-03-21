@@ -801,7 +801,7 @@ async function alimentarFavoritos() {
     }
 }
 
-window.removerFavorito = async (idFavorito, elementoHtml) => { 
+window.removerFavorito = async function (idFavorito, elementoHtml) => { 
 if (!confirm("Deseja remover esta questão dos favoritos?")) return; 
 
 const { error } = await supabase 
