@@ -244,6 +244,30 @@
             body { background: white; }
             .certificado-container { margin: 0; box-shadow: none; border: none; }
         }
+
+/* CSS para forçar a quebra de página no PDF */
+@media print {
+    .quebra-pagina {
+        page-break-after: always;
+        height: 0;
+        margin: 0;
+        border: none;
+    }
+}
+
+/* Estilo do container do Verso para ser idêntico à Frente */
+.verso-container {
+    width: 1000px;
+    height: 700px;
+    background-color: #fff;
+    padding: 20px;
+    margin: 20px auto;
+    border: 1px solid #ccc; /* Fica invisível no print */
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
     </style>
 </head>
 <body>
@@ -272,6 +296,26 @@
                 <div class="footer-dados">
                     <div><strong>EMITIDO EM:</strong> <span id="cert-data">--/--/----</span></div>
                     <div><strong>MÉDIA FINAL:</strong> <span id="cert-media">--</span>%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="quebra-pagina"></div>
+
+<div class="certificado-container verso-container" id="verso-layout">
+    <div class="moldura-tripla">
+        <div class="moldura-meio">
+            <div class="moldura-interna" style="padding: 30px;">
+                <h2 style="font-family: 'Cinzel'; letter-spacing: 4px;">Transcrito de Performance</h2>
+                
+                <div id="tabela-dinamica" style="width: 100%; margin-top: 20px;">
+                    </div>
+
+                <div class="footer-dados" style="margin-top: auto;">
+                    <div id="texto-logbook" style="font-size: 12px; text-align: justify; line-height: 1.4;">
+                        </div>
                 </div>
             </div>
         </div>
