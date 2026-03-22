@@ -268,64 +268,6 @@
     flex-direction: column;
 }
 
-/* Container para o efeito de giro */
-.flip-card {
-    background-color: transparent;
-    width: 1000px;
-    height: 700px;
-    perspective: 1500px; /* Intensidade do efeito 3D */
-    margin: 20px auto;
-}
-
-/* O "papel" que gira */
-.flip-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-style: preserve-3d;
-}
-
-/* Classe que o botão vai ativar */
-.flip-card.girar .flip-card-inner {
-    transform: rotateY(180deg);
-}
-
-/* Garante que a Frente e o Verso ocupem o mesmo espaço */
-#printable, #verso-layout {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    margin: 0 !important; /* Remove margens externas para não deslocar */
-}
-
-/* O Verso já nasce de costas */
-#verso-layout {
-    transform: rotateY(180deg);
-}
-
-/* AJUSTE PARA IMPRESSORA: Ignora o 3D e coloca um embaixo do outro */
-@media print {
-    .flip-card { 
-        height: auto; 
-        perspective: none; 
-        margin: 0;
-    }
-    .flip-card-inner { 
-        transform: none !important; 
-        transform-style: flat; 
-    }
-    #printable, #verso-layout { 
-        position: relative; 
-        transform: none !important; 
-        display: block; 
-        page-break-after: always; /* Garante 1 página para cada */
-    }
-    .btn-visualizacao { display: none; } /* Esconde o botão no PDF */
-}
-
     </style>
 </head>
 <body>
@@ -360,7 +302,25 @@
     </div>
 </div>
 
-<div class="certificado-container verso-container" id="verso-layout"> <div class="moldura-tripla"> <div class="moldura-meio"> <div class="moldura-interna" style="padding: 30px;"> <h2 style="font-family: 'Cinzel'; letter-spacing: 4px; text-align: center;">Transcrito de Performance</h2> <div id="tabela-dinamica" style="width: 100%; margin-top: 20px;"> </div> <div class="footer-dados" style="margin-top: auto;"> <div id="texto-logbook" style="font-size: 12px; text-align: justify; line-height: 1.4;"> </div> </div> </div> </div> </div> </div> </div> </div> <div style="text-align: center; margin-top: 20px;" class="btn-visualizacao"> <button class="btn-imprimir" onclick="document.getElementById('card-principal').classList.toggle('girar')"> 🔄 Ver Verso / Ver Frente </button> </div>
+<div class="quebra-pagina"></div>
+
+<div class="certificado-container verso-container" id="verso-layout">
+    <div class="moldura-tripla">
+        <div class="moldura-meio">
+            <div class="moldura-interna" style="padding: 30px;">
+                <h2 style="font-family: 'Cinzel'; letter-spacing: 4px;">Transcrito de Performance</h2>
+                
+                <div id="tabela-dinamica" style="width: 100%; margin-top: 20px;">
+                    </div>
+
+                <div class="footer-dados" style="margin-top: auto;">
+                    <div id="texto-logbook" style="font-size: 12px; text-align: justify; line-height: 1.4;">
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <button class="btn-imprimir" onclick="window.print()">Salvar como PDF / Imprimir</button>
 
