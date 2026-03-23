@@ -495,10 +495,9 @@ async function carregarDadosReais() {
         .eq('user_id', userId)
         .eq('materia', materia);
 
-    if (historico) {
-        // Agrupamos os dados para a função que você já tem
+    if (historico && historico.length > 0) {
         const dadosAgrupados = processarHistorico(historico);
-        renderizarDadosVerso(dadosAgrupados);
+        window.renderizarDadosVerso(dadosAgrupados); 
     }
 }
 
