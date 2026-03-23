@@ -465,38 +465,36 @@
     }
 
     async function carregarDadosReais() {
+        // 1. Identifica o ID do usuário logado (Tabela Interna USERS)
+        const { data: { user } } = await supabase.auth.getUser();
+        const userId = user?.id;
 
-    // Pega o usuário logado diretamente da tabela de sistema (users)
-    const { data: { user } } = await supabase.auth.getUser();
-    const userId = user?.id; 
+        if (!userId) return;
 
-    if (!userId) return;
+        // 2. Busca o nome editado na tabela PROFILE usando o ID que pegamos acima
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', userId)
+            .single();
 
-    // Mantém a busca do username na profiles, mas agora o userId veio da 'users'
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', userId)
-        .single();
+        // 3. Aplica o nome no certificado (Se existir no profile, ele usa. Se não, mantém o "Carregando...")
+        if (profile && profile.username) {
+            document.getElementById('cert-nome-aluno').innerText = profile.username;
+        }
 
-    if (profile) {
-        document.getElementById('cert-nome-aluno').innerText = profile.username;
+        // 4. Busca o histórico de simulados usando o mesmo ID
+        const { data: historico } = await supabase
+            .from('historico_simulados')
+            .select('capitulo, nota, tipo, tempo')
+            .eq('user_id', userId)
+            .eq('materia', materiaRaw);
+
+        if (historico && historico.length > 0) {
+            const dadosAgrupados = processarHistorico(historico);
+            window.renderizarDadosVerso(dadosAgrupados); 
+        }
     }
-
-    // O resto do seu código (historico_simulados, etc) continua igual...
-
-
-    const { data: historico } = await supabase
-        .from('historico_simulados')
-        .select('capitulo, nota, tipo, tempo')
-        .eq('user_id', userId)
-        .eq('materia', materiaRaw);
-
-    if (historico && historico.length > 0) {
-        const dadosAgrupados = processarHistorico(historico);
-        window.renderizarDadosVerso(dadosAgrupados); 
-    }
-}
 
     function processarHistorico(lista) {
         const caps = {};
