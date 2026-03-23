@@ -470,21 +470,23 @@
     }
 
 async function carregarDadosReais() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const Id = urlParams.get('id'); 
-    const materia = urlParams.get('materia');
 
-    if (!Id) return;
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id'); 
+    const materia = urlParams.get('materia');
 
-    // 1. Busca o nome do aluno na tabela 'profiles'
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', Id)
-        .single();
+    if (!userId) return;
 
-    if (profile) {
-        document.getElementById('cert-nome-aluno').innerText = profile.username;
+    // 1. Busca o nome do aluno na tabela 'profiles'
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', userId)
+        .single();
+
+    if (profile) {
+ document.getElementById('cert-nome-aluno').innerText = profile.username;
     }
 
     // 2. Busca o histórico na tabela 'historico_simulados'
@@ -492,7 +494,7 @@ async function carregarDadosReais() {
     const { data: historico, error } = await supabase
         .from('historico_simulados')
         .select('capitulo, nota, tipo, tempo')
-        .eq('user_id', Id)
+        .eq('user_id', id)
         .eq('materia', materia);
 
     if (historico && historico.length > 0) {
