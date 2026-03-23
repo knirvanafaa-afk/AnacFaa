@@ -312,118 +312,95 @@
 </head>
 <body>
 
-<div class="certificado-container" id="printable">
-    <div class="moldura-tripla">
-        <div class="moldura-meio">
-            <div class="moldura-interna">
-                <img src="selo.jpg" class="selo-imagem" id="selo-dinamico"> 
-
-                <div style="height: 60px;"></div>
-                
-               <h1>Certificado de Estudos</h1>
-                <p class="subtitulo">Certificamos que</p>
-                
-                <div class="nome-aluno" id="cert-nome-aluno">Carregando...</div>
-                
-                <div class="linha-azul"></div>
-                
-                <div class="texto-conclusao">
-                    demonstrou com sucesso proficiência profissional ao concluir todos os exames e simulações práticas exigidas para o módulo de:
-                    
-                    <span class="materia-destaque" id="cert-materia">FAA Aviation Mechanic</span>
-                </div>
-
-                <div class="footer-dados">
-                    <div><strong>EMITIDO EM:</strong> <span id="cert-data">--/--/----</span></div>
-                    <div><strong>MÉDIA FINAL:</strong> <span id="cert-media">--</span>%</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="quebra-pagina"></div>
-
-<div class="certificado-container verso-container" id="verso-layout">
-    <div class="moldura-tripla">
-        <div class="moldura-meio">
-            <div class="moldura-interna" style="padding: 30px;">
-                <h2 style="font-family: 'Cinzel'; letter-spacing: 4px;">Transcrito de Performance</h2>
-                
-                <div id="tabela-dinamica" style="width: 100%; margin-top: 20px;">
-                    </div>
-
-                <div class="footer-dados" style="margin-top: auto;">
-                    <div id="texto-logbook" style="font-size: 12px; text-align: justify; line-height: 1.4;">
-                        </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<body>
 
 <div class="flip-card" id="card-principal">
     <div class="flip-card-inner">
         
         <div class="certificado-container" id="printable">
+            <div class="moldura-tripla">
+                <div class="moldura-meio">
+                    <div class="moldura-interna">
+                        <img src="selo.jpg" class="selo-imagem" id="selo-dinamico"> 
+                        <div style="height: 60px;"></div>
+                        <h1>Certificado de Estudos</h1>
+                        <p class="subtitulo">Certificamos que</p>
+                        <div class="nome-aluno" id="cert-nome-aluno">Carregando...</div>
+                        <div class="linha-azul"></div>
+                        <div class="texto-conclusao">
+                            demonstrou com sucesso proficiência profissional ao concluir todos os exames e simulações práticas exigidas para o módulo de:
+                            <span class="materia-destaque" id="cert-materia">FAA Aviation Mechanic</span>
+                        </div>
+                        <div class="footer-dados">
+                            <div><strong>EMITIDO EM:</strong> <span id="cert-data">--/--/----</span></div>
+                            <div><strong>MÉDIA FINAL:</strong> <span id="cert-media">--</span>%</div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
 
         <div class="certificado-container verso-container" id="verso-layout">
+            <div class="moldura-tripla">
+                <div class="moldura-meio">
+                    <div class="moldura-interna" style="padding: 30px;">
+                        <h2 style="font-family: 'Cinzel'; letter-spacing: 4px; text-align: center;">Transcrito de Performance</h2>
+                        <div id="tabela-dinamica" style="width: 100%; margin-top: 20px;">
+                            </div>
+                        <div class="footer-dados" style="margin-top: auto;">
+                            <div id="texto-logbook" style="font-size: 12px; text-align: justify; line-height: 1.4;">
+                                </div>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </div>
 
     </div>
 </div>
 
-<div style="text-align: center;">
+<div style="text-align: center; margin-top: 20px;">
     <button class="btn-imprimir" onclick="document.getElementById('card-principal').classList.toggle('girar')">
-        🔄 VIRAR CERTIFICADO
+        🔄 VER VERSO / FRENTE
+    </button>
+    <button class="btn-imprimir" onclick="window.print()" style="margin-left: 10px;">
+        💾 SALVAR PDF
     </button>
 </div>
 
-
-<button class="btn-imprimir" onclick="window.print()">Salvar como PDF / Imprimir</button>
-
 <script type="module">
-    // 1. Pega os parâmetros da URL (materia e media)
     const urlParams = new URLSearchParams(window.location.search);
     const materiaRaw = urlParams.get('materia') || 'General';
     const media = urlParams.get('media') || '0';
-const nomeURL = urlParams.get('nome');
+    const nomeURL = urlParams.get('nome');
 
-    // 2. Formata o nome da matéria para o destaque
     const materiasFormatadas = {
         'General': 'FAA Aviation Mechanic — GENERAL',
         'Airframe': 'FAA Aviation Mechanic — AIRFRAME',
         'Powerplant': 'FAA Aviation Mechanic — POWERPLANT',
-       'Bronze': 'FAA Aviation Mechanic — BRONZE MERIT', 
-       'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 
-      'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
+        'Bronze': 'FAA Aviation Mechanic — BRONZE MERIT', 
+        'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 
+        'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
     };
-        document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
+
+    document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
     document.getElementById('cert-media').innerText = media;
     
-// 3. Define o Nome do Aluno 
+    const campoNome = document.getElementById('cert-nome-aluno'); 
+    if (nomeURL && nomeURL !== "Carregando...") { 
+        campoNome.innerText = decodeURIComponent(nomeURL); 
+    } else { 
+        campoNome.innerText = "Estudante WXR"; 
+    }
 
-const campoNome = document.getElementById('cert-nome-aluno'); 
-if (nomeURL && nomeURL !== "Carregando...") { 
-
-campoNome.innerText = decodeURIComponent(nomeURL); 
-} else { 
-campoNome.innerText = "Estudante WXR"; 
-}
-
-    // 4. Define a data atual
     const hoje = new Date();
     document.getElementById('cert-data').innerText = hoje.toLocaleDateString('pt-BR');
 
-
-        // 5. Muda a cor de ambos os lados
-const frente = document.getElementById('printable');
-const verso = document.getElementById('verso-layout');
-
-frente.classList.add('tema-' + materiaRaw);
-verso.classList.add('tema-' + materiaRaw);
-
+    // APLICANDO TEMA NOS DOIS LADOS
+    const frente = document.getElementById('printable');
+    const verso = document.getElementById('verso-layout');
+    if(frente) frente.classList.add('tema-' + materiaRaw);
+    if(verso) verso.classList.add('tema-' + materiaRaw);
 </script>
 
 </body>
