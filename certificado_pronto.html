@@ -470,7 +470,11 @@
     const userId = user?.id;
 
     if (!userId) return;
+
+if (user.user_metadata && user.user_metadata.full_name) { document.getElementById('cert-nome-aluno').innerText = user.user_metadata.full_name;
+
     }
+
 
     const { data: historico } = await supabase
         .from('historico_simulados')
