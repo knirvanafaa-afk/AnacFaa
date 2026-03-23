@@ -401,6 +401,47 @@
     const verso = document.getElementById('verso-layout');
     if(frente) frente.classList.add('tema-' + materiaRaw);
     if(verso) verso.classList.add('tema-' + materiaRaw);
+
+// Função para transformar "1min 20s" em segundos
+function textoParaSegundos(texto) {
+    if (!texto) return 0;
+    const numeros = texto.match(/\d+/g); // Pega só os números
+    if (!numeros) return 0;
+    
+    if (numeros.length === 2) {
+        return (parseInt(numeros[0]) * 60) + parseInt(numeros[1]);
+    }
+    return parseInt(numeros[0]);
+}
+
+// Lógica para preencher o Verso
+function preencherLogbook(dadosVindosDoSQL) {
+    let totalSegundos = 0;
+    let totalProvas = 0;
+    let totalSimulados = 0;
+
+    dadosVindosDoSQL.forEach(item => {
+        // 1. Soma Provas e Simulados
+        totalProvas += parseInt(item.total_provas);
+        totalSimulados += parseInt(item.total_simulados);
+
+        // 2. Trata a lista de tempos (ex: "0min 16s|0min 3s")
+        const tempos = item.lista_tempos.split('|');
+        tempos.forEach(t => {
+            totalSegundos += textoParaSegundos(t);
+        });
+    });
+
+    // 3. Converte para Horas
+    const horasDecimais = (totalSegundos / 3600).toFixed(1);
+
+    // 4. Injeta no seu HTML
+    document.getElementById('texto-logbook').innerHTML = `
+        <strong>OFFICIAL LOGBOOK:</strong> O técnico realizou <b>${totalProvas} Provas</b> e 
+        <b>${totalSimulados} Simulados</b>, totalizando <u>${horasDecimais} horas</u> de estudo ativo.
+    `;
+}
+
 </script>
 
 </body>
