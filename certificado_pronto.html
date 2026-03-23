@@ -416,9 +416,13 @@ campoNome.innerText = "Estudante WXR";
     const hoje = new Date();
     document.getElementById('cert-data').innerText = hoje.toLocaleDateString('pt-BR');
 
-    // 5. muda a cor do certificado
-const container = document.querySelector('.certificado-container');
-container.classList.add('tema-' + materiaRaw);
+
+        // 5. Muda a cor de ambos os lados
+const frente = document.getElementById('printable');
+const verso = document.getElementById('verso-layout');
+
+frente.classList.add('tema-' + materiaRaw);
+verso.classList.add('tema-' + materiaRaw);
 
 </script>
 
