@@ -495,7 +495,7 @@ async function carregarDadosReais() {
         .from('historico_simulados')
         .select('capitulo, nota, tipo, tempo')
         .eq('user_id', id)
-        .eq('materia', materia);
+        .eq('materia', materiaRaw);
 
     if (historico && historico.length > 0) {
         const dadosAgrupados = processarHistorico(historico);
