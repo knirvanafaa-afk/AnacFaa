@@ -344,7 +344,9 @@
                 <div class="moldura-meio">
                     <div class="moldura-interna" style="padding: 30px;">
                         <h2 style="margin-bottom: 5px; padding-bottom: 0; font-family: 'Cinzel'; letter-spacing: 4px; text-align: center;">Histórico de Estudos</h2>
-                        <div id="tabela-dinamica" style="margin-top: 0; padding-top: 0; width: 100%; margin-top: 20px;">
+                     
+   <div id="tabela-dinamica" style="margin-top: 0; padding-top: 0; width: 100%; margin-top: 20px;">
+
                             </div>
                         <div class="footer-dados" style="margin-top: auto;">
                             <div id="texto-logbook" style="font-size: 12px; text-align: justify; line-height: 1.4;">
@@ -452,7 +454,60 @@
         });
 
         tabelaHtml += `</tbody></table>`;
-        document.getElementById('tabela-dinamica').innerHTML = tabelaHtml;
+
+const ePremio = ['Bronze', 'Silver', 'Gold'].includes(materiaRaw);
+const container = document.getElementById('tabela-dinamica');
+        if (ePremio) {
+
+    // ativa layout de colunas
+    container.style.display = 'flex';
+    container.style.flexWrap = 'wrap';
+    container.style.justifyContent = 'space-between';
+    container.style.gap = '10px';
+
+    container.innerHTML = "";
+
+    const materias = ['General', 'Airframe', 'Powerplant'];
+
+    materias.forEach(m => {
+
+        const dadosFiltrados = dadosVindosDoSQL.filter(item => item.materia === m);
+
+        let tabelaLocal = `
+            <table style="flex:1; min-width: 30%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
+                <thead>
+                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
+                        <th colspan="3" style="padding: 6px; text-align: center;">${m}</th>
+                    </tr>
+                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
+                        <th style="padding: 6px; text-align: left;">Capítulo</th>
+                        <th style="padding: 6px; text-align: center;">Melhor Nota</th>
+                        <th style="padding: 6px; text-align: center;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        dadosFiltrados.forEach(item => {
+            tabelaLocal += `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 6px;">${item.capitulo}</td>
+                    <td style="padding: 6px; text-align: center;">${item.melhor_nota}%</td>
+                    <td style="padding: 6px; text-align: center; color: green; font-weight: bold;">PASS</td>
+                </tr>`;
+        });
+
+        tabelaLocal += `</tbody></table>`;
+
+        container.innerHTML += tabelaLocal;
+    });
+
+} else {
+
+    // volta ao comportamento original
+    container.style.display = 'block';
+
+    container.innerHTML = tabelaHtml;
+}
 
         const horasDecimais = (totalSegundos / 3600).toFixed(1);
         document.getElementById('texto-logbook').innerHTML = `
@@ -491,7 +546,7 @@
 
     let query = supabase
         .from('historico_simulados')
-        .select('capitulo, nota, tipo, tempo')
+        .select('capitulo, nota, tipo, tempo, materia')
         .eq('user_id', userId);
 
     // Se NÃO for prêmio, filtra pela matéria. Se FOR prêmio, não coloca esse filtro (traz tudo)
@@ -512,6 +567,7 @@
             if (!caps[item.capitulo]) {
                 caps[item.capitulo] = { 
                     capitulo: item.capitulo, 
+                    materia: item.materia,
                     melhor_nota: 0, 
                     total_provas: 0, 
                     total_simulados: 0, 
