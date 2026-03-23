@@ -470,15 +470,6 @@
     const userId = user?.id;
 
     if (!userId) return;
-
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('id', userId)
-        .single();
-
-    if (profile) {
-        document.getElementById('cert-nome-aluno').innerText = profile.username;
     }
 
     const { data: historico } = await supabase
