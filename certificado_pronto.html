@@ -268,6 +268,46 @@
     flex-direction: column;
 }
 
+/* Container que dá a profundidade */
+.flip-card {
+    background-color: transparent;
+    width: 1000px;
+    height: 700px;
+    perspective: 1500px; 
+    margin: 20px auto;
+}
+
+/* O "papel" que contém a frente e o verso */
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+}
+
+/* Quando o botão for clicado, ele adiciona essa classe e gira */
+.flip-card.girar .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* Faz a Frente e o Verso ocuparem o mesmo lugar exato */
+#printable, #verso-layout {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    margin: 0 !important;
+}
+
+/* O Verso começa virado para trás */
+#verso-layout {
+    transform: rotateY(180deg);
+}
+
     </style>
 </head>
 <body>
@@ -321,6 +361,25 @@
         </div>
     </div>
 </div>
+
+<div class="flip-card" id="card-principal">
+    <div class="flip-card-inner">
+        
+        <div class="certificado-container" id="printable">
+            </div>
+
+        <div class="certificado-container verso-container" id="verso-layout">
+            </div>
+
+    </div>
+</div>
+
+<div style="text-align: center;">
+    <button class="btn-imprimir" onclick="document.getElementById('card-principal').classList.toggle('girar')">
+        🔄 VIRAR CERTIFICADO
+    </button>
+</div>
+
 
 <button class="btn-imprimir" onclick="window.print()">Salvar como PDF / Imprimir</button>
 
