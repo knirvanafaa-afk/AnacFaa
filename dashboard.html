@@ -589,17 +589,28 @@ carregarDadosCertificados();
         const input = document.getElementById('display-name-input');
         const novoNome = input.value.trim();
 
-        if (novoNome && novoNome !== span.innerText && novoNome !== "Carregando...") {
+       if (novoNome && novoNome !== span.innerText && novoNome !== "Carregando...") {
             try {
-                const { error } = await supabase.auth.updateUser({
+                // 1. Continua atualizando o Auth (como você já faz)
+                await supabase.auth.updateUser({
                     data: { full_name: novoNome }
                 });
+
+                // 2. ATUALIZA A TABELA PROFILES (O que faltava para o certificado ler)
+                const { data: { user } } = await supabase.auth.getUser();
+                const { error } = await supabase
+                    .from('profiles')
+                    .update({ username: novoNome }) // Aqui ele grava na tabela que o certificado usa
+                    .eq('id', user.id);
+
                 if (error) throw error;
                 span.innerText = novoNome;
             } catch (error) {
                 alert("Erro ao atualizar nome: " + error.message);
             }
         }
+
+
         // Esconde o input e mostra o span
         input.style.display = 'none';
         span.style.display = 'inline-block';
