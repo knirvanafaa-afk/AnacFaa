@@ -473,7 +473,7 @@ async function carregarDadosReais() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('user_id'); 
-    const materiaRaw = urlParams.get('materia');
+    const materia = urlParams.get('materia');
 
     if (!userId) return;
 
@@ -495,7 +495,7 @@ async function carregarDadosReais() {
         .from('historico_simulados')
         .select('capitulo, nota, tipo, tempo')
         .eq('user_id', userId)
-        .eq('materia', materiaRaw);
+        .eq('materia', materia);
 
     if (historico && historico.length > 0) {
         const dadosAgrupados = processarHistorico(historico);
