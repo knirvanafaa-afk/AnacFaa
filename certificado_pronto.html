@@ -485,11 +485,21 @@
         }
 
         // 4. Busca o histórico de simulados (Também apenas leitura)
-        const { data: historico } = await supabase
-            .from('historico_simulados')
-            .select('capitulo, nota, tipo, tempo')
-            .eq('user_id', userId)
-            .eq('materia', materiaRaw);
+
+        // Define se deve filtrar por uma matéria específica ou buscar todas (para os prêmios)
+    const ePremio = ['Bronze', 'Silver', 'Gold'].includes(materiaRaw);
+
+    let query = supabase
+        .from('historico_simulados')
+        .select('capitulo, nota, tipo, tempo')
+        .eq('user_id', userId);
+
+    // Se NÃO for prêmio, filtra pela matéria. Se FOR prêmio, não coloca esse filtro (traz tudo)
+    if (!ePremio) {
+        query = query.eq('materia', materiaRaw);
+    }
+
+    const { data: historico } = await query;
 
         if (historico && historico.length > 0) {
             const dadosAgrupados = processarHistorico(historico);
