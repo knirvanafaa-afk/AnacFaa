@@ -465,30 +465,33 @@
     }
 
     async function carregarDadosReais() {
-const idParaTeste = userId || '0e2a2bb3-c8f5-4ae0-bacc-95de8062b6c9';
-        if (!userId) return;
 
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', userId)
-            .single();
+    const { data: { user } } = await supabase.auth.getUser();
+    const userId = user?.id;
 
-        if (profile) {
-            document.getElementById('cert-nome-aluno').innerText = profile.username;
-        }
+    if (!userId) return;
 
-        const { data: historico, error } = await supabase
-            .from('historico_simulados')
-            .select('capitulo, nota, tipo, tempo')
-            .eq('user_id', idParaTeste)
-            .eq('materia', materiaRaw);
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', userId)
+        .single();
 
-        if (historico && historico.length > 0) {
-            const dadosAgrupados = processarHistorico(historico);
-            window.renderizarDadosVerso(dadosAgrupados); 
-        }
+    if (profile) {
+        document.getElementById('cert-nome-aluno').innerText = profile.username;
     }
+
+    const { data: historico } = await supabase
+        .from('historico_simulados')
+        .select('capitulo, nota, tipo, tempo')
+        .eq('user_id', userId)
+        .eq('materia', materiaRaw);
+
+    if (historico && historico.length > 0) {
+        const dadosAgrupados = processarHistorico(historico);
+        window.renderizarDadosVerso(dadosAgrupados); 
+    }
+}
 
     function processarHistorico(lista) {
         const caps = {};
