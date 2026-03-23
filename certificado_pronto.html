@@ -228,6 +228,7 @@
 
         /* Botão para o aluno imprimir/salvar em PDF */
         .btn-imprimir {
+            font-size: 16px;
             display: block;
             margin: 20px auto;
             padding: 10px 20px;
@@ -244,7 +245,6 @@
             body { background: white; }
             .certificado-container { margin: 0; box-shadow: none; border: none; }
         }
-
 /* CSS para forçar a quebra de página no PDF */
 @media print {
     .quebra-pagina {
@@ -360,12 +360,12 @@
 </div>
 
 <div style="text-align: center; margin-top: 20px;">
+
     <button class="btn-imprimir" onclick="document.getElementById('card-principal').classList.toggle('girar')">
         🔄 VER VERSO / FRENTE
     </button>
-    <button class="btn-imprimir" onclick="window.print()" style="margin-left: 10px;">
-        💾 SALVAR PDF
-    </button>
+
+    <button class="btn-imprimir" onclick="window.print()">Salvar como PDF / Imprimir</button>
 </div>
 
 <script type="module">
