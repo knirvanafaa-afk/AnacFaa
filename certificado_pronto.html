@@ -368,6 +368,14 @@
 </div>
 
 <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+    import { validarAcessoTotal } from './seguranca.js';
+
+    // 1. Inicialização
+    validarAcessoTotal(false);
+    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+
     const urlParams = new URLSearchParams(window.location.search);
     const materiaRaw = urlParams.get('materia') || 'General';
     const media = urlParams.get('media') || '0';
@@ -461,20 +469,67 @@
         `;
     }
 
-// BUSCA AUTOMÁTICA DOS DADOS REAIS
-const userId = urlParams.get('user_id'); // Pega o ID do aluno da URL
+async function carregarDadosReais() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id'); 
+    const materia = urlParams.get('materia');
 
-if (userId) {
-    // Substitua 'busca_dados.php' pelo caminho do seu arquivo que executa a SQL
-    fetch(`busca_dados.php?user_id=${userId}&materia=${materiaRaw}`)
-        .then(response => response.json())
-        .then(dados => {
-            if (dados && dados.length > 0) {
-                renderizarDadosVerso(dados);
-            }
-        })
-        .catch(err => console.error("Erro ao carregar dados do verso:", err));
+    if (!userId) return;
+
+    // 1. Busca o nome do aluno na tabela 'profiles'
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('username')
+        .eq('id', userId)
+        .single();
+
+    if (profile) {
+        document.getElementById('cert-nome-aluno').innerText = profile.username;
+    }
+
+    // 2. Busca o histórico na tabela 'historico_simulados'
+    // Exatamente como está no seu CSV: capitulo, nota, tipo, tempo
+    const { data: historico, error } = await supabase
+        .from('historico_simulados')
+        .select('capitulo, nota, tipo, tempo')
+        .eq('user_id', userId)
+        .eq('materia', materia);
+
+    if (historico) {
+        // Agrupamos os dados para a função que você já tem
+        const dadosAgrupados = processarHistorico(historico);
+        renderizarDadosVerso(dadosAgrupados);
+    }
 }
+
+// Função para organizar os dados do banco no formato que o certificado espera
+function processarHistorico(lista) {
+    const caps = {};
+    lista.forEach(item => {
+        if (!caps[item.capitulo]) {
+            caps[item.capitulo] = { 
+                capitulo: item.capitulo, 
+                melhor_nota: 0, 
+                total_provas: 0, 
+                total_simulados: 0, 
+                tempos_brutos: [] 
+            };
+        }
+        
+        if (item.nota > caps[item.capitulo].melhor_nota) caps[item.capitulo].melhor_nota = item.nota;
+        if (item.tipo === 'Prova') caps[item.capitulo].total_provas++;
+        if (item.tipo === 'Simulado') caps[item.capitulo].total_simulados++;
+        caps[item.capitulo].tempos_brutos.push(item.tempo);
+    });
+
+    return Object.values(caps).map(c => ({
+        ...c,
+        tempos_brutos: c.tempos_brutos.join('|')
+    }));
+}
+
+// Chama a função ao carregar a página
+carregarDadosReais();
 
 </script>
 
