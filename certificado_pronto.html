@@ -473,7 +473,7 @@ async function carregarDadosReais() {
 
     const urlParams = new URLSearchParams(window.location.search);
     const userId = urlParams.get('user_id'); 
-    const materia = urlParams.get('materia');
+    const materiaRaw = urlParams.get('materia');
 
     if (!userId) return;
 
