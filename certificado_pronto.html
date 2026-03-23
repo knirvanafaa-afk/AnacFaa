@@ -310,7 +310,6 @@
 
     </style>
 </head>
-<body>
 
 <body>
 
@@ -401,18 +400,6 @@
     const verso = document.getElementById('verso-layout');
     if(frente) frente.classList.add('tema-' + materiaRaw);
     if(verso) verso.classList.add('tema-' + materiaRaw);
-
-// Função para transformar "1min 20s" em segundos
-function textoParaSegundos(texto) {
-    if (!texto) return 0;
-    const numeros = texto.match(/\d+/g); // Pega só os números
-    if (!numeros) return 0;
-    
-    if (numeros.length === 2) {
-        return (parseInt(numeros[0]) * 60) + parseInt(numeros[1]);
-    }
-    return parseInt(numeros[0]);
-}
 
 // --- LÓGICA DO VERSO (PROCESSANDO O SEU SQL) ---
 
