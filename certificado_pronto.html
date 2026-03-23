@@ -463,6 +463,21 @@
 
     renderizarDadosVerso([{capitulo: "Basic Electricity", melhor_nota: 100, total_provas: 1, total_simulados: 5, tempos_brutos: "0min 16s|1min 20s"}]);
 
+// BUSCA AUTOMÁTICA DOS DADOS REAIS
+const userId = urlParams.get('user_id'); // Pega o ID do aluno da URL
+
+if (userId) {
+    // Substitua 'busca_dados.php' pelo caminho do seu arquivo que executa a SQL
+    fetch(`busca_dados.php?user_id=${userId}&materia=${materiaRaw}`)
+        .then(response => response.json())
+        .then(dados => {
+            if (dados && dados.length > 0) {
+                renderizarDadosVerso(dados);
+            }
+        })
+        .catch(err => console.error("Erro ao carregar dados do verso:", err));
+}
+
 </script>
 
 </body>
