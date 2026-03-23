@@ -245,6 +245,7 @@
             body { background: white; }
             .certificado-container { margin: 0; box-shadow: none; border: none; }
         }
+
 /* CSS para forçar a quebra de página no PDF */
 @media print {
     .quebra-pagina {
@@ -253,6 +254,23 @@
         margin: 0;
         border: none;
     }
+
+.flip-card,
+.flip-card-inner {
+    transform: none !important;
+    perspective: none !important;
+}
+
+#printable, 
+#verso-layout {
+    position: relative !important;
+    transform: none !important;
+    backface-visibility: visible !important;
+}
+
+#verso-layout {
+    page-break-before: always;
+       }
 }
 
 /* Estilo do container do Verso para ser idêntico à Frente */
