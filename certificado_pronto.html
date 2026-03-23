@@ -465,25 +465,26 @@
     }
 
     async function carregarDadosReais() {
-        // 1. Identifica o ID do usuário logado (Tabela Interna USERS)
-        const { data: { user } } = await supabase.auth.getUser();
+        // 1. Identifica o ID do sistema (tabela users/auth) - APENAS LEITURA
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
         const userId = user?.id;
 
-        if (!userId) return;
+        if (!userId || authError) return;
 
-        // 2. Busca o nome editado na tabela PROFILE usando o ID que pegamos acima
+        // 2. Busca o nome na tabela profile (onde o lápis.jpg salva)
+        // Usamos .maybeSingle() para não travar o código caso o perfil demore a responder
         const { data: profile } = await supabase
             .from('profiles')
             .select('username')
             .eq('id', userId)
-            .single();
+            .maybeSingle();
 
-        // 3. Aplica o nome no certificado (Se existir no profile, ele usa. Se não, mantém o "Carregando...")
+        // 3. Se existir o nome editado, mostra. Se não, mantém o seu "Carregando..."
         if (profile && profile.username) {
             document.getElementById('cert-nome-aluno').innerText = profile.username;
         }
 
-        // 4. Busca o histórico de simulados usando o mesmo ID
+        // 4. Busca o histórico de simulados (Também apenas leitura)
         const { data: historico } = await supabase
             .from('historico_simulados')
             .select('capitulo, nota, tipo, tempo')
@@ -495,7 +496,6 @@
             window.renderizarDadosVerso(dadosAgrupados); 
         }
     }
-
     function processarHistorico(lista) {
         const caps = {};
         lista.forEach(item => {
