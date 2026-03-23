@@ -494,7 +494,7 @@ async function carregarDadosReais() {
     const { data: historico, error } = await supabase
         .from('historico_simulados')
         .select('capitulo, nota, tipo, tempo')
-        .eq('user_id', id)
+        .eq('user_id', userId)
         .eq('materia', materiaRaw);
 
     if (historico && historico.length > 0) {
