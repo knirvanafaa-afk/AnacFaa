@@ -228,7 +228,6 @@
 
         /* Botão para o aluno imprimir/salvar em PDF */
         .btn-imprimir {
-            font-size: 16px;
             display: block;
             margin: 20px auto;
             padding: 10px 20px;
@@ -245,283 +244,78 @@
             body { background: white; }
             .certificado-container { margin: 0; box-shadow: none; border: none; }
         }
-/* CSS para forçar a quebra de página no PDF */
-@media print {
-    .quebra-pagina {
-        page-break-after: always;
-        height: 0;
-        margin: 0;
-        border: none;
-    }
-}
-
-/* Estilo do container do Verso para ser idêntico à Frente */
-.verso-container {
-    width: 1000px;
-    height: 700px;
-    background-color: #fff;
-    padding: 20px;
-    margin: 20px auto;
-    border: 1px solid #ccc; /* Fica invisível no print */
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Container que dá a profundidade */
-.flip-card {
-    background-color: transparent;
-    width: 1000px;
-    height: 700px;
-    perspective: 1500px; 
-    margin: 20px auto;
-}
-
-/* O "papel" que contém a frente e o verso */
-.flip-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-    transform-style: preserve-3d;
-}
-
-/* Quando o botão for clicado, ele adiciona essa classe e gira */
-.flip-card.girar .flip-card-inner {
-    transform: rotateY(180deg);
-}
-
-/* Faz a Frente e o Verso ocuparem o mesmo lugar exato */
-#printable, #verso-layout {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    margin: 0 !important;
-}
-
-/* O Verso começa virado para trás */
-#verso-layout {
-    transform: rotateY(180deg);
-}
-
     </style>
 </head>
-
 <body>
 
-<div class="flip-card" id="card-principal">
-    <div class="flip-card-inner">
-        
-        <div class="certificado-container" id="printable">
-            <div class="moldura-tripla">
-                <div class="moldura-meio">
-                    <div class="moldura-interna">
-                        <img src="selo.jpg" class="selo-imagem" id="selo-dinamico"> 
-                        <div style="height: 60px;"></div>
-                        <h1>Certificado de Estudos</h1>
-                        <p class="subtitulo">Certificamos que</p>
-                        <div class="nome-aluno" id="cert-nome-aluno">Carregando...</div>
-                        <div class="linha-azul"></div>
-                        <div class="texto-conclusao">
-                            demonstrou com sucesso proficiência profissional ao concluir todos as provas e simulações teóricas exigidas para o módulo de:
-                            <span class="materia-destaque" id="cert-materia">FAA Aviation Mechanic</span>
-                        </div>
-                        <div class="footer-dados">
-                            <div><strong>EMITIDO EM:</strong> <span id="cert-data">--/--/----</span></div>
-                            <div><strong>MÉDIA FINAL:</strong> <span id="cert-media">--</span>%</div>
-                        </div>
-                    </div>
+<div class="certificado-container" id="printable">
+    <div class="moldura-tripla">
+        <div class="moldura-meio">
+            <div class="moldura-interna">
+                <img src="selo.jpg" class="selo-imagem" id="selo-dinamico"> 
+
+                <div style="height: 60px;"></div>
+                
+               <h1>Certificado de Estudos</h1>
+                <p class="subtitulo">Certificamos que</p>
+                
+                <div class="nome-aluno" id="cert-nome-aluno">Carregando...</div>
+                
+                <div class="linha-azul"></div>
+                
+                <div class="texto-conclusao">
+                    demonstrou com sucesso proficiência profissional ao concluir todos os exames e simulações práticas exigidas para o módulo de:
+                    
+                    <span class="materia-destaque" id="cert-materia">FAA Aviation Mechanic</span>
+                </div>
+
+                <div class="footer-dados">
+                    <div><strong>EMITIDO EM:</strong> <span id="cert-data">--/--/----</span></div>
+                    <div><strong>MÉDIA FINAL:</strong> <span id="cert-media">--</span>%</div>
                 </div>
             </div>
         </div>
-
-        <div class="certificado-container verso-container" id="verso-layout">
-            <div class="moldura-tripla">
-                <div class="moldura-meio">
-                    <div class="moldura-interna" style="padding: 30px;">
-                        <h2 style="font-family: 'Cinzel'; letter-spacing: 4px; text-align: center;">Histórico de Estudos</h2>
-                        <div id="tabela-dinamica" style="width: 100%; margin-top: 20px;">
-                            </div>
-                        <div class="footer-dados" style="margin-top: auto;">
-                            <div id="texto-logbook" style="font-size: 12px; text-align: justify; line-height: 1.4;">
-                                </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 </div>
 
-<div style="text-align: center; margin-top: 20px;">
-
-    <button class="btn-imprimir" onclick="document.getElementById('card-principal').classList.toggle('girar')">
-        🔄 VER VERSO / FRENTE
-    </button>
-
-    <button class="btn-imprimir" onclick="window.print()">Salvar como PDF / Imprimir</button>
-</div>
+<button class="btn-imprimir" onclick="window.print()">Salvar como PDF / Imprimir</button>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    import { validarAcessoTotal } from './seguranca.js';
-
-    // 1. Inicialização
-    validarAcessoTotal(false);
-    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
-
+    // 1. Pega os parâmetros da URL (materia e media)
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('user_id');
     const materiaRaw = urlParams.get('materia') || 'General';
     const media = urlParams.get('media') || '0';
-    const nomeURL = urlParams.get('nome');
+const nomeURL = urlParams.get('nome');
 
+    // 2. Formata o nome da matéria para o destaque
     const materiasFormatadas = {
         'General': 'FAA Aviation Mechanic — GENERAL',
         'Airframe': 'FAA Aviation Mechanic — AIRFRAME',
         'Powerplant': 'FAA Aviation Mechanic — POWERPLANT',
-        'Bronze': 'FAA Aviation Mechanic — BRONZE MERIT', 
-        'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 
-        'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
+       'Bronze': 'FAA Aviation Mechanic — BRONZE MERIT', 
+       'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 
+      'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
     };
-
-    document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
+        document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
     document.getElementById('cert-media').innerText = media;
     
-    const campoNome = document.getElementById('cert-nome-aluno'); 
-    if (nomeURL && nomeURL !== "Carregando...") { 
-        campoNome.innerText = decodeURIComponent(nomeURL); 
-    } else { 
-        campoNome.innerText = "Estudante WXR"; 
-    }
+// 3. Define o Nome do Aluno 
 
+const campoNome = document.getElementById('cert-nome-aluno'); 
+if (nomeURL && nomeURL !== "Carregando...") { 
+
+campoNome.innerText = decodeURIComponent(nomeURL); 
+} else { 
+campoNome.innerText = "Estudante WXR"; 
+}
+
+    // 4. Define a data atual
     const hoje = new Date();
     document.getElementById('cert-data').innerText = hoje.toLocaleDateString('pt-BR');
 
-    // APLICANDO TEMA NOS DOIS LADOS
-    const frente = document.getElementById('printable');
-    const verso = document.getElementById('verso-layout');
-    if(frente) frente.classList.add('tema-' + materiaRaw);
-    if(verso) verso.classList.add('tema-' + materiaRaw);
-
-    // --- LÓGICA DO VERSO (PROCESSANDO O SEU SQL) ---
-
-    function textoParaSegundos(texto) {
-        if (!texto) return 0;
-        const numeros = texto.match(/\d+/g);
-        if (!numeros) return 0;
-        return numeros.length === 2 ? (parseInt(numeros[0]) * 60) + parseInt(numeros[1]) : parseInt(numeros[0]);
-    }
-
-    window.renderizarDadosVerso = function(dadosVindosDoSQL) {
-        let totalSegundos = 0;
-        let totalProvas = 0;
-        let totalSimulados = 0;
-        
-        let tabelaHtml = `
-            <table style="width:100%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
-                <thead>
-                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
-                        <th style="padding: 10px; text-align: left;">Capítulo</th>
-                        <th style="padding: 10px; text-align: center;">Melhor Nota</th>
-                        <th style="padding: 10px; text-align: center;">Status</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-        dadosVindosDoSQL.forEach(item => {
-            totalProvas += parseInt(item.total_provas || 0);
-            totalSimulados += parseInt(item.total_simulados || 0);
-
-            if (item.tempos_brutos) {
-                const tempos = item.tempos_brutos.split('|');
-                tempos.forEach(t => totalSegundos += textoParaSegundos(t));
-            }
-
-            tabelaHtml += `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 8px;">${item.capitulo}</td>
-                    <td style="padding: 8px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 8px; text-align: center; color: green; font-weight: bold;">PASS</td>
-                </tr>`;
-        });
-
-        tabelaHtml += `</tbody></table>`;
-        document.getElementById('tabela-dinamica').innerHTML = tabelaHtml;
-
-        const horasDecimais = (totalSegundos / 3600).toFixed(1);
-        document.getElementById('texto-logbook').innerHTML = `
-            <div style="border-top: 2px solid #ddd; padding-top: 10px;">
-                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O técnico realizou um total de <b>${totalProvas} Provas Oficiais</b> 
-                e <b>${totalSimulados} Simulados</b> de performance, totalizando 
-                <u>${horasDecimais} horas</u> de instrução técnica ativa e análise de sistemas.
-            </div>
-        `;
-    }
-
-    async function carregarDadosReais() {
-        // 1. Identifica o ID do sistema (tabela users/auth) - APENAS LEITURA
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        const userId = user?.id;
-
-        if (!userId || authError) return;
-
-        // 2. Busca o nome na tabela profile (onde o lápis.jpg salva)
-        // Usamos .maybeSingle() para não travar o código caso o perfil demore a responder
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', userId)
-            .maybeSingle();
-
-        // 3. Se existir o nome editado, mostra. Se não, mantém o seu "Carregando..."
-        if (profile && profile.username) {
-            document.getElementById('cert-nome-aluno').innerText = profile.username;
-        }
-
-        // 4. Busca o histórico de simulados (Também apenas leitura)
-        const { data: historico } = await supabase
-            .from('historico_simulados')
-            .select('capitulo, nota, tipo, tempo')
-            .eq('user_id', userId)
-            .eq('materia', materiaRaw);
-
-        if (historico && historico.length > 0) {
-            const dadosAgrupados = processarHistorico(historico);
-            window.renderizarDadosVerso(dadosAgrupados); 
-        }
-    }
-    function processarHistorico(lista) {
-        const caps = {};
-        lista.forEach(item => {
-            if (!caps[item.capitulo]) {
-                caps[item.capitulo] = { 
-                    capitulo: item.capitulo, 
-                    melhor_nota: 0, 
-                    total_provas: 0, 
-                    total_simulados: 0, 
-                    tempos_brutos: [] 
-                };
-            }
-            
-            if (item.nota > caps[item.capitulo].melhor_nota) caps[item.capitulo].melhor_nota = item.nota;
-            if (item.tipo === 'Prova') caps[item.capitulo].total_provas++;
-            if (item.tipo === 'Simulado') caps[item.capitulo].total_simulados++;
-            caps[item.capitulo].tempos_brutos.push(item.tempo);
-        });
-
-        return Object.values(caps).map(c => ({
-            ...c,
-            tempos_brutos: c.tempos_brutos.join('|')
-        }));
-    }
-
-    carregarDadosReais();
+    // 5. muda a cor do certificado
+const container = document.querySelector('.certificado-container');
+container.classList.add('tema-' + materiaRaw);
 
 </script>
 
