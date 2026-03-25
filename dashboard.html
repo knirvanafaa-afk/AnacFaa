@@ -106,6 +106,7 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     width: fit-content;
     text-align: center; /* Garante que o texto multi-linha centralize */
 }
+
 /* Rótulo "NOME" que fica entre o lápis e o texto */
 .nome-estudante {
     font-size: 11px !important;    /* Força o tamanho pequeno */
@@ -320,7 +321,7 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     <div style="display: flex; align-items: flex-start; gap: 30px; width: 100%;">
       
             <div class="perfil-foto">
-    <div class="foto-container" id="foto-container">
+    <div class="foto-container" id="moldura-dinamica">
         <div class="parafuso-fixador esquerdo"><div class="parafuso-icon"></div></div>
         <div class="parafuso-fixador direito"><div class="parafuso-icon"></div></div>
 
@@ -634,17 +635,44 @@ window.atualizarNivel();
         }
     };
 
-    window.atualizarNivel = (questoesFeitas) => {
-        const root = document.documentElement;
-        let cor, bg, nome;
-        if (questoesFeitas < 500) { nome = "TRAINEE"; cor = "#cd7f32"; bg = "#fff5eb"; }
-        else if (questoesFeitas < 1500) { nome = "MECHANIC APRS"; cor = "#c0c0c0"; bg = "#f5f5f5"; }
-        else { nome = "INSPECTOR"; cor = "#f1c40f"; bg = "#fff9c4"; }
-        root.style.setProperty('--nivel-cor', cor);
-        root.style.setProperty('--nivel-bg', bg);
-        document.getElementById('rank-nome').innerText = nome;
-    };
+    window.atualizarNivel = (questoesFeitas, mediaGlobal) => {
+    const root = document.documentElement;
+    const moldura = document.getElementById('moldura-dinamica');
+    const labelRank = document.getElementById('rank-nome');
+    const patenteLabel = document.getElementById('patente-label'); // Texto dentro da moldura
 
+    let cor, bg, nome;
+
+    // Lógica de níveis (conforme seus critérios)
+    if (questoesFeitas < 3000) { 
+        nome = "TRAINEE"; 
+        cor = "#b37059"; // Cobre
+        bg = "#fff5eb"; 
+    } else if (questoesFeitas < 4500) { 
+        nome = "MECHANIC APRS"; 
+        cor = "#95a5a6"; // Prata
+        bg = "#f5f5f5"; 
+    } else { 
+        nome = "INSPECTOR GOLD"; 
+        cor = "#b7950b"; // Ouro
+        bg = "#fff9c4"; 
+    }
+
+    // 1. Atualiza as variáveis que o BADGE usa
+    root.style.setProperty('--nivel-cor', cor);
+    root.style.setProperty('--nivel-bg', bg);
+
+    // 2. Atualiza os textos
+    if (labelRank) labelRank.innerText = nome;
+    if (patenteLabel) patenteLabel.innerText = nome;
+
+    // 3. Atualiza a borda da MOLDURA DE COBRE para seguir o Badge
+    if (moldura) {
+        moldura.style.borderColor = cor;
+        // Se quiser que o fundo da moldura também mude levemente:
+        // moldura.style.boxShadow = `0 4px 10px rgba(0,0,0,0.2), inset 0 0 10px ${cor}33`;
+    }
+};
 
     // 5. Execuções Iniciais
     carregarDadosIniciais();
@@ -944,7 +972,7 @@ window.confirmarAcao = (resposta) => {
 };
 
 function atualizarDossieDinamico(media, total) {
-    const moldura = document.getElementById('foto-container');
+    const moldura = document.getElementById('moldura-dinamica');
     const label = document.getElementById('patente-label');
     const meta = document.getElementById('meta-info');
     const root = document.documentElement;
