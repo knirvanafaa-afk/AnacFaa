@@ -312,6 +312,21 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 .estrelas-xp { font-size: 16px; letter-spacing: 5px; color: #2c3e50; }
 #meta-info { font-size: 9px; font-weight: bold; color: #2c3e50; margin-top: 5px; }
 
+/* Efeito para o escalonamento das estrelas */
+.estrela-vazia { color: #ccc !important; -webkit-text-stroke: 0; }
+
+/* Estado 1: Somente a Borda acesa (Contorno) */
+.estrela-borda { 
+    color: transparent !important; 
+    -webkit-text-stroke: 1.5px var(--nivel-cor); 
+}
+
+/* Estado 2: Estrela totalmente preenchida */
+.estrela-cheia { 
+    color: var(--nivel-cor) !important; 
+    -webkit-text-stroke: 0; 
+}
+
     </style>
 </head>
 <body>
@@ -873,6 +888,9 @@ async function carregarDadosCertificados() {
     
     const mediaGlobal = ((mG + mA + mP) / 3).toFixed(1);
 
+// Atualizar Tabela de Cobre
+atualizarSistemaNivel(totalQuestoesGeral, parseFloat(mediaGlobal));
+
     // Requisitos mínimos por módulo (Trava de Segurança)
     const minG = acumulador.General.totalQuestoes;
     const minA = acumulador.Airframe.totalQuestoes;
@@ -916,8 +934,6 @@ async function carregarDadosCertificados() {
     atualizarLinhaNormal('powerplant', 'Powerplant');
 }
 
-atualizarSistemaNivel(totalQuestoesGeral, parseFloat(mediaGlobal));
-
 let resolverConfirmacao;
 
 window.mostrarConfirmacao = (mensagem) => {
@@ -935,58 +951,54 @@ window.confirmarAcao = (resposta) => {
 };
 
 function atualizarSistemaNivel(total, media) {
-
-if (isNaN(total) || isNaN(media)) return;
-
     const moldura = document.getElementById('foto-container');
-    const labelPatente = document.getElementById('patente-label'); // Dentro da moldura
-    const labelBadge = document.getElementById('rank-nome');      // No seu Badge abaixo do nome
+    const labelPatente = document.getElementById('patente-label'); 
+    const labelBadge = document.getElementById('rank-nome');      
     const meta = document.getElementById('meta-info');
     const root = document.documentElement;
 
-    let cor, bg, nome;
+    let cor, bg, nome, baseNivel;
 
-    // Régua de Corte: Bronze (1500), Silver (3000), Gold (4500)
-    if (total >= 4500 && media >= 90) {
-        nome = "INSPECTOR GOLD";
-        cor = "#f1c40f"; // Ouro
-        bg = "#fff9c4";
-    } else if (total >= 3000 && media >= 80) { // Inicia Silver em 3000 conforme seu pedido
-        nome = "MECHANIC APRS";
-        cor = "#95a5a6"; // Prata
-        bg = "#f5f5f5";
-    } else {
-        nome = "TRAINEE BRONZE";
-        cor = "#b37059"; // Cobre
-        bg = "#fff5eb";
+    // 1. Definição de Cores e Níveis (1500 / 3000 / 4500)
+    if (total >= 3000) { 
+        nome = "INSPECTOR GOLD"; cor = "#f1c40f"; bg = "#fff9c4"; baseNivel = 3000;
+    } else if (total >= 1500) { 
+        nome = "MECHANIC APRS"; cor = "#95a5a6"; bg = "#f5f5f5"; baseNivel = 1500;
+    } else { 
+        nome = "TRAINEE BRONZE"; cor = "#b37059"; bg = "#fff5eb"; baseNivel = 0;
     }
 
-    // Atualiza cores (Badge e Moldura)
     root.style.setProperty('--nivel-cor', cor);
     root.style.setProperty('--nivel-bg', bg);
-    
     if (moldura) moldura.style.borderColor = cor;
     if (labelPatente) labelPatente.innerText = nome;
     if (labelBadge) labelBadge.innerText = nome;
 
-    // Lógica das 5 Estrelas (Preenchimento gradual até 4500)
-    // Cada estrela representa 900 questões (4500 / 5)
+    // 2. Lógica de Escalonamento (150 questões x 30 estágios)
+    let progressoNoNivel = total - baseNivel; 
+
     for (let i = 1; i <= 5; i++) {
         let est = document.getElementById(`est-${i}`);
-        if (est) {
-            if (total >= (i * 900)) {
-                est.innerText = "★"; // Totalmente preenchida
-                est.style.color = cor;
-            } else {
-                est.innerText = "☆"; // Apenas borda
-                est.style.color = "#2c3e50";
-            }
+        if (!est) continue;
+
+        let metaBorda = i * 150;        // Ex: Estrela 1 ganha borda com 150
+        let metaCheia = (i * 150) + 750; // Ex: Estrela 1 enche após as 5 terem borda (5x150=750)
+
+        if (progressoNoNivel >= metaCheia) {
+            est.innerHTML = "★";
+            est.className = "estrela-cheia";
+        } else if (progressoNoNivel >= metaBorda) {
+            est.innerHTML = "★";
+            est.className = "estrela-borda";
+        } else {
+            est.innerHTML = "☆";
+            est.className = "estrela-vazia";
         }
     }
 
     if (meta) {
-        let faltam = (total < 1500) ? 1500 - total : (total < 4500) ? 4500 - total : 0;
-        meta.innerText = faltam > 0 ? `FALTAM ${faltam} QUESTÕES` : "MÁXIMO ATINGIDO";
+        let proximo = total < 1500 ? 1500 : total < 3000 ? 3000 : 4500;
+        meta.innerText = total >= 4500 ? "MÁXIMO" : `FALTAM ${proximo - total} QUESTÕES`;
     }
 }
 
