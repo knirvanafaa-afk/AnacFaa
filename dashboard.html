@@ -36,15 +36,6 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     gap: 20px; 
     margin-bottom: 20px;
 }
-        /* MOLDURA COBRE */
-        .foto-container {
-            width: 180px; height: 110px;
-            background: linear-gradient(145deg, #e2a78f, #f4c2ab); 
-            border-radius: 12px; position: relative;
-            display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2), inset 0 0 10px rgba(0,0,0,0.1);
-            border: 1px solid #b37059; flex-shrink: 0;
-        }
 
         .parafuso-fixador { position: absolute; top: 50%; transform: translateY(-50%) scale(0.55); }
         .parafuso-fixador.esquerdo { left: 5px; }
@@ -653,6 +644,7 @@ window.atualizarNivel();
         root.style.setProperty('--nivel-bg', bg);
         document.getElementById('rank-nome').innerText = nome;
     };
+
 
     // 5. Execuções Iniciais
     carregarDadosIniciais();
