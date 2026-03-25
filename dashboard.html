@@ -320,7 +320,7 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     <div style="display: flex; align-items: flex-start; gap: 30px; width: 100%;">
       
             <div class="perfil-foto">
-    <div class="foto-container" id="moldura-dinamica">
+    <div class="foto-container" id="foto-container">
         <div class="parafuso-fixador esquerdo"><div class="parafuso-icon"></div></div>
         <div class="parafuso-fixador direito"><div class="parafuso-icon"></div></div>
 
@@ -944,7 +944,7 @@ window.confirmarAcao = (resposta) => {
 };
 
 function atualizarDossieDinamico(media, total) {
-    const moldura = document.getElementById('moldura-dinamica');
+    const moldura = document.getElementById('foto-container');
     const label = document.getElementById('patente-label');
     const meta = document.getElementById('meta-info');
     const root = document.documentElement;
