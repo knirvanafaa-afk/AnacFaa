@@ -560,8 +560,6 @@ await alimentarFavoritos();
 alimentarLogBookReal(); 
 carregarDadosParaTeia();
 carregarDadosCertificados();  
-window.atualizarNivel();
-atualizarSistemaNivel(totalQuestoesGeral, mediaGlobal);
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -918,6 +916,8 @@ async function carregarDadosCertificados() {
     atualizarLinhaNormal('powerplant', 'Powerplant');
 }
 
+atualizarSistemaNivel(totalQuestoesGeral, parseFloat(mediaGlobal));
+
 let resolverConfirmacao;
 
 window.mostrarConfirmacao = (mensagem) => {
@@ -935,6 +935,9 @@ window.confirmarAcao = (resposta) => {
 };
 
 function atualizarSistemaNivel(total, media) {
+
+if (isNaN(total) || isNaN(media)) return;
+
     const moldura = document.getElementById('foto-container');
     const labelPatente = document.getElementById('patente-label'); // Dentro da moldura
     const labelBadge = document.getElementById('rank-nome');      // No seu Badge abaixo do nome
@@ -948,7 +951,7 @@ function atualizarSistemaNivel(total, media) {
         nome = "INSPECTOR GOLD";
         cor = "#f1c40f"; // Ouro
         bg = "#fff9c4";
-    } else if (total >= 1500 && media >= 80) { // Inicia Silver em 1500 conforme seu pedido
+    } else if (total >= 3000 && media >= 80) { // Inicia Silver em 3000 conforme seu pedido
         nome = "MECHANIC APRS";
         cor = "#95a5a6"; // Prata
         bg = "#f5f5f5";
