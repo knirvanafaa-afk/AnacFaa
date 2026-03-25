@@ -322,7 +322,7 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     <div style="display: flex; align-items: flex-start; gap: 30px; width: 100%;">
       
             <div class="perfil-foto">
-    <div class="foto-container" id="moldura-dinamica">
+    <div class="foto-container" id="foto-container">
         <div class="parafuso-fixador esquerdo"><div class="parafuso-icon"></div></div>
         <div class="parafuso-fixador direito"><div class="parafuso-icon"></div></div>
 
@@ -561,6 +561,7 @@ alimentarLogBookReal();
 carregarDadosParaTeia();
 carregarDadosCertificados();  
 window.atualizarNivel();
+atualizarSistemaNivel(totalQuestoesGeral, mediaGlobal);
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -635,45 +636,6 @@ window.atualizarNivel();
             window.location.href = 'index.html';
         }
     };
-
-    window.atualizarNivel = (questoesFeitas, mediaGlobal) => {
-    const root = document.documentElement;
-    const moldura = document.getElementById('moldura-dinamica');
-    const labelRank = document.getElementById('rank-nome');
-    const patenteLabel = document.getElementById('patente-label'); // Texto dentro da moldura
-
-    let cor, bg, nome;
-
-    // Lógica de níveis (conforme seus critérios)
-    if (questoesFeitas < 3000) { 
-        nome = "TRAINEE"; 
-        cor = "#b37059"; // Cobre
-        bg = "#fff5eb"; 
-    } else if (questoesFeitas < 4500) { 
-        nome = "MECHANIC APRS"; 
-        cor = "#95a5a6"; // Prata
-        bg = "#f5f5f5"; 
-    } else { 
-        nome = "INSPECTOR"; 
-        cor = "#b7950b"; // Ouro
-        bg = "#fff9c4"; 
-    }
-
-    // 1. Atualiza as variáveis que o BADGE usa
-    root.style.setProperty('--nivel-cor', cor);
-    root.style.setProperty('--nivel-bg', bg);
-
-    // 2. Atualiza os textos
-    if (labelRank) labelRank.innerText = nome;
-    if (patenteLabel) patenteLabel.innerText = nome;
-
-    // 3. Atualiza a borda da MOLDURA DE COBRE para seguir o Badge
-    if (moldura) {
-        moldura.style.borderColor = cor;
-        // Se quiser que o fundo da moldura também mude levemente:
-        // moldura.style.boxShadow = `0 4px 10px rgba(0,0,0,0.2), inset 0 0 10px ${cor}33`;
-    }
-};
 
     // 5. Execuções Iniciais
     carregarDadosIniciais();
@@ -972,48 +934,56 @@ window.confirmarAcao = (resposta) => {
     resolverConfirmacao(resposta);
 };
 
-function atualizarDossieDinamico(media, total) {
-    const moldura = document.getElementById('moldura-dinamica');
-    const label = document.getElementById('patente-label');
+function atualizarSistemaNivel(total, media) {
+    const moldura = document.getElementById('foto-container');
+    const labelPatente = document.getElementById('patente-label'); // Dentro da moldura
+    const labelBadge = document.getElementById('rank-nome');      // No seu Badge abaixo do nome
     const meta = document.getElementById('meta-info');
     const root = document.documentElement;
 
-    let corPlaca, corBorda, nomePatente, bgSite;
+    let cor, bg, nome;
 
-    // Lógica de Promoção baseada nos 3 cliques do Supabase
-    if (media >= 90 && total >= 4500) {
-        nomePatente = "INSPECTOR GOLD";
-        corPlaca = "linear-gradient(145deg, #f1c40f, #f39c12)"; // PINTA DE OURO
-        corBorda = "#b7950b";
-        bgSite = "#fff9c4";
-    } else if (media >= 80 && total >= 3000) {
-        nomePatente = "MECHANIC APRS";
-        corPlaca = "linear-gradient(145deg, #bdc3c7, #ecf0f1)"; // PINTA DE PRATA
-        corBorda = "#95a5a6";
-        bgSite = "#f5f5f5";
+    // Régua de Corte: Bronze (1500), Silver (3000), Gold (4500)
+    if (total >= 4500 && media >= 90) {
+        nome = "INSPECTOR GOLD";
+        cor = "#f1c40f"; // Ouro
+        bg = "#fff9c4";
+    } else if (total >= 1500 && media >= 80) { // Inicia Silver em 1500 conforme seu pedido
+        nome = "MECHANIC APRS";
+        cor = "#95a5a6"; // Prata
+        bg = "#f5f5f5";
     } else {
-        nomePatente = "TRAINEE BRONZE";
-        corPlaca = "linear-gradient(145deg, #e2a78f, #f4c2ab)"; // SEU COBRE ORIGINAL
-        corBorda = "#b37059";
-        bgSite = "#fff5eb";
+        nome = "TRAINEE BRONZE";
+        cor = "#b37059"; // Cobre
+        bg = "#fff5eb";
     }
 
-    // Aplica a nova cor na SUA moldura sem mexer nos parafusos
-    if (moldura) {
-        moldura.style.background = corPlaca;
-        moldura.style.borderColor = corBorda;
-    }
-    label.innerText = nomePatente;
-    meta.innerText = (total >= 4500) ? "MÉRITO MÁXIMO" : `FALTAM ${4500 - total} QUESTÕES`;
+    // Atualiza cores (Badge e Moldura)
+    root.style.setProperty('--nivel-cor', cor);
+    root.style.setProperty('--nivel-bg', bg);
     
-    // Atualiza o fundo do site para combinar
-    root.style.setProperty('--nivel-bg', bgSite);
+    if (moldura) moldura.style.borderColor = cor;
+    if (labelPatente) labelPatente.innerText = nome;
+    if (labelBadge) labelBadge.innerText = nome;
 
-    // Acende as estrelas (★)
-    let alvo = (total >= 3000) ? 4500 : 3000;
+    // Lógica das 5 Estrelas (Preenchimento gradual até 4500)
+    // Cada estrela representa 900 questões (4500 / 5)
     for (let i = 1; i <= 5; i++) {
         let est = document.getElementById(`est-${i}`);
-        if (est) est.innerText = (total >= (i * (alvo/5))) ? "★" : "☆";
+        if (est) {
+            if (total >= (i * 900)) {
+                est.innerText = "★"; // Totalmente preenchida
+                est.style.color = cor;
+            } else {
+                est.innerText = "☆"; // Apenas borda
+                est.style.color = "#2c3e50";
+            }
+        }
+    }
+
+    if (meta) {
+        let faltam = (total < 1500) ? 1500 - total : (total < 4500) ? 4500 - total : 0;
+        meta.innerText = faltam > 0 ? `FALTAM ${faltam} QUESTÕES` : "MÁXIMO ATINGIDO";
     }
 }
 
