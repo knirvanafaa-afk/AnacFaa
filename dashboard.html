@@ -961,11 +961,11 @@ function atualizarSistemaNivel(total, media) {
 
     // 1. Definição de Cores e Níveis (1500 / 3000 / 4500)
     if (total >= 3000) { 
-        nome = "INSPECTOR GOLD"; cor = "#f1c40f"; bg = "#fff9c4"; baseNivel = 3000;
+        nome = "INSPECTOR"; cor = "#f1c40f"; bg = "#fff9c4"; baseNivel = 3000;
     } else if (total >= 1500) { 
         nome = "MECHANIC APRS"; cor = "#95a5a6"; bg = "#f5f5f5"; baseNivel = 1500;
     } else { 
-        nome = "TRAINEE BRONZE"; cor = "#b37059"; bg = "#fff5eb"; baseNivel = 0;
+        nome = "TRAINEE"; cor = "#b37059"; bg = "#fff5eb"; baseNivel = 0;
     }
 
     root.style.setProperty('--nivel-cor', cor);
