@@ -448,8 +448,8 @@
                 <thead>
                     <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
                         <th style="padding: 10px; text-align: left;">Capítulo</th>
-                        <th style="padding: 10px; text-align: center;">Melhor Nota</th>
-                        <th style="padding: 10px; text-align: center;">Status</th>
+                        <th style="padding: 10px; text-align: center;">Notas</th>
+                        <th style="padding: 10px; text-align: center;">Carga Horária</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -463,11 +463,35 @@
                 tempos.forEach(t => totalSegundos += textoParaSegundos(t));
             }
 
+function somarTempos(listaDeTempos) {
+    let totalSegundos = 0;
+    listaDeTempos.forEach(t => {
+        if (!t || typeof t !== 'string') return;
+        // Extrai números da string "0min 15s"
+        const partes = t.match(/(\d+)/g); 
+        if (partes && partes.length >= 2) {
+            totalSegundos += (parseInt(partes[0]) * 60) + parseInt(partes[1]);
+        }
+    });
+
+    const m = Math.floor(totalSegundos / 60);
+    const s = totalSegundos % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} Min`;
+}
+
+    const m = Math.floor(totalSegundos / 60);
+    const s = totalSegundos % 60;
+    // Retorna no formato 00:00
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} Min`;
+}
+
             tabelaHtml += `
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 8px;">${item.capitulo}</td>
                     <td style="padding: 8px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 8px; text-align: center; color: green; font-weight: bold;">PASS</td>
+                    <td style="padding: 8px; text-align: center; color: #2c3e50; font-weight: bold;">
+    ${somarTempos(cap.tempos_brutos)}
+</td>
                 </tr>`;
         });
 
@@ -499,8 +523,8 @@ const container = document.getElementById('tabela-dinamica');
                     </tr>
                     <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
                         <th style="padding: 6px; text-align: left;">Capítulo</th>
-                        <th style="padding: 6px; text-align: center;">Melhor Nota</th>
-                        <th style="padding: 6px; text-align: center;">Status</th>
+                        <th style="padding: 6px; text-align: center;">Notas</th>
+                        <th style="padding: 6px; text-align: center;">Carga Horária</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -510,7 +534,9 @@ const container = document.getElementById('tabela-dinamica');
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 6px;">${item.capitulo}</td>
                     <td style="padding: 6px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 6px; text-align: center; color: green; font-weight: bold;">PASS</td>
+                    <td style="padding: 6px; text-align: center; color: #2c3e50; font-weight: bold;">
+    ${somarTempos(cap.tempos_brutos)}
+</td>
                 </tr>`;
         });
 
@@ -530,9 +556,12 @@ const container = document.getElementById('tabela-dinamica');
         const horasDecimais = (totalSegundos / 3600).toFixed(1);
         document.getElementById('texto-logbook').innerHTML = `
             <div style="border-top: 2px solid #ddd; padding-top: 10px;">
-                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O técnico realizou um total de <b>${totalProvas} Provas Oficiais</b> 
-                e <b>${totalSimulados} Simulados</b> de performance, totalizando 
-                <u>${horasDecimais} horas</u> de instrução técnica ativa e análise de sistemas.
+
+document.querySelector('.footer-info').innerHTML = `
+
+                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> 
+                e <b>${totalSimulados} Simulados</b>, totalizando 
+                <u>${horasDecimais} horas</u> de questionários de um total de <b>${window.totalQuestoesGlobalCertificado}</b> questões.
             </div>
         `;
     }
@@ -581,6 +610,7 @@ const container = document.getElementById('tabela-dinamica');
     }
     function processarHistorico(lista) {
         const caps = {};
+let somaTotalQuestoes = 0;
         lista.forEach(item => {
             if (!caps[item.capitulo]) {
                 caps[item.capitulo] = { 
@@ -589,15 +619,21 @@ const container = document.getElementById('tabela-dinamica');
                     melhor_nota: 0, 
                     total_provas: 0, 
                     total_simulados: 0, 
-                    tempos_brutos: [] 
+                    tempos_brutos: [],
+                    total_questoes_cap: 0
                 };
             }
             
+somaTotalQuestoes += parseInt(item.total_questoes || 0);
+
             if (item.nota > caps[item.capitulo].melhor_nota) caps[item.capitulo].melhor_nota = item.nota;
             if (item.tipo === 'Prova') caps[item.capitulo].total_provas++;
             if (item.tipo === 'Simulado') caps[item.capitulo].total_simulados++;
             caps[item.capitulo].tempos_brutos.push(item.tempo);
         });
+
+window.totalQuestoesGlobalCertificado = somaTotalQuestoes; return caps; 
+}
 
         return Object.values(caps).map(c => ({
             ...c,
