@@ -409,8 +409,7 @@
         'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 
         'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
     };
-
-    document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
+ document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
     document.getElementById('cert-media').innerText = media;
     
     const campoNome = document.getElementById('cert-nome-aluno'); 
@@ -463,22 +462,6 @@
                 tempos.forEach(t => totalSegundos += textoParaSegundos(t));
             }
 
-function somarTempos(listaDeTempos) {
-    let totalSegundos = 0;
-    listaDeTempos.forEach(t => {
-        if (!t || typeof t !== 'string') return;
-        // Extrai números da string "0min 15s"
-        const partes = t.match(/(\d+)/g); 
-        if (partes && partes.length >= 2) {
-            totalSegundos += (parseInt(partes[0]) * 60) + parseInt(partes[1]);
-        }
-    });
-
-    const m = Math.floor(totalSegundos / 60);
-    const s = totalSegundos % 60;
-    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} Min`;
-}
-
     const m = Math.floor(totalSegundos / 60);
     const s = totalSegundos % 60;
     // Retorna no formato 00:00
@@ -489,9 +472,7 @@ function somarTempos(listaDeTempos) {
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 8px;">${item.capitulo}</td>
                     <td style="padding: 8px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 8px; text-align: center; color: #2c3e50; font-weight: bold;">
-    ${somarTempos(cap.tempos_brutos)}
-</td>
+                    <td style="padding: 8px; text-align: center; color: #2c3e50; font-weight: bold;">${somarTempos(cap.tempos_brutos)}</td>
                 </tr>`;
         });
 
@@ -534,9 +515,7 @@ const container = document.getElementById('tabela-dinamica');
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 6px;">${item.capitulo}</td>
                     <td style="padding: 6px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 6px; text-align: center; color: #2c3e50; font-weight: bold;">
-    ${somarTempos(cap.tempos_brutos)}
-</td>
+                    <td style="padding: 6px; text-align: center; color: #2c3e50; font-weight: bold;">${somarTempos(cap.tempos_brutos)}</td>
                 </tr>`;
         });
 
@@ -605,6 +584,22 @@ document.querySelector('.footer-info').innerHTML = `
 
         if (historico && historico.length > 0) {
             const dadosAgrupados = processarHistorico(historico);
+
+function somarTempos(listaDeTempos) {
+    let totalSegundos = 0;
+    listaDeTempos.forEach(t => {
+        if (!t || typeof t !== 'string') return;
+        // Extrai números da string "0min 15s"
+        const partes = t.match(/(\d+)/g); 
+        if (partes && partes.length >= 2) {
+            totalSegundos += (parseInt(partes[0]) * 60) + parseInt(partes[1]);
+        }
+    });
+
+    const m = Math.floor(totalSegundos / 60);
+    const s = totalSegundos % 60;
+    return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')} Min`;
+}
             window.renderizarDadosVerso(dadosAgrupados); 
         }
     }
