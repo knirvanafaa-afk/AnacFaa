@@ -471,6 +471,13 @@ function somarTempos(tempos) {
 }
 
     window.renderizarDadosVerso = function(dadosVindosDoSQL) {
+
+let tempoPorMateria = {
+    General: 0,
+    Airframe: 0,
+    Powerplant: 0
+};
+
         let totalQuestoes = 0;
         let totalSegundos = 0;
         let totalProvas = 0;
@@ -496,7 +503,15 @@ totalProvas += parseInt(item.total_provas || 0);
 
             if (item.tempos_brutos) {
                 const tempos = item.tempos_brutos.split('|');
-                tempos.forEach(t => totalSegundos += textoParaSegundos(t));
+                tempos.forEach(t => {
+    const seg = textoParaSegundos(t);
+
+    totalSegundos += seg;
+
+    if (tempoPorMateria[item.materia] !== undefined) {
+        tempoPorMateria[item.materia] += seg;
+    }
+});
             }
 
             tabelaHtml += `
@@ -550,7 +565,17 @@ const container = document.getElementById('tabela-dinamica');
                 </tr>`;
         });
 
-        tabelaLocal += `</tbody></table>`;
+        tabelaLocal += `
+<tr style="border-top: 2px solid #333; font-weight: bold;">
+
+<td colspan="2" style="padding: 6px; text-align: right;">Total:</td>
+
+<td style="padding: 6px; text-align: center; color: blue;">
+
+${totalMateria}
+</td>
+</tr>
+</tbody></table>`;
 
         container.innerHTML += tabelaLocal;
     });
