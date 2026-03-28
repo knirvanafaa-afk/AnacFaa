@@ -466,102 +466,96 @@ function somarTempos(tempos) {
         return numeros.length === 2 ? (parseInt(numeros[0]) * 60) + parseInt(numeros[1]) : parseInt(numeros[0]);
     }
 
-    window.renderizarDadosVerso = function(dadosVindosDoSQL, totalQuestoes = 0) {
-        let totalSegundos = 0;
-        let totalProvas = 0;
-        let totalSimulados = 0;
-        
-        let tabelaHtml = `
-            <table style="width:100%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
-                <thead>
-                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
-                        <th style="padding: 10px; text-align: left;">Capítulo</th>
-                        <th style="padding: 10px; text-align: center;">Notas</th>
-                        <th style="padding: 10px; text-align: center;">Carga Horária</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+    window.renderizarDadosVerso = function(dadosVindosDoSQL) {
+    let totalSegundos = 0;
+    let totalProvas = 0;
+    let totalSimulados = 0;
+    const ePremio = ['Bronze', 'Silver', 'Gold'].includes(materiaRaw);
+    const container = document.getElementById('tabela-dinamica');
 
-        dadosVindosDoSQL.forEach(item => {
-            totalProvas += parseInt(item.total_provas || 0);
-            totalSimulados += parseInt(item.total_simulados || 0);
+    // 1. Cálculos de Totais
+    dadosVindosDoSQL.forEach(item => {
+        totalProvas += parseInt(item.total_provas || 0);
+        totalSimulados += parseInt(item.total_simulados || 0);
+        if (item.tempos_brutos) {
+            const tempos = item.tempos_brutos.split('|');
+            tempos.forEach(t => {
+                const partes = t.match(/(\d+)/g);
+                if (partes && partes.length >= 2) {
+                    totalSegundos += (parseInt(partes[0]) * 60) + parseInt(partes[1]);
+                }
+            });
+        }
+    });
 
-            if (item.tempos_brutos) {
-                const tempos = item.tempos_brutos.split('|');
-                tempos.forEach(t => totalSegundos += textoParaSegundos(t));
-            }
+    // 2. Renderização
+    if (ePremio) {
+        // LAYOUT EM 3 COLUNAS (MÉRITO)
+        container.style.display = 'flex';
+        container.style.flexWrap = 'nowrap';
+        container.style.justifyContent = 'space-between';
+        container.style.gap = '10px';
+        container.innerHTML = "";
 
-            tabelaHtml += `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 8px;">${item.capitulo}</td>
-                    <td style="padding: 8px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 8px; text-align: center; color: green; font-weight: bold;">${somarTempos(item.tempos_brutos)}</td>
-                </tr>`;
-        });
+        const materias = ['General', 'Airframe', 'Powerplant'];
+        materias.forEach(m => {
+            const filtrados = dadosVindosDoSQL.filter(item => item.materia === m);
+            let tabelaLocal = `
+                <table style="flex:1; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 11px;">
+                    <thead>
+                        <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
+                            <th colspan="3" style="padding: 5px; text-align: center; text-transform: uppercase;">${m}</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+            
+            filtrados.forEach(item => {
+                tabelaLocal += `
+                    <tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 4px; text-align: left;">${item.capitulo}</td>
+                        <td style="padding: 4px; text-align: center;">${item.melhor_nota}%</td>
+                        <td style="padding: 4px; text-align: center; font-weight: bold; color: #2c3e50;">${somarTempos(item.tempos_brutos)}</td>
+                    </tr>`;
+            });
+            tabelaLocal += `</tbody></table>`;
+            container.innerHTML += tabelaLocal;
+        });
+    } else {
+        // LAYOUT TRADICIONAL (MATÉRIA ÚNICA)
+        container.style.display = 'block';
+        let htmlSimples = `
+            <table style="width:100%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
+                <thead>
+                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
+                        <th style="padding: 10px; text-align: left;">Capítulo</th>
+                        <th style="padding: 10px; text-align: center;">Nota</th>
+                        <th style="padding: 10px; text-align: center;">Carga Horária</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
-        tabelaHtml += `</tbody></table>`;
+        dadosVindosDoSQL.forEach(item => {
+            htmlSimples += `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px;">${item.capitulo}</td>
+                    <td style="padding: 8px; text-align: center;">${item.melhor_nota}%</td>
+                    <td style="padding: 8px; text-align: center; font-weight: bold; color: #2c3e50;">${somarTempos(item.tempos_brutos)}</td>
+                </tr>`;
+        });
+        htmlSimples += `</tbody></table>`;
+        container.innerHTML = htmlSimples;
+    }
 
-const ePremio = ['Bronze', 'Silver', 'Gold'].includes(materiaRaw);
-const container = document.getElementById('tabela-dinamica');
-        if (ePremio) {
-
-    // ativa layout de colunas
-    container.style.display = 'flex';
-    container.style.flexWrap = 'wrap';
-    container.style.justifyContent = 'space-between';
-    container.style.gap = '10px';
-
-    container.innerHTML = "";
-
-    const materias = ['General', 'Airframe', 'Powerplant'];
-
-    materias.forEach(m => {
-
-        const dadosFiltrados = dadosVindosDoSQL.filter(item => item.materia === m);
-
-        let tabelaLocal = `
-            <table style="flex:1; min-width: 30%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
-                <thead>
-                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
-                        <th colspan="3" style="padding: 6px; text-align: center;">${m}</th>
-                    </tr>
-                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
-                        <th style="padding: 6px; text-align: left;">Capítulo</th>
-                        <th style="padding: 6px; text-align: center;">Notas</th>
-                        <th style="padding: 6px; text-align: center;">Carga Horária</th>
-                    </tr>
-                </thead>
-                <tbody>`;
-
-        dadosFiltrados.forEach(item => {
-            tabelaLocal += `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 6px;">${item.capitulo}</td>
-                    <td style="padding: 6px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 6px; text-align: center; color: green; font-weight: bold;">${somarTempos(item.tempos_brutos)}     </td>
-                </tr>`;
-        });
-
-        tabelaLocal += `</tbody></table>`;
-
-        container.innerHTML += tabelaLocal;
-    });
-
-} else {
-
-    // volta ao comportamento original
-    container.style.display = 'block';
-
-    container.innerHTML = tabelaHtml;
-}
-
-        const horasDecimais = (totalSegundos / 3600).toFixed(1);
-        document.getElementById('texto-logbook').innerHTML = `
-            <div style="border-top: 2px solid #ddd; padding-top: 10px;">
-                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> e <b>${totalSimulados} Simulados </b>, totalizando <u>${horasDecimais} horas </u> de questionários num total de ${totalQuestoes} questões.
-            </div>
-        `;
-    }
+    // 3. Atualização do Rodapé
+    const horasDecimais = (totalSegundos / 3600).toFixed(1);
+    document.getElementById('texto-logbook').innerHTML = `
+        <div style="border-top: 2px solid #ddd; padding-top: 10px;">
+            <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas</b> 
+            e <b>${totalSimulados} Simulados</b>, totalizando 
+            <u>${horasDecimais} horas</u> de questionários de um total de <b>${window.totalQuestoesGlobalCertificado || 0}</b> questões.
+        </div>
+    `;
+};
 
     async function carregarDadosReais() {
         // 1. Identifica o ID do sistema (tabela users/auth) - APENAS LEITURA
