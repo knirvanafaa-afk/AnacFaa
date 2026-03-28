@@ -959,20 +959,36 @@ function atualizarSistemaNivel(total, media) {
 
     let cor, bg, nome, baseNivel;
 
-    // 1. Definição de Cores e Níveis (1500 / 3000 / 4500)
     if (total >= 3000) { 
-        nome = "INSPECTOR"; cor = "#f1c40f"; bg = "#fff9c4"; baseNivel = 3000;
+        nome = "INSPECTOR"; 
+        cor = "#f1c40f"; 
+        bg = "linear-gradient(145deg, #fff3a0, #f1c40f)"; // OURO MELHOR VISÍVEL
+        baseNivel = 3000;
+
     } else if (total >= 1500) { 
-        nome = "MECHANIC APRS"; cor = "#95a5a6"; bg = "#f5f5f5"; baseNivel = 1500;
+        nome = "MECHANIC APRS"; 
+        cor = "#95a5a6"; 
+        bg = "linear-gradient(145deg, #d7dbdd, #f0f3f4)"; // PRATA MAIS CLARO
+        baseNivel = 1500;
+
     } else { 
-        nome = "TRAINEE"; cor = "#b37059"; bg = "#fff5eb"; baseNivel = 0;
+        nome = "TRAINEE"; 
+        cor = "#b37059"; 
+        bg = "linear-gradient(145deg, #e2a78f, #f4c2ab)"; // COBRE ORIGINAL
+        baseNivel = 0;
     }
 
     root.style.setProperty('--nivel-cor', cor);
     root.style.setProperty('--nivel-bg', bg);
-    if (moldura) moldura.style.borderColor = cor;
+
+    if (moldura) {
+        moldura.style.borderColor = cor;
+        moldura.style.background = bg;
+    }
+
     if (labelPatente) labelPatente.innerText = nome;
     if (labelBadge) labelBadge.innerText = nome;
+}
 
     // 2. Lógica de Escalonamento (150 questões x 30 estágios)
     let progressoNoNivel = total - baseNivel; 
