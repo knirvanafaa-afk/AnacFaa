@@ -542,6 +542,10 @@ const container = document.getElementById('tabela-dinamica');
 
         const dadosFiltrados = dadosVindosDoSQL.filter(item => item.materia === m);
 
+const totalMateria = somarTempos(
+   dadosFiltrados.map(i => i.tempos_brutos || '').join('|')
+);
+
         let tabelaLocal = `
             <table style="flex:1; min-width: 30%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
                 <thead>
