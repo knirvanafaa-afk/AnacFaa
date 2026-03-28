@@ -471,6 +471,7 @@ function somarTempos(tempos) {
 }
 
     window.renderizarDadosVerso = function(dadosVindosDoSQL) {
+        let totalQuestoes = 0;
         let totalSegundos = 0;
         let totalProvas = 0;
         let totalSimulados = 0;
@@ -487,7 +488,10 @@ function somarTempos(tempos) {
                 <tbody>`;
 
         dadosVindosDoSQL.forEach(item => {
-            totalProvas += parseInt(item.total_provas || 0);
+            
+totalQuestoes += parseInt(item.total_questoes || 0);
+
+totalProvas += parseInt(item.total_provas || 0);
             totalSimulados += parseInt(item.total_simulados || 0);
 
             if (item.tempos_brutos) {
@@ -564,7 +568,7 @@ const container = document.getElementById('tabela-dinamica');
 );
         document.getElementById('texto-logbook').innerHTML = `
             <div style="border-top: 2px solid #ddd; padding-top: 10px;">
-                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> e <b>${totalSimulados} Simulados</b>, com carga horária de <u>${horasDecimais} </u> e questões.
+                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> e <b>${totalSimulados} Simulados</b>, com carga horária de <u>${horasDecimais} </u> em um total de <b>${totalQuestoes} questões</b>.
             </div>
         `;
     }
@@ -596,7 +600,7 @@ const container = document.getElementById('tabela-dinamica');
 
     let query = supabase
         .from('historico_simulados')
-        .select('capitulo, nota, tipo, tempo, materia')
+       .select('capitulo, nota, tipo, tempo, materia, total_questoes')
         .eq('user_id', userId);
 
     // Se NÃO for prêmio, filtra pela matéria. Se FOR prêmio, não coloca esse filtro (traz tudo)
@@ -621,7 +625,8 @@ const container = document.getElementById('tabela-dinamica');
                     melhor_nota: 0, 
                     total_provas: 0, 
                     total_simulados: 0, 
-                    tempos_brutos: [] 
+                    tempos_brutos: [],
+                    total_questoes: 0
                 };
             }
             
@@ -629,6 +634,9 @@ const container = document.getElementById('tabela-dinamica');
             if (item.tipo === 'Prova') caps[item.capitulo].total_provas++;
             if (item.tipo === 'Simulado') caps[item.capitulo].total_simulados++;
             caps[item.capitulo].tempos_brutos.push(item.tempo);
+
+caps[item.capitulo].total_questoes += parseInt(item.total_questoes || 0);
+
         });
 
         return Object.values(caps).map(c => ({
