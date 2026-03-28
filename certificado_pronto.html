@@ -438,6 +438,38 @@
         return numeros.length === 2 ? (parseInt(numeros[0]) * 60) + parseInt(numeros[1]) : parseInt(numeros[0]);
     }
 
+function somarTempos(tempos) {
+    if (!tempos) return "00:00 Min";
+
+    let totalSegundos = 0;
+
+    const lista = tempos.split('|');
+
+    lista.forEach(t => {
+        if (!t) return;
+
+        const partes = t.split(":");
+        const min = parseInt(partes[0]) || 0;
+        const seg = parseInt(partes[1]) || 0;
+
+        totalSegundos += (min * 60) + seg;
+    });
+
+    // menos de 1 hora
+    if (totalSegundos < 3600) {
+        const min = Math.floor(totalSegundos / 60);
+        const seg = totalSegundos % 60;
+
+        return `${String(min).padStart(2,'0')}:${String(seg).padStart(2,'0')} Min`;
+    }
+
+    // mais de 1 hora
+    const horas = Math.floor(totalSegundos / 3600);
+    const minutos = Math.floor((totalSegundos % 3600) / 60);
+
+    return `${String(horas).padStart(2,'0')}:${String(minutos).padStart(2,'0')} h`;
+}
+
     window.renderizarDadosVerso = function(dadosVindosDoSQL) {
         let totalSegundos = 0;
         let totalProvas = 0;
@@ -448,8 +480,8 @@
                 <thead>
                     <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
                         <th style="padding: 10px; text-align: left;">Capítulo</th>
-                        <th style="padding: 10px; text-align: center;">Melhor Nota</th>
-                        <th style="padding: 10px; text-align: center;">Status</th>
+                        <th style="padding: 10px; text-align: center;">Notas</th>
+                        <th style="padding: 10px; text-align: center;">Carga Horária</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -467,7 +499,7 @@
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 8px;">${item.capitulo}</td>
                     <td style="padding: 8px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 8px; text-align: center; color: green; font-weight: bold;">PASS</td>
+                    <td style="padding: 8px; text-align: center; color: green; font-weight: bold;">${somarTempos(item.tempos_brutos)}</td>
                 </tr>`;
         });
 
@@ -499,8 +531,8 @@ const container = document.getElementById('tabela-dinamica');
                     </tr>
                     <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
                         <th style="padding: 6px; text-align: left;">Capítulo</th>
-                        <th style="padding: 6px; text-align: center;">Melhor Nota</th>
-                        <th style="padding: 6px; text-align: center;">Status</th>
+                        <th style="padding: 6px; text-align: center;">Notas</th>
+                        <th style="padding: 6px; text-align: center;">Carga Horária</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -510,7 +542,7 @@ const container = document.getElementById('tabela-dinamica');
                 <tr style="border-bottom: 1px solid #eee;">
                     <td style="padding: 6px;">${item.capitulo}</td>
                     <td style="padding: 6px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 6px; text-align: center; color: green; font-weight: bold;">PASS</td>
+                    <td style="padding: 6px; text-align: center; color: green; font-weight: bold;">${somarTempos(item.tempos_brutos)}</td>
                 </tr>`;
         });
 
@@ -527,12 +559,12 @@ const container = document.getElementById('tabela-dinamica');
     container.innerHTML = tabelaHtml;
 }
 
-        const horasDecimais = (totalSegundos / 3600).toFixed(1);
+        const horasDecimais = somarTempos(
+    dadosVindosDoSQL.map(i => i.tempos_brutos).join('|')
+);
         document.getElementById('texto-logbook').innerHTML = `
             <div style="border-top: 2px solid #ddd; padding-top: 10px;">
-                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O técnico realizou um total de <b>${totalProvas} Provas Oficiais</b> 
-                e <b>${totalSimulados} Simulados</b> de performance, totalizando 
-                <u>${horasDecimais} horas</u> de instrução técnica ativa e análise de sistemas.
+                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> e <b>${totalSimulados} Simulados</b>, com carga horária de <u>${horasDecimais} </u> e questões.
             </div>
         `;
     }
