@@ -558,9 +558,7 @@ const container = document.getElementById('tabela-dinamica');
         const horasDecimais = (totalSegundos / 3600).toFixed(1);
         document.getElementById('texto-logbook').innerHTML = `
             <div style="border-top: 2px solid #ddd; padding-top: 10px;">
-                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> 
-                e <b>${totalSimulados} Simulados</b>, totalizando 
-                <u>${horasDecimais} horas</u> de questionários num total de ${totalQuestoes} questões.
+                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> e <b>${totalSimulados} Simulados </b>, totalizando <u>${horasDecimais} horas </u> de questionários num total de ${totalQuestoes} questões.
             </div>
         `;
     }
