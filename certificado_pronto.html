@@ -388,255 +388,258 @@
 </div>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-    import { validarAcessoTotal } from './seguranca.js';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { validarAcessoTotal } from './seguranca.js';
 
-    // 1. Inicialização
-    validarAcessoTotal(false);
-    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+    // 1. Inicialização
+    validarAcessoTotal(false);
+    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('user_id');
-    const materiaRaw = urlParams.get('materia') || 'General';
-    const media = urlParams.get('media') || '0';
-    const nomeURL = urlParams.get('nome');
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('user_id');
+    const materiaRaw = urlParams.get('materia') || 'General';
+    const media = urlParams.get('media') || '0';
+    const nomeURL = urlParams.get('nome');
 
-    const materiasFormatadas = {
-        'General': 'FAA Aviation Mechanic — GENERAL',
-        'Airframe': 'FAA Aviation Mechanic — AIRFRAME',
-        'Powerplant': 'FAA Aviation Mechanic — POWERPLANT',
-        'Bronze': 'FAA Aviation Mechanic — BRONZE MERIT', 
-        'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 
-        'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
-    };
+    const materiasFormatadas = {
+        'General': 'FAA Aviation Mechanic — GENERAL',
+        'Airframe': 'FAA Aviation Mechanic — AIRFRAME',
+        'Powerplant': 'FAA Aviation Mechanic — POWERPLANT',
+        'Bronze': 'FAA Aviation Mechanic — BRONZE MERIT', 
+        'Silver': 'FAA Aviation Mechanic — SILVER MERIT', 
+        'Gold': 'FAA Aviation Mechanic — GOLD MERIT' 
+    };
 
-    document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
-    document.getElementById('cert-media').innerText = media;
-    
-    const campoNome = document.getElementById('cert-nome-aluno'); 
-    if (nomeURL && nomeURL !== "Carregando...") { 
-        campoNome.innerText = decodeURIComponent(nomeURL); 
-    } else { 
-        campoNome.innerText = "Estudante WXR"; 
-    }
+    document.getElementById('cert-materia').innerText = materiasFormatadas[materiaRaw] || materiaRaw;
+    document.getElementById('cert-media').innerText = media;
+    
+    const campoNome = document.getElementById('cert-nome-aluno'); 
+    if (nomeURL && nomeURL !== "Carregando...") { 
+        campoNome.innerText = decodeURIComponent(nomeURL); 
+    } else { 
+        campoNome.innerText = "Estudante WXR"; 
+    }
 
-    const hoje = new Date();
-    document.getElementById('cert-data').innerText = hoje.toLocaleDateString('pt-BR');
+    const hoje = new Date();
+    document.getElementById('cert-data').innerText = hoje.toLocaleDateString('pt-BR');
 
-    // APLICANDO TEMA NOS DOIS LADOS
-    const frente = document.getElementById('printable');
-    const verso = document.getElementById('verso-layout');
-    if(frente) frente.classList.add('tema-' + materiaRaw);
-    if(verso) verso.classList.add('tema-' + materiaRaw);
+    // APLICANDO TEMA NOS DOIS LADOS
+    const frente = document.getElementById('printable');
+    const verso = document.getElementById('verso-layout');
+    if(frente) frente.classList.add('tema-' + materiaRaw);
+    if(verso) verso.classList.add('tema-' + materiaRaw);
 
-    // --- LÓGICA DO VERSO (PROCESSANDO O SEU SQL) ---
+    // --- LÓGICA DO VERSO (PROCESSANDO O SEU SQL) ---
 
 function somarTempos(tempos) {
-  if (!tempos) return "00:00 h";
+  if (!tempos) return "00:00 h";
 
-  let totalSegundos = 0;
+  let totalSegundos = 0;
 
-  try {
-    const lista = typeof tempos === "string" ? JSON.parse(tempos) : tempos;
+  try {
+    const lista = typeof tempos === "string" ? JSON.parse(tempos) : tempos;
 
-    lista.forEach(t => {
-      if (!t) return;
+    lista.forEach(t => {
+      if (!t) return;
 
-      const partes = t.split(":");
-      const min = parseInt(partes[0]) || 0;
-      const seg = parseInt(partes[1]) || 0;
+      const partes = t.split(":");
+      const min = parseInt(partes[0]) || 0;
+      const seg = parseInt(partes[1]) || 0;
 
-      totalSegundos += (min * 60) + seg;
-    });
+      totalSegundos += (min * 60) + seg;
+    });
 
-  } catch (e) {
-    return "00:00 h";
-  }
+  } catch (e) {
+    return "00:00 h";
+  }
 
-  const horas = Math.floor(totalSegundos / 3600);
-  const minutos = Math.floor((totalSegundos % 3600) / 60);
+  const horas = Math.floor(totalSegundos / 3600);
+  const minutos = Math.floor((totalSegundos % 3600) / 60);
 
-  return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')} h`;
+  return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')} h`;
 }
 
-    function textoParaSegundos(texto) {
-        if (!texto) return 0;
-        const numeros = texto.match(/\d+/g);
-        if (!numeros) return 0;
-        return numeros.length === 2 ? (parseInt(numeros[0]) * 60) + parseInt(numeros[1]) : parseInt(numeros[0]);
-    }
+    function textoParaSegundos(texto) {
+        if (!texto) return 0;
+        const numeros = texto.match(/\d+/g);
+        if (!numeros) return 0;
+        return numeros.length === 2 ? (parseInt(numeros[0]) * 60) + parseInt(numeros[1]) : parseInt(numeros[0]);
+    }
 
-    window.renderizarDadosVerso = function(dadosVindosDoSQL) {
-        let totalSegundos = 0;
-        let totalProvas = 0;
-        let totalSimulados = 0;
-        let totalQuestoes = 0;
-        
-        let tabelaHtml = `
-            <table style="width:100%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
-                <thead>
-                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
-                        <th style="padding: 10px; text-align: left;">Capítulo</th>
-                        <th style="padding: 10px; text-align: center;">Notas</th>
-                        <th style="padding: 10px; text-align: center;">Carga Horária</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+    window.renderizarDadosVerso = function(dadosVindosDoSQL, totalQuestoes = 0) {
+        let totalSegundos = 0;
+        let totalProvas = 0;
+        let totalSimulados = 0;
+        
+        let tabelaHtml = `
+            <table style="width:100%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
+                <thead>
+                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
+                        <th style="padding: 10px; text-align: left;">Capítulo</th>
+                        <th style="padding: 10px; text-align: center;">Notas</th>
+                        <th style="padding: 10px; text-align: center;">Carga Horária</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
-        dadosVindosDoSQL.forEach(item => {
-            totalProvas += parseInt(item.total_provas || 0);
-            totalSimulados += parseInt(item.total_simulados || 0);
+        dadosVindosDoSQL.forEach(item => {
+            totalProvas += parseInt(item.total_provas || 0);
+            totalSimulados += parseInt(item.total_simulados || 0);
 
-            if (item.tempos_brutos) {
-                const tempos = item.tempos_brutos.split('|');
-                tempos.forEach(t => totalSegundos += textoParaSegundos(t));
-            }
+            if (item.tempos_brutos) {
+                const tempos = item.tempos_brutos.split('|');
+                tempos.forEach(t => totalSegundos += textoParaSegundos(t));
+            }
 
-            tabelaHtml += `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 8px;">${item.capitulo}</td>
-                    <td style="padding: 8px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 8px; text-align: center; color: green; font-weight: bold;">${somarTempos(item.tempos_brutos)}</td>
-                </tr>`;
-        });
+            tabelaHtml += `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 8px;">${item.capitulo}</td>
+                    <td style="padding: 8px; text-align: center;">${item.melhor_nota}%</td>
+                    <td style="padding: 8px; text-align: center; color: green; font-weight: bold;">${somarTempos(item.tempos_brutos)}</td>
+                </tr>`;
+        });
 
-        tabelaHtml += `</tbody></table>`;
+        tabelaHtml += `</tbody></table>`;
 
 const ePremio = ['Bronze', 'Silver', 'Gold'].includes(materiaRaw);
 const container = document.getElementById('tabela-dinamica');
-        if (ePremio) {
+        if (ePremio) {
 
-    // ativa layout de colunas
-    container.style.display = 'flex';
-    container.style.flexWrap = 'wrap';
-    container.style.justifyContent = 'space-between';
-    container.style.gap = '10px';
+    // ativa layout de colunas
+    container.style.display = 'flex';
+    container.style.flexWrap = 'wrap';
+    container.style.justifyContent = 'space-between';
+    container.style.gap = '10px';
 
-    container.innerHTML = "";
+    container.innerHTML = "";
 
-    const materias = ['General', 'Airframe', 'Powerplant'];
+    const materias = ['General', 'Airframe', 'Powerplant'];
 
-    materias.forEach(m => {
+    materias.forEach(m => {
 
-        const dadosFiltrados = dadosVindosDoSQL.filter(item => item.materia === m);
+        const dadosFiltrados = dadosVindosDoSQL.filter(item => item.materia === m);
 
-        let tabelaLocal = `
-            <table style="flex:1; min-width: 30%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
-                <thead>
-                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
-                        <th colspan="3" style="padding: 6px; text-align: center;">${m}</th>
-                    </tr>
-                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
-                        <th style="padding: 6px; text-align: left;">Capítulo</th>
-                        <th style="padding: 6px; text-align: center;">Notas</th>
-                        <th style="padding: 6px; text-align: center;">Carga Horária</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+        let tabelaLocal = `
+            <table style="flex:1; min-width: 30%; border-collapse: collapse; font-family: 'Libre Baskerville'; font-size: 14px;">
+                <thead>
+                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
+                        <th colspan="3" style="padding: 6px; text-align: center;">${m}</th>
+                    </tr>
+                    <tr style="background: #f4f4f4; border-bottom: 2px solid #333;">
+                        <th style="padding: 6px; text-align: left;">Capítulo</th>
+                        <th style="padding: 6px; text-align: center;">Notas</th>
+                        <th style="padding: 6px; text-align: center;">Carga Horária</th>
+                    </tr>
+                </thead>
+                <tbody>`;
 
-        dadosFiltrados.forEach(item => {
-            tabelaLocal += `
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 6px;">${item.capitulo}</td>
-                    <td style="padding: 6px; text-align: center;">${item.melhor_nota}%</td>
-                    <td style="padding: 6px; text-align: center; color: green; font-weight: bold;">${somarTempos(item.tempos_brutos)}     </td>
-                </tr>`;
-        });
+        dadosFiltrados.forEach(item => {
+            tabelaLocal += `
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 6px;">${item.capitulo}</td>
+                    <td style="padding: 6px; text-align: center;">${item.melhor_nota}%</td>
+                    <td style="padding: 6px; text-align: center; color: green; font-weight: bold;">${somarTempos(item.tempos_brutos)}     </td>
+                </tr>`;
+        });
 
-        tabelaLocal += `</tbody></table>`;
+        tabelaLocal += `</tbody></table>`;
 
-        container.innerHTML += tabelaLocal;
-    });
+        container.innerHTML += tabelaLocal;
+    });
 
 } else {
 
-    // volta ao comportamento original
-    container.style.display = 'block';
+    // volta ao comportamento original
+    container.style.display = 'block';
 
-    container.innerHTML = tabelaHtml;
+    container.innerHTML = tabelaHtml;
 }
 
-        const horasDecimais = (totalSegundos / 3600).toFixed(1);
-        document.getElementById('texto-logbook').innerHTML = `
-            <div style="border-top: 2px solid #ddd; padding-top: 10px;">
-                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> 
-                e <b>${totalSimulados} Simulados</b>, totalizando 
-                <u>${horasDecimais} horas</u> de questionários num total de ${totalQuestoes} questões.
-            </div>
-        `;
-    }
+        const horasDecimais = (totalSegundos / 3600).toFixed(1);
+        document.getElementById('texto-logbook').innerHTML = `
+            <div style="border-top: 2px solid #ddd; padding-top: 10px;">
+                <strong>OFFICIAL TRAINING LOGBOOK:</strong> O aluno realizou um total de <b>${totalProvas} Provas </b> 
+                e <b>${totalSimulados} Simulados</b>, totalizando 
+                <u>${horasDecimais} horas</u> de questionários num total de ${totalQuestoes} questões.
+            </div>
+        `;
+    }
 
-    async function carregarDadosReais() {
-        // 1. Identifica o ID do sistema (tabela users/auth) - APENAS LEITURA
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        const userId = user?.id;
+    async function carregarDadosReais() {
+        // 1. Identifica o ID do sistema (tabela users/auth) - APENAS LEITURA
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const userId = user?.id;
 
-        if (!userId || authError) return;
+        if (!userId || authError) return;
 
-        // 2. Busca o nome na tabela profile (onde o lápis.jpg salva)
-        // Usamos .maybeSingle() para não travar o código caso o perfil demore a responder
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('username')
-            .eq('id', userId)
-            .maybeSingle();
+        // 2. Busca o nome na tabela profile (onde o lápis.jpg salva)
+        // Usamos .maybeSingle() para não travar o código caso o perfil demore a responder
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('id', userId)
+            .maybeSingle();
 
-        // 3. Se existir o nome editado, mostra. Se não, mantém o seu "Carregando..."
-        if (profile && profile.username) {
-            document.getElementById('cert-nome-aluno').innerText = profile.username;
+        // 3. Se existir o nome editado, mostra. Se não, mantém o seu "Carregando..."
+        if (profile && profile.username) {
+            document.getElementById('cert-nome-aluno').innerText = profile.username;
+        }
+
+        // 4. Busca o histórico de simulados (Também apenas leitura)
+
+        // Define se deve filtrar por uma matéria específica ou buscar todas (para os prêmios)
+    const ePremio = ['Bronze', 'Silver', 'Gold'].includes(materiaRaw);
+
+    let query = supabase
+        .from('historico_simulados')
+        .select('capitulo, nota, tipo, tempo, materia, total_questoes')
+        .eq('user_id', userId);
+
+    // Se NÃO for prêmio, filtra pela matéria. Se FOR prêmio, não coloca esse filtro (traz tudo)
+    if (!ePremio) {
+        query = query.eq('materia', materiaRaw);
+    }
+
+    const { data: historico } = await query;
+
+        if (historico && historico.length > 0) {
+           const resultado = processarHistorico(historico);
+window.renderizarDadosVerso(resultado.dados, resultado.totalQuestoes);
+        }
+    }
+    function processarHistorico(lista) {
+    const caps = {};
+    let totalQuestoes = 0;
+
+    lista.forEach(item => {
+        if (!caps[item.capitulo]) {
+            caps[item.capitulo] = { 
+                capitulo: item.capitulo, 
+                materia: item.materia,
+                melhor_nota: 0, 
+                total_provas: 0, 
+                total_simulados: 0, 
+                tempos_brutos: [] 
+            };
         }
+        
+        if (item.nota > caps[item.capitulo].melhor_nota) caps[item.capitulo].melhor_nota = item.nota;
+        if (item.tipo === 'Prova') caps[item.capitulo].total_provas++;
+        if (item.tipo === 'Simulado') caps[item.capitulo].total_simulados++;
 
-        // 4. Busca o histórico de simulados (Também apenas leitura)
+        totalQuestoes += parseInt(item.total_questoes || 0);
+        caps[item.capitulo].tempos_brutos.push(item.tempo);
+    });
 
-        // Define se deve filtrar por uma matéria específica ou buscar todas (para os prêmios)
-    const ePremio = ['Bronze', 'Silver', 'Gold'].includes(materiaRaw);
-
-    let query = supabase
-        .from('historico_simulados')
-        .select('capitulo, nota, tipo, tempo, materia')
-        .eq('user_id', userId);
-
-    // Se NÃO for prêmio, filtra pela matéria. Se FOR prêmio, não coloca esse filtro (traz tudo)
-    if (!ePremio) {
-        query = query.eq('materia', materiaRaw);
-    }
-
-    const { data: historico } = await query;
-
-        if (historico && historico.length > 0) {
-            const dadosAgrupados = processarHistorico(historico);
-            window.renderizarDadosVerso(dadosAgrupados); 
-        }
-    }
-    function processarHistorico(lista) {
-        const caps = {};
-        lista.forEach(item => {
-            if (!caps[item.capitulo]) {
-                caps[item.capitulo] = { 
-                    capitulo: item.capitulo, 
-                    materia: item.materia,
-                    melhor_nota: 0, 
-                    total_provas: 0, 
-                    total_simulados: 0, 
-                    tempos_brutos: [] 
-                };
-            }
-            
-            if (item.nota > caps[item.capitulo].melhor_nota) caps[item.capitulo].melhor_nota = item.nota;
-            if (item.tipo === 'Prova') caps[item.capitulo].total_provas++;
-            if (item.tipo === 'Simulado') caps[item.capitulo].total_simulados++;
-           
-totalQuestoes += parseInt(item.total_questoes || 0);
- caps[item.capitulo].tempos_brutos.push(item.tempo);
-        });
-
-        return Object.values(caps).map(c => ({
+    return {
+        dados: Object.values(caps).map(c => ({
             ...c,
             tempos_brutos: c.tempos_brutos.join('|')
-        }));
-    }
-
-    carregarDadosReais();
+        })),
+        totalQuestoes
+    };
+}
+    carregarDadosReais();
 
 </script>
 
