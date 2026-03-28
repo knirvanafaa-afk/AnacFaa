@@ -282,8 +282,7 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 }
 
 .icone-diploma-wrapper {
-   background: transparent !important;
-   text-align: right;
+    text-align: right;
 }
 
 .icone-diploma-cert {
@@ -293,7 +292,6 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     filter: grayscale(100%); /* Cinza por padrão */
     opacity: 0.3;
     transition: 0.3s;
-    mix-blend-mode: multiply; 
 }
 
 /* Classes para quando o diploma for ATIVADO */
@@ -404,22 +402,6 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     </table>
 </div>
 
-<div id="custom-confirm" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
-    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center;">
-        
-        <p id="confirm-message" style="font-weight: bold; margin-bottom: 20px;"></p>
-
-        <button onclick="confirmarAcao(true)" style="background:#27ae60;color:white;padding:10px 20px;border:none;border-radius:10px;margin-right:10px;cursor:pointer;">
-            SIM
-        </button>
-
-        <button onclick="confirmarAcao(false)" style="background:#e74c3c;color:white;padding:10px 20px;border:none;border-radius:10px;cursor:pointer;">
-            NÃO
-        </button>
-
-    </div>
-</div>
-
     <div class="secao-radar-personalizada">
         <div class="radar-header">
             <svg width="40" height="40" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
@@ -486,43 +468,16 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     </div>
 
 </div>
-  
+
+
+               
                 </div>
-          </div>
+            </div>
             
- 
-        <div class="secao-titulo">Itens de Inspeção Obrigatória(Certificados)</div>
-        <div id="lista-certificados">
             <div class="favorito-item" style="display: flex; justify-content: space-between; align-items: center;">
                 <div>
                     <strong style="color: #2c3e50; display:block; margin-bottom:10px;">Certificados Especiais de Mérito</strong>
-
-<div id="container-certificados-lista" style="margin-top: 10px;">
-    
-    <div class="linha-certificado">
-    <div class="nome-materia-cert">BRONZE</div>
-    <div class="status-media-cert">Média Global: <span id="cert-media-bronze">--</span>% </div>
-    <div class="icone-diploma-wrapper">
-       <img src="bronze.jpg" id="img-cert-bronze" class="icone-diploma-cert">
-    </div>
-</div>
-
-<div class="linha-certificado">
-    <div class="nome-materia-cert">SILVER</div>
-    <div class="status-media-cert">Média Global: <span id="cert-media-silver">--</span>% </div>
-    <div class="icone-diploma-wrapper">
-      <img src="silver.jpg" id="img-cert-silver" class="icone-diploma-cert">
-    </div>
-</div>
-
-<div class="linha-certificado">
-    <div class="nome-materia-cert">GOLD</div>
-    <div class="status-media-cert">Média Global: <span id="cert-media-gold">--</span>% </div>
-    <div class="icone-diploma-wrapper">
-        <img src="gold.jpg" id="img-cert-gold" class="icone-diploma-cert">
-    </div>
-</div>
-                         
+                    <div style="font-size: 12px; color: #888;">Emitido em: 10/12/2023</div>
                 </div>
             </div>
         </div>
@@ -767,15 +722,15 @@ async function alimentarFavoritos() {
 
     const { data: favoritos } = await supabase
         .from('favoritos')
-        .select('id, materia, pergunta, resposta_correta')
+        .select('materia, pergunta, resposta_correta')
         .eq('user_id', user.id)
-        .order('data_flag', { ascending: false })
+     .order('data_flag', { ascending: false })
         .limit(3);
 
     const tbody = document.getElementById('tabela-favoritos');
-    if (!tbody) return;
+    if (!tbody) return; // Segurança caso a tabela não exista
     
-    tbody.innerHTML = '';
+    tbody.innerHTML = ''; 
 
     favoritos.forEach(f => {
         const tr = document.createElement('tr');
@@ -783,55 +738,36 @@ async function alimentarFavoritos() {
             <td class="explica-asa">${f.materia}</td>
             <td class="explica-asa">${f.pergunta}</td>
             <td class="explica-asa">${f.resposta_correta}</td>
-
-            <td style="text-align: right;">
-                <img src="Lixeira-aberta.png"
-                     style="width:25px; cursor:pointer;"
-                     onclick="removerFavorito('${f.id}', this)">
-            </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-window.removerFavorito = async function(idFavorito, elemento) {
-
-    const confirmar = await mostrarConfirmacao("Deseja remover esta questão dos favoritos?");
-if (!confirmar) return;
-
-    const { error } = await supabase
-        .from('favoritos')
-        .delete()
-        .eq('id', idFavorito);
-
-    if (error) {
-        alert("Erro ao remover: " + error.message);
-        return;
-    }
-
-    // Remove a linha da tabela
-    elemento.closest('tr').remove();
-};
-
 async function carregarDadosCertificados() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
+    // Busca o histórico (igualzinho na sua página de análise)
     const { data: historico, error } = await supabase
         .from('historico_simulados')
         .select('*')
         .eq('user_id', user.id);
 
-    if (error) return;
+    if (error) {
+        console.error("Erro ao carregar dados:", error);
+        return;
+    }
 
+    // Criamos o acumulador para as 3 matérias
     const acumulador = {
         'General': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 },
         'Airframe': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 },
         'Powerplant': { somaNotas: 0, totalQuestoes: 0, qtdSimulados: 0 }
     };
 
+    // Percorre o histórico e soma os valores
     historico.forEach(item => {
-        const mat = item.materia;
+        const mat = item.materia; // 'General', 'Airframe' ou 'Powerplant'
         if (acumulador[mat]) {
             acumulador[mat].somaNotas += parseFloat(item.nota || 0);
             acumulador[mat].totalQuestoes += parseInt(item.total_questoes || 0);
@@ -839,85 +775,39 @@ async function carregarDadosCertificados() {
         }
     });
 
-    // 1. ATUALIZA OS INDIVIDUAIS (Igual você já tinha)
-    const atualizarLinhaNormal = (idHtml, chaveBanco) => {
-        const d = acumulador[chaveBanco];
-        const media = d.qtdSimulados > 0 ? (d.somaNotas / d.qtdSimulados).toFixed(1) : 0;
+    // Função para aplicar a regra visual em cada linha
+    const atualizarLinha = (idHtml, chaveBanco) => {
+        const dados = acumulador[chaveBanco];
+        const media = dados.qtdSimulados > 0 ? (dados.somaNotas / dados.qtdSimulados).toFixed(1) : 0;
+        const totalQts = dados.totalQuestoes;
+
+        // Atualiza o texto da média na sua coluna centralizada
         document.getElementById(`cert-media-${idHtml}`).innerText = media;
 
-        if (parseFloat(media) >= 70 && d.totalQuestoes >= 500) {
-            ativarBotao(idHtml, chaveBanco, media);
-        }
-    };
+        // REGRA: Média >= 70 E questões >= 500
 
-    // 2. LÓGICA DOS ESPECIAIS (A NOVA IDEIA)
-    const totalQuestoesGeral = acumulador.General.totalQuestoes + acumulador.Airframe.totalQuestoes + acumulador.Powerplant.totalQuestoes;
-    
-    // Cálculo das Médias Individuais para a Média Global
-    const mG = acumulador.General.qtdSimulados > 0 ? (acumulador.General.somaNotas / acumulador.General.qtdSimulados) : 0;
-    const mA = acumulador.Airframe.qtdSimulados > 0 ? (acumulador.Airframe.somaNotas / acumulador.Airframe.qtdSimulados) : 0;
-    const mP = acumulador.Powerplant.qtdSimulados > 0 ? (acumulador.Powerplant.somaNotas / acumulador.Powerplant.qtdSimulados) : 0;
-    
-    const mediaGlobal = ((mG + mA + mP) / 3).toFixed(1);
-
-    // Requisitos mínimos por módulo (Trava de Segurança)
-    const minG = acumulador.General.totalQuestoes;
-    const minA = acumulador.Airframe.totalQuestoes;
-    const minP = acumulador.Powerplant.totalQuestoes;
-
-    // Função Auxiliar para Ativar
-    function ativarBotao(id, materiaNome, mediaValor) {
-        const img = document.getElementById(`img-cert-${id}`);
-        const nomeAl = document.getElementById('user-display-name')?.innerText || "Estudante";
-        if(img) {
-            img.classList.add('diploma-ativo');
+        if (parseFloat(media) >= 70 && totalQts >= 500)
+ {
+            const img = document.getElementById(`img-cert-${idHtml}`);
+            img.classList.add('diploma-ativo'); // Ativa a cor e o ponteiro
             img.onclick = () => {
-                window.location.href = `certificado_pronto.html?materia=${materiaNome}&media=${mediaValor}&nome=${encodeURIComponent(nomeAl)}`;
-            };
-        }
-    }
 
-    // --- VALIDAÇÃO DOS NÍVEIS ESPECIAIS ---
-    
-    // BRONZE: Global >= 70% | Total >= 1500 | Min 500/módulo
-    document.getElementById('cert-media-bronze').innerText = mediaGlobal;
-    if (parseFloat(mediaGlobal) >= 70 && totalQuestoesGeral >= 1500 && minG >= 500 && minA >= 500 && minP >= 500) {
-        ativarBotao('bronze', 'Bronze', mediaGlobal);
-    }
+// Pega o nome que está aparecendo no seu Dashboard agora 
 
-    // SILVER: Global >= 80% | Total >= 3000 | Min 1000/módulo
-    document.getElementById('cert-media-silver').innerText = mediaGlobal;
-    if (parseFloat(mediaGlobal) >= 80 && totalQuestoesGeral >= 3000 && minG >= 1000 && minA >= 1000 && minP >= 1000) {
-        ativarBotao('silver', 'Silver', mediaGlobal);
-    }
+const elementoNome = document.getElementById('user-display-name'); 
 
-    // GOLD: Global >= 90% | Total >= 4500 | Min 1500/módulo
-    document.getElementById('cert-media-gold').innerText = mediaGlobal;
-    if (parseFloat(mediaGlobal) >= 90 && totalQuestoesGeral >= 4500 && minG >= 1500 && minA >= 1500 && minP >= 1500) {
-        ativarBotao('gold', 'Gold', mediaGlobal);
-    }
+const nomeAluno = elementoNome ? elementoNome.innerText : "Estudante"; 
 
-    // Chama as atualizações individuais
-    atualizarLinhaNormal('general', 'General');
-    atualizarLinhaNormal('airframe', 'Airframe');
-    atualizarLinhaNormal('powerplant', 'Powerplant');
-}
+window.location.href = `certificado_pronto.html?materia=${chaveBanco}&media=${media}&nome=${encodeURIComponent(nomeAluno)}`; 
+           }; 
+       } 
+ };
 
-let resolverConfirmacao;
-
-window.mostrarConfirmacao = (mensagem) => {
-    document.getElementById('confirm-message').innerText = mensagem;
-    document.getElementById('custom-confirm').style.display = 'flex';
-
-    return new Promise((resolve) => {
-        resolverConfirmacao = resolve;
-    });
-};
-
-window.confirmarAcao = (resposta) => {
-    document.getElementById('custom-confirm').style.display = 'none';
-    resolverConfirmacao(resposta);
-};
+    // Executa a atualização para cada uma
+    atualizarLinha('general', 'General');
+    atualizarLinha('airframe', 'Airframe');
+    atualizarLinha('powerplant', 'Powerplant');
+} 
 
 </script>
 </body>
