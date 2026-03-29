@@ -28,6 +28,36 @@
         .passo.ativo { display: block; }
         
         .chave-manual { font-size: 12px; color: #555; margin-top: 10px; word-break: break-all; background: #eee; padding: 5px; border-radius: 5px; text-align: center; }
+
+.box-contrato {
+  width: 90%;
+  height: 250px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  background: white;
+  padding: 10px;
+  overflow-y: auto; /* simula scroll do textarea */
+  font-family: Arial, sans-serif;
+  margin-bottom: 20px; 
+}
+
+.titulo {
+  text-align: center;
+  font-weight: bold;
+}
+
+.subtitulo {
+  font-size: 15px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.texto {
+  font-size: 12px;
+  margin-top: 5px;
+}
+
     </style>
 </head>
 <body>
@@ -45,12 +75,57 @@
     <div id="passo1" class="passo ativo">
         <div class="section-box">
             <p style="font-weight: bold; color: #2c3e50;">Bem-vindo(a)! Confirme os termos abaixo para prosseguir:</p>
-            <textarea readonly>
-CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY
-1. O acesso é individual e intransferível.
-2. É proibido o compartilhamento de senhas.
-3. O conteúdo é protegido por direitos autorais.
-            </textarea>
+          
+       <div class="box-contrato">
+  <p class="titulo">CONTRATO DE PRESTAÇÃO DE SERVIÇOS - SKYLICENSE ACADEMY</p>
+
+  
+
+<p class="subtitulo">Termo de Uso – Versão Beta</p>
+<p class="texto">Ao marcar a opção “Li e concordo”, o usuário declara estar ciente e concordar com as seguintes condições:</p>
+
+<p class="subtitulo">Versão experimental</p>
+<p class="texto">A plataforma encontra-se em fase de testes (versão BETA), podendo apresentar falhas, instabilidades, alterações ou interrupções a qualquer momento, sem aviso prévio.</p>
+
+<p class="subtitulo">Isenção de Responsabilidade</p>
+<p class="texto">O PARTICIPANTE declara estar ciente de que a plataforma está em versão experimental, sujeita a falhas, erros de sistema e perda eventual de dados ou histórico. O desenvolvedor não se responsabiliza por eventuais danos, perdas de tempo ou expectativas frustradas decorrentes da instabilidade da plataforma, sendo o uso inteiramente por conta e risco do PARTICIPANTE.</p>
+
+<p class="subtitulo">Acesso gratuito e não comercial</p>
+<p class="texto">O acesso concedido é gratuito, pessoal, temporário e limitado, exclusivamente para fins de teste e avaliação da plataforma. Esse acesso não constitui relação de consumo, prestação de serviço remunerada ou qualquer direito adquirido sobre o produto.</p>
+
+<p class="subtitulo">
+Ausência de vínculo</p>
+<p class="texto">A participação do usuário como testador não estabelece qualquer tipo de vínculo empregatício, societário, associativo, contratual ou de parceria com o responsável pela plataforma.</p>
+
+<p class="subtitulo">
+Aceitação integral</p>
+<p class="texto">Ao aceitar estes termos, o usuário reconhece que está apenas participando de um período de testes voluntário, sem expectativa de remuneração, participação societária, reconhecimento de autoria ou qualquer direito sobre o desenvolvimento ou exploração da plataforma.</p>
+
+<p class="subtitulo">
+Sugestões e feedback</p>
+<p class="texto">Toda sugestão, ideia, comentário, melhoria ou feedback fornecido pelo usuário durante o período de testes poderá ser livremente utilizado pelo responsável pela plataforma, sem qualquer obrigação de compensação, reconhecimento ou atribuição de autoria. O usuário declara que não possui, nem reivindicará, direitos de propriedade intelectual sobre tais contribuições.</p>
+
+<p class="subtitulo">LGPD e Tratamento de Dados</p>
+<p class="texto">O PARTICIPANTE autoriza, de forma livre e informada, o tratamento de seus dados pessoais (nome, e-mail, logs de acesso e comportamento na plataforma) exclusivamente para fins de viabilizar a execução do teste, estatísticas de uso e aprimoramento do produto, em conformidade com a Lei Geral de Proteção de Dados (LGPD). O titular poderá solicitar a exclusão de seus dados a qualquer momento após o término do período de teste.</p>
+
+<p class="subtitulo">
+Propriedade intelectual</p>
+<p class="texto">Todos os direitos relativos à plataforma, incluindo software, marca, conteúdo, design, banco de dados, metodologia e funcionalidades, pertencem exclusivamente ao seu desenvolvedor ou titular, sendo proibida qualquer tentativa de cópia, reprodução, engenharia reversa, exploração comercial ou uso indevido.</p>
+
+<p class="subtitulo">
+Uso da marca e do sistema</p>
+<p class="texto">O usuário compromete-se a não utilizar o nome, marca, identidade visual ou qualquer elemento da plataforma de forma pública ou comercial sem autorização expressa.</p>
+
+<p class="subtitulo">
+Confidencialidade</p>
+<p class="texto">O PARTICIPANTE obriga-se a manter em sigilo absoluto todas as informações, telas, funcionalidades, estratégias e conteúdos acessados na plataforma, não podendo divulgá-los, copiar imagens ou gravar vídeos para terceiros ou redes sociais sem autorização expressa. Este dever de confidencialidade perdura mesmo após o encerramento do período de testes.</p>
+
+<p class="subtitulo">
+Encerramento do acesso</p>
+<p class="texto">O acesso ao ambiente de testes poderá ser suspenso ou encerrado a qualquer momento, a critério exclusivo do responsável pela plataforma, sem necessidade de justificativa.</p>
+
+     </div>
+
             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                 <input type="checkbox" id="check-contrato" onchange="document.getElementById('btn-p1').disabled = !this.checked">
                 <b>Li e concordo com os termos.</b>
