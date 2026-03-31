@@ -127,7 +127,7 @@ display: flex; flex-direction: column; box-sizing: border-box;
             TIME: <span id="final-time">00:00</span>
         </div>
 
-<button id="btn-review-pos-prova" class="btn-acao" style="display: none; background-color: #3498db; margin-bottom: 10px; height: 70px; width: 100%;"> REVIEW EXAM (RESULTS) </button>
+<button id="btn-review-pos-prova" class="btn-acao" style="display: none; background-color: #3498db; margin-bottom: 10px; height: 90px; width: 100%;"> REVIEW EXAM (RESULTS) </button>
 
         <button style="
     width: 100%; 
@@ -284,19 +284,21 @@ if (opt && opt !== 'N/A') {
 
     window.finishExam = () => { document.getElementById('exam-screen').style.display = 'none'; document.getElementById('review-screen').style.display = 'block'; showReview(); }; 
 
-window.hideReview = () => {
-        if (modoRevisaoAtivo) { 
-            // Se a prova acabou, o BACK não volta para a questão, volta para a nota!
-            document.getElementById('review-screen').style.display = 'none';
-            document.getElementById('result-screen').style.display = 'block'; 
-            return; 
-        }
+window.hideReview = (veioDoGrid = false) => {
+    // Se o modo revisão está ativo E o usuário clicou no botão BACK (não no número do grid)
+    if (modoRevisaoAtivo && !veioDoGrid) { 
+        document.getElementById('review-screen').style.display = 'none';
+        document.getElementById('result-screen').style.display = 'block'; 
+        return; 
+    }
 
-        document.getElementById('review-screen').style.display = 'none'; 
-        document.getElementById('exam-screen').style.display = 'block'; 
-        loadQuestion(); 
-    };
-    function updateFlagButton() {
+    // Caso contrário (está na prova ou clicou num número do grid), vai para a questão
+    document.getElementById('review-screen').style.display = 'none'; 
+    document.getElementById('exam-screen').style.display = 'block'; 
+    loadQuestion(); 
+};
+  
+  function updateFlagButton() {
         const btn = document.getElementById('btn-flag');
         btn.className = flags[currentIdx] ? 'active' : '';
         btn.innerText = flags[currentIdx] ? "🚩 FLAGGED" : "🚩 FLAG";
@@ -334,7 +336,7 @@ window.hideReview = () => {
 
          // --- FIM DA INSERÇÃO ---
 
-            item.onclick = () => { currentIdx = i; hideReview(); loadQuestion(); };
+            item.onclick = () => { currentIdx = i; hideReview(true); loadQuestion(); };
             grid.appendChild(item);
         });
     }
@@ -426,8 +428,8 @@ document.getElementById('btn-review-pos-prova').onclick = () => {
     document.getElementById('result-screen').style.display = 'none'; 
     finishExam(); 
            };
+     }
 }
-
 
 window.addEventListener('beforeunload', (event) => {
     // O navegador vai exibir o alerta padrão dele com o texto que definirmos aqui
