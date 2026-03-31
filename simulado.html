@@ -150,14 +150,13 @@ display: flex; flex-direction: column; box-sizing: border-box;
         </div>
     </div>
 
-    <div id="review-screen" style="display:none;">
-        <h2>REVIEW EXAM</h2>
-        <div id="review-grid"></div>
-        <div class="nav-bar" style="grid-template-columns: 1fr 1fr;">
-            <button onclick="hideReview()" style="background:#7f8c8d;">BACK</button>
-            <button onclick="confirmFinish()" style="background:#e74c3c;">SUBMIT</button>
-        </div>
+  <div id="review-screen" style="display:none;">
+    <h2>REVIEW EXAM</h2>
+    <div id="review-grid"></div>
+    <div id="nav-bar-review" class="nav-bar" style="grid-template-columns: 1fr 1fr;"> <button onclick="hideReview()" style="background:#7f8c8d;">BACK</button>
+        <button onclick="confirmFinish()" style="background:#e74c3c;">SUBMIT</button>
     </div>
+</div>
 
     <div id="result-screen">
         <div id="status-text" class="status-box"></div>
@@ -324,7 +323,26 @@ if (opt && opt !== 'N/A') {
     window.toggleFlag = () => { flags[currentIdx] = !flags[currentIdx]; updateFlagButton(); };
     window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; loadQuestion(); } };
 
-    window.finishExam = () => { document.getElementById('exam-screen').style.display = 'none'; document.getElementById('review-screen').style.display = 'block'; showReview(); }; 
+    window.finishExam = () => { 
+
+document.getElementById('exam-screen').style.display = 'none';
+    document.getElementById('review-screen').style.display = 'block';
+
+    // AJUSTE DO BOTÃO:
+    const navBar = document.getElementById('nav-bar-review');
+    if (navBar) {
+        // Se for a revisão final, deixa o BACK centralizado (1 coluna). 
+        // Se for durante a prova, divide o espaço com o SUBMIT (2 colunas).
+        navBar.style.gridTemplateColumns = modoRevisaoAtivo ? '1fr' : '1fr 1fr';
+    }
+
+    const btnSubmit = document.querySelector("button[onclick='confirmFinish()']");
+    if (btnSubmit) {
+        // Esconde o botão SUBMIT se a prova já tiver sido finalizada
+        btnSubmit.style.display = modoRevisaoAtivo ? 'none' : 'block';
+    }
+
+ showReview(); }; 
 
 window.hideReview = (veioDoGrid = false) => {
     // Se o modo revisão está ativo E o usuário clicou no botão BACK (não no número do grid)
@@ -349,6 +367,11 @@ window.hideReview = (veioDoGrid = false) => {
     function showReview() {
         document.getElementById('exam-screen').style.display = 'none';
         document.getElementById('review-screen').style.display = 'block';
+
+const btnSubmit = document.querySelector("button[onclick='confirmFinish()']"); 
+
+if (btnSubmit) { btnSubmit.style.display = modoRevisaoAtivo ? 'none' : 'block'; }
+
         const grid = document.getElementById('review-grid');
         grid.innerHTML = '';
 
