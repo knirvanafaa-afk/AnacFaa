@@ -472,8 +472,12 @@ document.getElementById('btn-review-pos-prova').onclick = () => {
            };
      }
 
+// Substitua o bloco window.addEventListener('beforeunload'...) por este:
 window.addEventListener('beforeunload', (event) => {
-    // O navegador vai exibir o alerta padrão dele com o texto que definirmos aqui
+    // Se o modo revisão estiver ativo, significa que a prova já acabou.
+    // Portanto, não mostramos o alerta ao sair ou clicar em NEW TEST.
+    if (modoRevisaoAtivo) return;
+
     const message = "ARE YOU SURE YOU WANT TO LEAVE? ALL YOUR PROGRESS WILL BE LOST.";
     event.returnValue = message; 
     return message;
