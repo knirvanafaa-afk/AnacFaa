@@ -52,6 +52,28 @@ display: flex; flex-direction: column; box-sizing: border-box;
     .status-answered { background-color: #27ae60; color: white; border-color: #2ecc71; }
     .status-flagged { background-color: #f39c12; color: white; border-color: #e67e22; }
     .status-unanswered { background-color: #bdc3c7; color: white; }
+
+/* Cores para o Grid de Revisão */
+.correta-grid { background-color: #27ae60 !important; color: white !important; } /* Verde */
+.errada-grid { background-color: #e74c3c !important; color: white !important; }  /* Vermelho */
+.branco-grid { background-color: #95a5a6 !important; color: white !important; }  /* Cinza */
+
+/* Estilo para as Alternativas dentro da questão na Revisão */
+.alternativa-correta-revisao { 
+    background-color: #d4edda !important; 
+    border: 2px solid #28a745 !important; 
+    pointer-events: none; 
+}
+.alternativa-errada-revisao { 
+    background-color: #f8d7da !important; 
+    border: 2px solid #dc3545 !important; 
+    pointer-events: none; 
+}
+.alternativa-apagada-revisao { 
+    opacity: 0.5; 
+    pointer-events: none; 
+}
+
 </style>
 </head>
 <body>
@@ -104,6 +126,11 @@ display: flex; flex-direction: column; box-sizing: border-box;
             SCORE: <span id="final-score">0/0</span><br>
             TIME: <span id="final-time">00:00</span>
         </div>
+
+<button id="btn-review-pos-prova" class="btn-acao" style="display: none; background-color: #3498db; margin-bottom: 10px;">
+    REVIEW EXAM (RESULTS)
+</button>
+
         <button style="
     width: 100%; 
     background-color: #fff9c4; 
@@ -144,6 +171,7 @@ display: flex; flex-direction: column; box-sizing: border-box;
     let questions = [];
     let timeLeft = 120 * 60; 
     let timerInterval;
+    let modoRevisaoAtivo = false; 
 
     // --- ALERTAS PERSONALIZADOS (MODIFICADO APENAS AQUI) ---
     window.mostrarMensagem = (texto, ehConfirmacao = false) => {
@@ -159,8 +187,12 @@ display: flex; flex-direction: column; box-sizing: border-box;
     };
 
     // Função necessária para o botão YES
+
     window.executarFinalizacao = () => {
         document.getElementById('custom-alert').style.display = 'none';
+
+modoRevisaoAtivo = true; 
+
         processFinalResult();
     };
 
@@ -210,13 +242,29 @@ display: flex; flex-direction: column; box-sizing: border-box;
 
         // 1. PRIMEIRO: Carregamos as opções de resposta
         const opts = [q.r1, q.r2, q.r3, q.r4];
-        opts.forEach((opt, i) => {
-            if (opt && opt !== 'N/A') {
-                let checked = (answers[currentIdx] === i) ? 'checked' : '';
-                // Mantive seu estilo de padding e cursor
-                html += `<label style="display:block; padding:8px; cursor:pointer;"><input type="radio" name="ans" value="${i}" ${checked} onchange="saveAnswer(${i})"> ${opt}</label>`;
-            }
-        });
+opts.forEach((opt, i) => {
+if (opt && opt !== 'N/A') {
+    let estiloRevisao = ''; 
+    let disabled = ''; 
+
+    if (modoRevisaoAtivo) { 
+        disabled = 'disabled'; 
+        const indiceCorretoNoBanco = parseInt(q.correta) - 1; 
+
+        if (i === indiceCorretoNoBanco) { 
+            estiloRevisao = 'background-color: #d4edda; border: 1px solid #28a745; border-radius: 8px;';
+        } else if (answers[currentIdx] === i) { 
+            estiloRevisao = 'background-color: #f8d7da; border: 2px solid #dc3545; border-radius: 8px;'; 
+        } else { 
+            estiloRevisao = 'opacity: 0.5;'; 
+        } 
+    } 
+
+    let checked = (answers[currentIdx] === i) ? 'checked' : '';
+    // Correção da string HTML para evitar quebras:
+    html += `<label style="display:block; padding:8px; cursor:pointer; ${estiloRevisao}"><input type="radio" name="ans" value="${i}" ${checked} ${disabled} onchange="saveAnswer(${i})"> ${opt}</label>`;
+}
+    });    
 
         // 2. DEPOIS: Se houver foto, ela entra abaixo das alternativas
         if (q.foto && q.foto !== 'N/A' && q.foto.trim() !== '') {
@@ -229,15 +277,27 @@ display: flex; flex-direction: column; box-sizing: border-box;
         updateFlagButton();
     };
 
-    window.saveAnswer = (i) => answers[currentIdx] = i;
+    window.saveAnswer = (i) => {
+        if (modoRevisaoAtivo) return; // Se a prova acabou, ignora o clique
+        answers[currentIdx] = i;
+    };
     window.toggleFlag = () => { flags[currentIdx] = !flags[currentIdx]; updateFlagButton(); };
     window.changeQuestion = (dir) => { if (questions[currentIdx + dir]) { currentIdx += dir; loadQuestion(); } };
 
     window.finishExam = () => { document.getElementById('exam-screen').style.display = 'none'; document.getElementById('review-screen').style.display = 'block'; showReview(); }; 
 
-window.hideReview = () => { document.getElementById('review-screen').style.display = 'none'; document.getElementById('exam-screen').style.display = 'block'; loadQuestion(); 
-};
+window.hideReview = () => {
+        if (modoRevisaoAtivo) { 
+            // Se a prova acabou, o BACK não volta para a questão, volta para a nota!
+            document.getElementById('review-screen').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'block'; 
+            return; 
+        }
 
+        document.getElementById('review-screen').style.display = 'none'; 
+        document.getElementById('exam-screen').style.display = 'block'; 
+        loadQuestion(); 
+    };
     function updateFlagButton() {
         const btn = document.getElementById('btn-flag');
         btn.className = flags[currentIdx] ? 'active' : '';
@@ -249,10 +309,33 @@ window.hideReview = () => { document.getElementById('review-screen').style.displ
         document.getElementById('review-screen').style.display = 'block';
         const grid = document.getElementById('review-grid');
         grid.innerHTML = '';
+
         questions.forEach((q, i) => {
             const item = document.createElement('div');
+            // Mantém a classe original para o modo de prova normal
             item.className = 'review-item ' + (flags[i] ? 'status-flagged' : (answers[i] !== undefined ? 'status-answered' : 'status-unanswered'));
             item.innerText = i + 1;
+
+            // --- INSERIR A LÓGICA DE CORES DA REVISÃO AQUI ---
+
+           if (modoRevisaoAtivo) { 
+                const correctIndex = parseInt(q.correta) - 1;
+                const respostaUser = answers[i]; 
+
+                if (respostaUser === undefined) { 
+                    item.classList.add('branco-grid');
+                    item.innerHTML = (i + 1) + '<br><small>✖</small>'; 
+                } else if (respostaUser === correctIndex) { 
+                    item.classList.add('correta-grid');
+                    item.innerHTML = (i + 1) + '<br><small>✔</small>'; 
+                } else { 
+                    item.classList.add('errada-grid');
+                    item.innerHTML = (i + 1) + '<br><small>✖</small>'; 
+                } 
+            }
+
+         // --- FIM DA INSERÇÃO ---
+
             item.onclick = () => { currentIdx = i; hideReview(); loadQuestion(); };
             grid.appendChild(item);
         });
@@ -336,7 +419,17 @@ registrarResultadoNoBanco(
         document.getElementById('status-text').className = `status-box ${passed ? 'passed' : 'failed'}`;
         document.getElementById('final-score').innerText = `${score} / ${questions.length}`;
         document.getElementById('final-time').innerText = document.getElementById('timer').innerText;
-    }
+
+document.getElementById('btn-review-pos-prova').style.display = 'block';
+
+// E já vamos dar a função para ele abrir o Review que você já tem:
+
+document.getElementById('btn-review-pos-prova').onclick = () => {
+    document.getElementById('result-screen').style.display = 'none'; 
+    finishExam(); 
+           };
+}
+
 
 window.addEventListener('beforeunload', (event) => {
     // O navegador vai exibir o alerta padrão dele com o texto que definirmos aqui
