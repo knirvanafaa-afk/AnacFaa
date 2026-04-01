@@ -77,33 +77,111 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
 // Função para capturar IP e Cidade (Gratuita via ipapi.co)
 
 async function obterLocalizacao() {
-  try {
-    // 1ª Tentativa: Cloudflare (Mais rápida/estável)
-    let response = await fetch('https://visapi-tau.vercel.app/api/ip');
-    
-    // Se a primeira falhar ou der erro, tenta a segunda (ipapi)
-    if (!response.ok) {
-        response = await fetch('https://ipapi.co/json/');
-    }
+  const APIS = [
+    { nome: "visapi", url: "https://visapi-tau.vercel.app/api/ip" },
+    { nome: "ipapi", url: "https://ipapi.co/json/" }
+  ];
 
-    const data = await response.json();
-    
-    return {
-      ip: data.ip || '0.0.0.0',
-      cidade: data.city || 'Desconhecida',
-      regiao: data.region || 'N/A',
-      pais: data.country_name || 'Brasil'
+  const diagnostico = {
+    tentativas: [],
+    conectividade: null
+  };
+
+  // Teste de conectividade
+  try {
+    const t0 = performance.now();
+    await fetch("https://www.google.com", { mode: "no-cors" });
+    diagnostico.conectividade = {
+      status: "ok",
+      tempo: Math.round(performance.now() - t0)
     };
-  } catch (error) {
-    // Mantendo seu padrão preferido de log e valores genéricos
-    console.warn("Erro ao obter localização, usando valores genéricos:", error);
-    return { 
-      ip: '0.0.0.0', 
-      cidade: 'Desconhecida', 
-      regiao: 'N/A', 
-      pais: 'N/A' 
+  } catch (e) {
+    diagnostico.conectividade = {
+      status: "falha",
+      erro: e.message
     };
   }
+
+  for (const api of APIS) {
+    const tentativa = {
+      api: api.nome,
+      status: null,
+      tempo: null,
+      erro: null,
+      httpStatus: null,
+      resposta: null
+    };
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const inicio = performance.now();
+
+    try {
+      const response = await fetch(api.url, {
+        signal: controller.signal
+      });
+
+      tentativa.tempo = Math.round(performance.now() - inicio);
+      tentativa.httpStatus = response.status;
+
+      if (!response.ok) {
+        tentativa.status = "http_error";
+        diagnostico.tentativas.push(tentativa);
+        continue;
+      }
+
+      const data = await response.json();
+      tentativa.resposta = data;
+
+      const ip =
+        data.ip ||
+        data.query ||
+        data.ip_address ||
+        null;
+
+      if (!ip) {
+        tentativa.status = "invalid_data";
+        diagnostico.tentativas.push(tentativa);
+        continue;
+      }
+
+      tentativa.status = "ok";
+      diagnostico.tentativas.push(tentativa);
+
+      console.log("DIAGNÓSTICO:", diagnostico);
+
+      return {
+        ip: ip,
+        cidade: data.city || data.cidade || "Desconhecida",
+        regiao: data.region || data.regionName || "N/A",
+        pais: data.country_name || data.country || "N/A"
+      };
+
+    } catch (err) {
+      tentativa.tempo = Math.round(performance.now() - inicio);
+
+      if (err.name === "AbortError") {
+        tentativa.status = "timeout";
+      } else {
+        tentativa.status = "network_error";
+        tentativa.erro = err.message;
+      }
+
+      diagnostico.tentativas.push(tentativa);
+    } finally {
+      clearTimeout(timeout);
+    }
+  }
+
+  console.log("DIAGNÓSTICO FINAL:", diagnostico);
+
+  return {
+    ip: "0.0.0.0",
+    cidade: "Desconhecida",
+    regiao: "N/A",
+    pais: "N/A"
+  };
 }
 export async function analisarSeguranca(userId) {
 try {
@@ -214,4 +292,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-}
+        }
