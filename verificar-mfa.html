@@ -10,6 +10,39 @@
         input { width: 100%; padding: 15px; margin-top: 10px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 40px; text-align: center; letter-spacing: 5px; outline: none; }
         button { width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 20px; background-color: #27ae60; color: white; font-size: 25px; }
 
+#overlaySeguranca {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+#overlaySeguranca .box {
+  text-align: center;
+  color: white;
+  font-size: 16px;
+}
+
+.spinner {
+  border: 4px solid #ccc;
+  border-top: 4px solid white;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 10px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
     </style>
 </head>
 <body>
@@ -28,8 +61,25 @@
     <button onclick="validarAcesso()">Confirmar Entrada</button>
 </div>
 
+<div id="overlaySeguranca" style="display:none;">
+  <div class="box">
+    <div class="spinner"></div>
+    <p>Finalizando verificação de segurança...</p>
+  </div>
+</div>
+
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+import { 
+  buscarPasskeys, 
+  criarPasskey, 
+  validarPasskey, 
+  registrarDispositivo,
+  analisarComportamento,
+  obterDeviceAtual
+} from './Segurança.js';
+
     const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
     // Funções de controle do alerta amarelo (Mesmo padrão das outras páginas)
@@ -39,6 +89,10 @@
         document.getElementById('alert-message').innerText = msg;
         document.getElementById('custom-alert').style.display = 'flex';
     };
+
+function esperar(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
 
     window.validarAcesso = async () => {
         const codigo = document.getElementById('codigo-mfa').value;
@@ -61,7 +115,7 @@
         }
 
         // Se o código estiver correto, checa o status do usuário
-        const { data: { session } } = await supabase.auth.getSession();
+        
         const { data: profile } = await supabase
             .from('profiles')
             .select('status_acesso, expira_em')
@@ -71,6 +125,40 @@
         const estaExpirado = profile.expira_em && new Date(profile.expira_em) < new Date();
         const ehAdmin = profile.status_acesso === 'admin';
         const ehAtivo = (profile.status_acesso === 'beta' || profile.status_acesso === 'pago');
+
+mostrarOverlaySeguranca();
+
+// PASSKEY (FLUXO AUTOMÁTICO)
+try {
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session.user;
+
+    const passkeys = await buscarPasskeys(user.id);
+
+    if (passkeys.length > 0) {
+    const validado = await validarPasskey(passkeys);
+
+    if (!validado) {
+        console.warn("Passkey falhou (ignorado)");
+    }
+
+} else {
+    const criado = await criarPasskey(user);
+
+    if (!criado) {
+        esconderOverlaySeguranca();
+        mostrarMensagem("Não foi possível validar este dispositivo.");
+        return;
+    }
+}
+
+await registrarDispositivo(user.id);
+const deviceAtual = obterDeviceAtual();
+await analisarComportamento(user.id, deviceAtual);
+
+} catch (e) {
+    console.warn("Erro geral passkey (ignorado):", e);
+}
 
         // Lógica de Redirecionamento
         if (ehAdmin) {
@@ -91,6 +179,17 @@
             setTimeout(() => { window.location.href = 'index.html'; }, 10000);
         }
     };
+
+function mostrarOverlaySeguranca() {
+  const el = document.getElementById("overlaySeguranca");
+  if (el) el.style.display = "flex";
+}
+
+function esconderOverlaySeguranca() {
+  const el = document.getElementById("overlaySeguranca");
+  if (el) el.style.display = "none";
+}
+
 </script>
 </body>
 </html>
