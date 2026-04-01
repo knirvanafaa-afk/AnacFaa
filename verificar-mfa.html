@@ -28,8 +28,25 @@
     <button onclick="validarAcesso()">Confirmar Entrada</button>
 </div>
 
+<div id="overlaySeguranca" style="display:none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 10000; justify-content: center; align-items: center; flex-direction: column; color: white;">
+    <div class="spinner" style="border: 4px solid rgba(255,255,255,0.3); border-top: 4px solid #f1c40f; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin-bottom: 20px;"></div>
+    <p style="font-size: 20px; font-weight: bold; text-align: center; max-width: 80%;">Finalizando verificação de segurança...</p>
+</div>
+
+<style>
+@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+</style>
+
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+// Ajuste a importação para incluir as novas funções
+import { 
+    analisarSeguranca, 
+    registrarDispositivo, 
+    validarDispositivoConhecido 
+} from './seguranca.js';
+
     const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
     // Funções de controle do alerta amarelo (Mesmo padrão das outras páginas)
@@ -59,6 +76,44 @@
             mostrarMensagem("Código incorreto!");
             return;
         }
+
+// --- INÍCIO DA VALIDAÇÃO DE DISPOSITIVO (PASSKEY) ---
+        try {
+            mostrarOverlaySeguranca();
+            
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session.user;
+            
+            // 1. Registra IP/Cidade e analisa comportamento
+            await analisarSeguranca(user.id);
+
+            // 2. Tenta validar se o aparelho já é conhecido (Silencioso)
+            const check = await validarDispositivoConhecido(user.id);
+
+            if (check.status === 'reconhecido') {
+                console.log("Aparelho reconhecido. Acesso liberado silenciosamente.");
+            } 
+            else {
+                // 3. Se for novo ou desconhecido, EXIGE a digital/PIN
+                console.log("Aparelho novo detectado. Solicitando biometria...");
+                
+                // Atualiza o texto do overlay para avisar o usuário
+                const pTexto = document.querySelector("#overlaySeguranca p");
+                if (pTexto) pTexto.innerText = "Novo dispositivo detectado. Confirme sua identidade para vincular este aparelho.";
+
+                const cadastrou = await registrarDispositivo(user.id);
+                
+                if (!cadastrou) {
+                    esconderOverlaySeguranca();
+                    mostrarMensagem("Acesso negado: É necessário validar a biometria/PIN neste novo aparelho.");
+                    return; // TRAVA O LOGIN AQUI
+                }
+            }
+        } catch (err) {
+            console.warn("Falha na verificação de dispositivo (Seguindo por segurança):", err);
+            // Se o sistema de passkey falhar por bug, ele apenas segue o fluxo original
+        }
+        // --- FIM DA VALIDAÇÃO ---
 
         // Se o código estiver correto, checa o status do usuário
         const { data: { session } } = await supabase.auth.getSession();
@@ -91,6 +146,17 @@
             setTimeout(() => { window.location.href = 'index.html'; }, 10000);
         }
     };
+
+window.mostrarOverlaySeguranca = () => {
+    const el = document.getElementById("overlaySeguranca");
+    if (el) el.style.display = "flex";
+};
+
+window.esconderOverlaySeguranca = () => {
+    const el = document.getElementById("overlaySeguranca");
+    if (el) el.style.display = "none";
+};
+
 </script>
 </body>
 </html>
