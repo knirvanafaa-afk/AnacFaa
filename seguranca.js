@@ -104,7 +104,6 @@ async function obterLocalizacao() {
       pais: 'N/A' 
     };
   }
-}
 
 export async function analisarSeguranca(userId) {
 try {
