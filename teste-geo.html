@@ -39,6 +39,23 @@ async function obterLocalizacaoREAL() {
         throw new Error("Falha TOTAL na geolocalização: " + e.message);
     }
 }
+        // 2. PEGA GEO (usa outra API)
+        const geoRes = await fetch(`https://ipwho.is/${ipData.ip}`);
+        const geoData = await geoRes.json();
+
+        if (!geoData.success) throw new Error("Geo falhou");
+
+        return {
+            ip: ipData.ip,
+            cidade: geoData.city,
+            regiao: geoData.region,
+            pais: geoData.country
+        };
+
+    } catch (e) {
+        throw new Error("Falha TOTAL na geolocalização: " + e.message);
+    }
+}
     // PASSO 2
     try {
         document.getElementById('passo2').innerHTML = "⏳ Gravando no banco...";
