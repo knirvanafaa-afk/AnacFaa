@@ -2,13 +2,13 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Prova Real Nativa + Supabase</title>
+    <title>Segurança Invisível - Supabase</title>
 </head>
 <body style="background:#000; color:#0ff; font-family:monospace; padding:20px;">
 
-<h3>SLA - LABORATÓRIO DE CONEXÃO (NATIVO)</h3>
-<div id="passo1">1. Capturando Localização via GPS/Rede...</div>
-<div id="passo2">2. Gravando no Supabase...</div>
+<h3>SLA - RASTREAMENTO PASSIVO</h3>
+<div id="passo1">1. Identificando Conexão (Invisível)...</div>
+<div id="passo2">2. Sincronizando com Supabase...</div>
 <hr>
 <div id="resultado" style="color:#f1c40f">Aguardando...</div>
 
@@ -17,54 +17,63 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-async function iniciarTeste() {
+async function segurancaSilenciosa() {
     const resDiv = document.getElementById('resultado');
     const p1 = document.getElementById('passo1');
     const p2 = document.getElementById('passo2');
 
-    // 1. PEGAR IP VIA CLOUDFLARE (O QUE VOCÊ PROVOU QUE FUNCIONA)
-    let ipReal = "0.0.0.0";
+    let dadosLogs = { ip: '0.0.0.0', cidade: 'Desconhecida', regiao: 'N/A', pais: 'BR' };
+
     try {
-        const cf = await fetch('https://1.1.1.1/cdn-cgi/trace');
-        const text = await cf.text();
-        ipReal = text.split('\n').find(row => row.startsWith('ip=')).split('=')[1];
-    } catch(e) { console.error("Erro IP"); }
-
-    // 2. PEGAR CIDADE VIA NAVEGADOR (SEM DEPENDER DE API DE GEO)
-    if ("geolocation" in navigator) {
-        p1.innerHTML = "⏳ Solicitando permissão de localização no celular...";
+        p1.innerHTML = "⏳ Rastreando origem...";
         
-        navigator.geolocation.getCurrentPosition(async (position) => {
-            const lat = position.coords.latitude;
-            const lon = position.coords.longitude;
-            p1.innerHTML = `✅ COORDENADAS: ${lat}, ${lon}`;
+        // Esta API é excelente porque não costuma dar erro de CORS em domínios GitHub
+        const res = await fetch('https://ipapi.co/json/');
+        if (!res.ok) throw new Error("Erro na API");
+        
+        const data = await res.json();
+        dadosLogs = {
+            ip: data.ip,
+            cidade: data.city,
+            regiao: data.region,
+            pais: data.country_name
+        };
+        p1.innerHTML = `✅ ORIGEM: ${dadosLogs.cidade}, ${dadosLogs.regiao}`;
 
-            try {
-                p2.innerHTML = "⏳ Gravando no Supabase...";
-                // Gravamos a latitude e longitude como "cidade/região" para provar a precisão
-                const { error } = await supabase.from('access_logs').insert([{
-                    user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
-                    ip_address: ipReal,
-                    city: `Lat: ${lat.toFixed(2)}`,
-                    region: `Lon: ${lon.toFixed(2)}`,
-                    country: 'BR'
-                }]);
+    } catch (e) {
+        p1.innerHTML = "⚠️ FALLBACK: Usando Rota de Emergência...";
+        // Se a primeira falhar (DNS/CORS), tentamos a segunda opção silenciosa
+        try {
+            const res2 = await fetch('https://api.db-ip.com/v2/free/self');
+            const data2 = await res2.json();
+            dadosLogs.ip = data2.ipAddress;
+            dadosLogs.cidade = data2.city || "Via DB-IP";
+            dadosLogs.regiao = data2.stateProv || "SP";
+        } catch(e2) {
+            p1.innerHTML = "❌ FALHA TOTAL DE GEO";
+        }
+    }
 
-                if (error) throw error;
-                resDiv.innerHTML = "🚀 SUCESSO TOTAL! Localização real gravada via GPS.";
-                resDiv.style.color = "#2ecc71";
-            } catch (err) {
-                resDiv.innerHTML = "❌ ERRO BANCO: " + err.message;
-            }
-        }, (error) => {
-            resDiv.innerHTML = "❌ GPS NEGADO OU FALHOU: " + error.message;
-        });
-    } else {
-        resDiv.innerHTML = "❌ Seu navegador não suporta GeoLocalização.";
+    // GRAVAÇÃO NO BANCO (Não importa se a Geo falhou, o log é criado)
+    try {
+        p2.innerHTML = "⏳ Gravando log de acesso...";
+        const { error } = await supabase.from('access_logs').insert([{
+            user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
+            ip_address: dadosLogs.ip,
+            city: dadosLogs.cidade,
+            region: dadosLogs.regiao,
+            country: dadosLogs.pais
+        }]);
+
+        if (error) throw error;
+        resDiv.innerHTML = `🚀 SUCESSO! Log gravado para: ${dadosLogs.cidade}`;
+        resDiv.style.color = "#2ecc71";
+    } catch (err) {
+        resDiv.innerHTML = "❌ ERRO SUPABASE: " + err.message;
     }
 }
 
-iniciarTeste();
+segurancaSilenciosa();
 </script>
 </body>
 </html>
