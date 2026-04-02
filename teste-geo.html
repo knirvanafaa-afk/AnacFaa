@@ -16,50 +16,29 @@ const supabase = createClient(
 
 async function obterLocalizacaoREAL() {
     try {
-        // 🔥 MESMO PADRÃO DO SEU SISTEMA REAL
-        let response = await fetch('https://visapi-tau.vercel.app/api/ip');
+        // 1. PEGA IP (SEMPRE FUNCIONA)
+        const ipRes = await fetch('https://api.ipify.org?format=json');
+        const ipData = await ipRes.json();
 
-        if (!response.ok) {
-            response = await fetch('https://ipapi.co/json/');
-        }
+        if (!ipData.ip) throw new Error("IP não encontrado");
 
-        const data = await response.json();
+        // 2. PEGA GEO (usa outra API)
+        const geoRes = await fetch(`https://ipwho.is/${ipData.ip}`);
+        const geoData = await geoRes.json();
+
+        if (!geoData.success) throw new Error("Geo falhou");
 
         return {
-            ip: data.ip,
-            cidade: data.city,
-            regiao: data.region,
-            pais: data.country_name || 'Brasil'
+            ip: ipData.ip,
+            cidade: geoData.city,
+            regiao: geoData.region,
+            pais: geoData.country
         };
 
     } catch (e) {
-        throw new Error("Falha TOTAL na geolocalização");
+        throw new Error("Falha TOTAL na geolocalização: " + e.message);
     }
 }
-
-async function rodarTeste() {
-    const resDiv = document.getElementById('resultado');
-
-    let dados;
-
-    // PASSO 1
-    try {
-        dados = await obterLocalizacaoREAL();
-
-        if (!dados.ip) throw new Error("Sem IP válido");
-
-        document.getElementById('passo1').innerHTML =
-            "✅ IP REAL: " + dados.ip + " | " + dados.cidade;
-
-    } catch (e) {
-        document.getElementById('passo1').innerHTML =
-            "❌ FALHA REAL: " + e.message;
-
-        resDiv.innerHTML = "❌ TESTE CANCELADO (sem geolocalização)";
-        resDiv.style.color = "red";
-        return; // 🔥 TRAVA TOTAL (sem fallback fake)
-    }
-
     // PASSO 2
     try {
         document.getElementById('passo2').innerHTML = "⏳ Gravando no banco...";
