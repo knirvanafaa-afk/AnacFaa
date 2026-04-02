@@ -7,69 +7,67 @@
 <body style="background:#000; color:#0ff; font-family:monospace; padding:20px;">
 
 <h3>SLA - LABORATÓRIO DE CONEXÃO</h3>
-<div id="passo1">1. Testando IP via Cloudflare...</div>
+<div id="passo1">1. Testando IP e Cidade via IP-API...</div>
 <div id="passo2">2. Gravando no Supabase...</div>
 <hr>
 <div id="resultado" style="color:#f1c40f">Aguardando...</div>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-    async function rodarLaboratorio() {
-        const resDiv = document.getElementById('resultado');
-        const p1 = document.getElementById('passo1');
-        const p2 = document.getElementById('passo2');
+async function provaDeCidadeReal() {
+    const resDiv = document.getElementById('resultado');
+    const p1 = document.getElementById('passo1');
+    const p2 = document.getElementById('passo2');
 
-        // --- EXECUÇÃO DA SUA FUNÇÃO DE LOCALIZAÇÃO ---
-        let dados;
-        try {
-            p1.innerHTML = "⏳ Consultando Cloudflare (1.1.1.1)...";
-            // Usamos a técnica de texto para evitar bloqueio de CORS
-            const res = await fetch('https://1.1.1.1/cdn-cgi/trace');
-            const text = await res.text();
+    try {
+        p1.innerHTML = "⏳ Consultando localização real...";
+        
+        // Rota que retorna Cidade e Estado sem bloqueio de DNS comum
+        const res = await fetch('https://demo.ip-api.com/json/?lang=pt-BR');
+        const data = await res.json();
+
+        if (data.status === 'success') {
+            p1.innerHTML = `✅ LOCALIZADO: ${data.city}, ${data.regionName}`;
             
-            const lines = text.split('\n');
-            const ip = lines.find(row => row.startsWith('ip=')).split('=')[1];
-            const loc = lines.find(row => row.startsWith('loc=')).split('=')[1];
+            p2.innerHTML = "⏳ Gravando na tabela access_logs...";
 
-            dados = {
-                ip: ip,
-                cidade: "Detectada via CF",
-                regiao: loc,
-                pais: "BR"
+            const infoParaBanco = {
+                ip: data.query,
+                cidade: data.city,
+                regiao: data.regionName,
+                pais: data.country
             };
-            p1.innerHTML = "✅ IP CAPTURADO: " + dados.ip;
-        } catch (e) {
-            p1.innerHTML = "⚠️ FALHA NA CAPTURA: " + e.message;
-            dados = { ip: '0.0.0.0', cidade: 'Erro Rede', regiao: 'N/A', pais: 'BR' };
-        }
 
-        // --- GRAVAÇÃO AUTOMÁTICA NA TABELA ---
-        try {
-            p2.innerHTML = "⏳ Enviando para o Supabase...";
+            // GRAVAÇÃO NO SUPABASE
             const { error } = await supabase.from('access_logs').insert([{
                 user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
-                ip_address: dados.ip,
-                city: dados.cidade,
-                region: dados.regiao,
-                country: dados.pais
+                ip_address: infoParaBanco.ip,
+                city: infoParaBanco.cidade,
+                region: infoParaBanco.regiao,
+                country: infoParaBanco.pais
             }]);
 
             if (error) throw error;
 
-            resDiv.innerHTML = "🚀 SUCESSO! Verifique sua tabela no Supabase agora.";
+            p2.innerHTML = "✅ DADO ESCRITO COM SUCESSO";
+            resDiv.innerHTML = `🚀 SUCESSO! Gravado no Banco: ${infoParaBanco.cidade} - ${infoParaBanco.ip}`;
             resDiv.style.color = "#2ecc71";
-            p2.innerHTML = "✅ DADO ESCRITO NO BANCO";
-        } catch (err) {
-            resDiv.innerHTML = "❌ ERRO NO BANCO: " + err.message;
-            resDiv.style.color = "#ff4d4d";
+        } else {
+            throw new Error("Falha na resposta da API de Geo");
         }
-    }
 
-    // DISPARA O TESTE AUTOMATICAMENTE
-    rodarLaboratorio();
+    } catch (e) {
+        resDiv.innerHTML = "❌ ERRO TÉCNICO: " + e.message;
+        resDiv.style.color = "#ff4d4d";
+    }
+}
+
+// Inicia o processo assim que a página carrega
+provaDeCidadeReal();
+
 </script>
 </body>
 </html>
