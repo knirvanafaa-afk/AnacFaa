@@ -78,9 +78,15 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
 
 async function obterLocalizacao() {
   try {
-    const res = await fetch('https://ymyxikhlhkkvcufgwufe.functions.supabase.co/log-access');
+    const res = await fetch('https://ymyxikhlhkkvcufgwufe.supabase.co/functions/v1/log-access');
     const data = await res.json();
-    return data;
+
+    return {
+      ip: data.ip || '0.0.0.0',
+      cidade: data.cidade || 'Desconhecida',
+      regiao: data.regiao || 'N/A',
+      pais: data.pais || 'N/A'
+    };
 
   } catch (error) {
     return { 
@@ -91,7 +97,6 @@ async function obterLocalizacao() {
     };
   }
 }
-
 export async function analisarSeguranca(userId) {
 try {
   const loc = await obterLocalizacao();
@@ -201,4 +206,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-        }
+}
