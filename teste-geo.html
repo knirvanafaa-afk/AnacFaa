@@ -23,84 +23,25 @@
 
 
 // 🔥 FUNÇÃO ROBUSTA (SEM QUEBRAR)
+
 async function obterLocalizacaoREAL() {
-
-    // Lista de APIs (ordem de tentativa)
-    const fontes = [
-        async () => {
-            const r = await fetch('https://ipwho.is/');
-            const d = await r.json();
-            if (!d.success) throw new Error("ipwho falhou");
-            return {
-                ip: d.ip,
-                cidade: d.city,
-                regiao: d.region,
-                pais: d.country
-            };
-        },
-
-        async () => {
-            const r = await fetch('https://ipapi.co/json/');
-            const d = await r.json();
-            if (!d.ip) throw new Error("ipapi falhou");
-            return {
-                ip: d.ip,
-                cidade: d.city,
-                regiao: d.region,
-                pais: d.country_name
-            };
-        },
-
-        async () => {
-            const r = await fetch('https://api.ipify.org?format=json');
-            const d = await r.json();
-            if (!d.ip) throw new Error("ipify falhou");
-
-            return {
-                ip: d.ip,
-                cidade: "Desconhecida",
-                regiao: "N/A",
-                pais: "N/A"
-            };
-        }
-    ];
-
-    for (const tentar of fontes) {
-        try {
-            return await tentar();
-        } catch (e) {
-            console.warn("Fonte falhou:", e.message);
-        }
-    }
-
-    throw new Error("Todas APIs falharam");
-}
-
-// 🚀 EXECUÇÃO
-async function rodarTeste() {
-    const resDiv = document.getElementById('resultado');
-
-    let dados;
-
-    // PASSO 1
     try {
-        dados = await obterLocalizacaoREAL();
+        const res = await fetch('https://visapi-tau.vercel.app/api/ip');
+        const data = await res.json();
 
-        if (!dados.ip || dados.ip === "0.0.0.0") {
-            throw new Error("IP inválido");
-        }
+        if (!data.ip) throw new Error("Sem IP");
 
-        document.getElementById('passo1').innerHTML =
-            `✅ IP: ${dados.ip} | ${dados.cidade}`;
+        return {
+            ip: data.ip,
+            cidade: data.city,
+            regiao: data.region,
+            pais: data.country_name
+        };
 
     } catch (e) {
-        document.getElementById('passo1').innerHTML =
-            "❌ ERRO REAL: " + e.message;
-
-        resDiv.innerHTML = "❌ TESTE CANCELADO (sem geo)";
-        resDiv.style.color = "red";
-        return;
+        throw new Error("Falha backend: " + e.message);
     }
+}
 
     // PASSO 2
     try {
