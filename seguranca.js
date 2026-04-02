@@ -74,30 +74,53 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
     }, 3000);
 }
 
-export async function analisarSeguranca(userId) {
+// Função para capturar IP e Cidade (Gratuita via ipapi.co)
+
+async function obterLocalizacao() {
   try {
-    // 1. Tenta pegar o ID do dispositivo (biometria)
-    // Se não tiver biometria ainda, ele envia null e o SQL aceita
-    const check = await validarDispositivoConhecido(userId);
-    const deviceId = check.credentialId || null;
+    // 1ª Tentativa: Cloudflare (Mais rápida/estável)
+    let response = await fetch('https://visapi-tau.vercel.app/api/ip');
+    
+    // Se a primeira falhar ou der erro, tenta a segunda (ipapi)
+    if (!response.ok) {
+        response = await fetch('https://ipapi.co/json/');
+    }
 
-    // 2. Faz o insert SIMPLES. 
-    // O SQL que eu te passei vai interceptar isso e colocar o IP/Cidade sozinho.
-    const { error } = await supabase
-      .from('access_logs')
-      .insert([{
-        user_id: userId,
-        device_id: deviceId
-        // NOTA: Não enviamos IP, cidade ou país aqui. O Banco resolve!
-      }]);
-
-    if (error) throw error;
-    return true;
-  } catch (err) {
-    console.error("Erro no log de segurança:", err);
-    return false;
+    const data = await response.json();
+    
+    return {
+      ip: data.ip || '0.0.0.0',
+      cidade: data.city || 'Desconhecida',
+      regiao: data.region || 'N/A',
+      pais: data.country_name || 'Brasil'
+    };
+  } catch (error) {
+    // Mantendo seu padrão preferido de log e valores genéricos
+    console.warn("Erro ao obter localização, usando valores genéricos:", error);
+    return { 
+      ip: '0.0.0.0', 
+      cidade: 'Desconhecida', 
+      regiao: 'N/A', 
+      pais: 'N/A' 
+    };
   }
 }
+
+export async function analisarSeguranca(userId) {
+try {
+  const loc = await obterLocalizacao();
+
+  // 1. Registrar o Log de Acesso no Banco
+const { error } =
+  await supabase.from('access_logs').insert([{
+    user_id: userId,
+    ip_address: loc.ip,
+    city: loc.cidade,
+    region: loc.regiao,
+    country: loc.pais
+  }]);
+
+if (error) console.error("Erro ao gravar log:", error);
 
   // 2. Checar quantidade de dispositivos
   const { data: passkeys } = await supabase
@@ -192,4 +215,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-    }
+        }
