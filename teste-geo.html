@@ -1,0 +1,45 @@
+<div id="painel" style="background:#000; color:#0ff; padding:20px; font-family:monospace; font-size:18px;">
+    <h3>SLA - LABORATÓRIO DE CONEXÃO</h3>
+    <div id="passo1">1. Testando IPWHO.IS...</div>
+    <div id="passo2">2. Testando SUPABASE...</div>
+    <hr>
+    <div id="resultado" style="color:#f1c40f">Aguardando...</div>
+</div>
+
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const supabase = createClient('SUA_URL', 'SUA_KEY');
+
+    async function rodarTeste() {
+        const resDiv = document.getElementById('resultado');
+        
+        try {
+            // TESTE 1: API EXTERNA
+            const geoRes = await fetch('https://ipwho.is/');
+            if (!geoRes.ok) throw new Error(`HTTP_FAULT_${geoRes.status}`);
+            const geoData = await geoRes.json();
+            document.getElementById('passo1').innerHTML = "✅ IPWHO.IS: " + geoData.ip;
+
+            // TESTE 2: SUPABASE (TENTA GRAVAR)
+            const { error } = await supabase.from('access_logs').insert([{
+                user_id: 'ID_DE_TESTE', 
+                ip_address: geoData.ip,
+                city: geoData.city,
+                region: geoData.region
+            }]);
+
+            if (error) {
+                resDiv.innerHTML = `❌ ERRO NO BANCO: ${error.code} - ${error.message}`;
+                resDiv.style.color = "#ff4d4d";
+            } else {
+                resDiv.innerHTML = "🚀 SUCESSO TOTAL! Dados alimentados na tabela.";
+                resDiv.style.color = "#2ecc71";
+            }
+
+        } catch (err) {
+            resDiv.innerHTML = `⚠️ FALHA TÉCNICA: ${err.message}`;
+            resDiv.style.color = "#ff4d4d";
+        }
+    }
+    rodarTeste();
+</script>
