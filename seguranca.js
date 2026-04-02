@@ -215,4 +215,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-      }
+        }
