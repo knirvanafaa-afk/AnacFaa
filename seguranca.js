@@ -74,27 +74,15 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
     }, 3000);
 }
 
-// Função para capturar IP e Cidade (Gratuita via ipapi.co)
+// Função para capturar IP e Cidade (Gratuita via ipwho.is) 
 
 async function obterLocalizacao() {
   try {
-    const res = await fetch('https://ipwho.is/');
+    const res = await fetch('https://ymyxikhlhkkvcufgwufe.functions.supabase.co/log-access');
     const data = await res.json();
-
-    if (!data.success) {
-      throw new Error("API não retornou sucesso");
-    }
-
-    return {
-      ip: data.ip || '0.0.0.0',
-      cidade: data.city || 'Desconhecida',
-      regiao: data.region || 'N/A',
-      pais: data.country || 'N/A'
-    };
+    return data;
 
   } catch (error) {
-    console.warn("Erro ao obter localização:", error);
-
     return { 
       ip: '0.0.0.0', 
       cidade: 'Desconhecida', 
@@ -213,4 +201,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-}
+        }
