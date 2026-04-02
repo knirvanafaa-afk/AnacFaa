@@ -1,19 +1,15 @@
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
-<meta charset="UTF-8">
-<title>Diagnóstico Geo + Supabase</title>
+    <meta charset="UTF-8">
+    <title>Diagnóstico Geo + Supabase</title>
 </head>
-
 <body style="background:#000; color:#0ff; font-family:monospace; padding:20px;">
 
 <h3>SLA - LABORATÓRIO DE CONEXÃO</h3>
-
 <div id="passo1">1. Testando IP e Localização...</div>
 <div id="passo2">2. Testando Gravação no Supabase...</div>
-
 <hr>
-
 <div id="resultado" style="color:#f1c40f">Aguardando...</div>
 
 <script type="module">
@@ -21,56 +17,62 @@
 
     const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
+    async function rodarTeste() {
+        const resDiv = document.getElementById('resultado');
+        const p1 = document.getElementById('passo1');
+        const p2 = document.getElementById('passo2');
+        
+        let dadosRecuperados = { ip: '0.0.0.0', cidade: 'Erro', regiao: 'Erro', pais: 'Brasil' };
 
-// 🔥 FUNÇÃO ROBUSTA (SEM QUEBRAR)
+        // --- PASSO 1: BUSCAR LOCALIZAÇÃO ---
+        try {
+            p1.innerHTML = "⏳ Buscando Localização...";
+            const res = await fetch('https://visapi-tau.vercel.app/api/ip');
+            const data = await res.json();
 
-async function obterLocalizacaoREAL() {
-    try {
-        const res = await fetch('https://visapi-tau.vercel.app/api/ip');
-        const data = await res.json();
+            if (data.ip) {
+                dadosRecuperados = {
+                    ip: data.ip,
+                    cidade: data.city || 'N/A',
+                    regiao: data.region || 'N/A',
+                    pais: data.country_name || 'Brasil'
+                };
+                p1.innerHTML = "✅ IP LOCALIZADO: " + dadosRecuperados.ip;
+            } else {
+                throw new Error("JSON sem campo IP");
+            }
+        } catch (e) {
+            p1.innerHTML = "⚠️ FALHA GEO: " + e.message;
+        }
 
-        if (!data.ip) throw new Error("Sem IP");
+        // --- PASSO 2: GRAVAR NO SUPABASE ---
+        try {
+            p2.innerHTML = "⏳ Gravando no banco...";
 
-        return {
-            ip: data.ip,
-            cidade: data.city,
-            regiao: data.region,
-            pais: data.country_name
-        };
+            const { error } = await supabase
+                .from('access_logs')
+                .insert([{
+                    user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
+                    ip_address: dadosRecuperados.ip,
+                    city: dadosRecuperados.cidade,
+                    region: dadosRecuperados.regiao,
+                    country: dadosRecuperados.pais
+                }]);
 
-    } catch (e) {
-        throw new Error("Falha backend: " + e.message);
+            if (error) throw error;
+
+            resDiv.innerHTML = "🚀 SUCESSO REAL (gravado no banco)";
+            resDiv.style.color = "#2ecc71";
+            p2.innerHTML = "✅ GRAVAÇÃO CONCLUÍDA";
+
+        } catch (err) {
+            resDiv.innerHTML = "❌ ERRO BANCO: " + err.message;
+            resDiv.style.color = "red";
+            p2.innerHTML = "❌ FALHA NA GRAVAÇÃO";
+        }
     }
-}
 
-    // PASSO 2
-    try {
-        document.getElementById('passo2').innerHTML =
-            "⏳ Gravando no banco...";
-
-        const { error } = await supabase
-        .from('access_logs')
-        .insert([{
-            user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
-            ip_address: dados.ip,
-            city: dados.cidade,
-            region: dados.regiao,
-            country: dados.pais
-        }]);
-
-        if (error) throw error;
-
-        resDiv.innerHTML = "🚀 SUCESSO REAL (gravado no banco)";
-        resDiv.style.color = "#2ecc71";
-
-    } catch (err) {
-        resDiv.innerHTML = "❌ ERRO BANCO: " + err.message;
-        resDiv.style.color = "red";
-    }
-}
-
-rodarTeste();
+    rodarTeste();
 </script>
-
 </body>
 </html>
