@@ -16,46 +16,46 @@ const supabase = createClient(
 
 async function obterLocalizacaoREAL() {
     try {
-        // 1. PEGA IP (SEMPRE FUNCIONA)
-        const ipRes = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipRes.json();
-
-        if (!ipData.ip) throw new Error("IP não encontrado");
-
-        // 2. PEGA GEO (usa outra API)
-        const geoRes = await fetch(`https://ipwho.is/${ipData.ip}`);
+        const geoRes = await fetch('https://ipwho.is/');
         const geoData = await geoRes.json();
 
-        if (!geoData.success) throw new Error("Geo falhou");
+        if (!geoData.success) {
+            throw new Error("Geo falhou");
+        }
 
         return {
-            ip: ipData.ip,
+            ip: geoData.ip,
             cidade: geoData.city,
             regiao: geoData.region,
             pais: geoData.country
         };
 
     } catch (e) {
-        throw new Error("Falha TOTAL na geolocalização: " + e.message);
+        throw new Error("Falha TOTAL: " + e.message);
     }
 }
-        // 2. PEGA GEO (usa outra API)
-        const geoRes = await fetch(`https://ipwho.is/${ipData.ip}`);
-        const geoData = await geoRes.json();
 
-        if (!geoData.success) throw new Error("Geo falhou");
+async function rodarTeste() {
+    const resDiv = document.getElementById('resultado');
 
-        return {
-            ip: ipData.ip,
-            cidade: geoData.city,
-            regiao: geoData.region,
-            pais: geoData.country
-        };
+    let dados;
+
+    // PASSO 1
+    try {
+        dados = await obterLocalizacaoREAL();
+
+        document.getElementById('passo1').innerHTML =
+            "✅ IP REAL: " + dados.ip + " | " + dados.cidade;
 
     } catch (e) {
-        throw new Error("Falha TOTAL na geolocalização: " + e.message);
+        document.getElementById('passo1').innerHTML =
+            "❌ ERRO: " + e.message;
+
+        resDiv.innerHTML = "❌ TESTE CANCELADO";
+        resDiv.style.color = "red";
+        return;
     }
-}
+
     // PASSO 2
     try {
         document.getElementById('passo2').innerHTML = "⏳ Gravando no banco...";
@@ -70,11 +70,9 @@ async function obterLocalizacaoREAL() {
             country: dados.pais
         }]);
 
-        if (error) {
-            throw error;
-        }
+        if (error) throw error;
 
-        resDiv.innerHTML = "🚀 SUCESSO REAL (IP + LOCAL gravados)";
+        resDiv.innerHTML = "🚀 SUCESSO REAL";
         resDiv.style.color = "#2ecc71";
 
     } catch (err) {
