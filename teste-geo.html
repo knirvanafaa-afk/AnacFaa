@@ -13,41 +13,49 @@
 
     async function rodarTeste() {
         const resDiv = document.getElementById('resultado');
-        let geoData = null;
+        
+        // Dados padrão caso tudo falhe
+        let dadosParaBanco = {
+            ip: '0.0.0.0',
+            cidade: 'Erro CORS',
+            regiao: 'N/A'
+        };
 
-        // --- PASSO 1: TENTAR OBTER IP (COM FALLBACK) ---
-        // TESTE 1: API EXTERNA (Versão para furar o bloqueio de CORS)
-try {
-    // Usaremos o ip-api.com que é mais aberto para testes em JS
-    const geoRes = await fetch('https://demo.ip-api.com/json/?lang=pt-BR'); 
-    const geoData = await geoRes.json();
-    
-    document.getElementById('passo1').innerHTML = "✅ CONEXÃO OK: " + geoData.query;
-    // Ajusta os nomes para o banco
-    var ipParaBanco = geoData.query;
-    var cidadeParaBanco = geoData.city;
-    var regiaoParaBanco = geoData.regionName;
-} catch (e) {
-    document.getElementById('passo1').innerHTML = "⚠️ ERRO DE CORS/REQUISIÇÃO: " + e.message;
-    var ipParaBanco = '0.0.0.0';
-}
+        // --- PASSO 1: TENTAR OBTER LOCALIZAÇÃO ---
+        try {
+            // Usando a demo da ip-api que permite acesso do GitHub Pages
+            const geoRes = await fetch('https://demo.ip-api.com/json/?lang=pt-BR'); 
+            const geoData = await geoRes.json();
+            
+            if(geoData && geoData.status !== 'fail') {
+                document.getElementById('passo1').innerHTML = "✅ CONEXÃO OK: " + geoData.query;
+                dadosParaBanco.ip = geoData.query;
+                dadosParaBanco.cidade = geoData.city;
+                dadosParaBanco.regiao = geoData.regionName;
+            } else {
+                throw new Error("Resposta inválida da API");
+            }
+        } catch (e) {
+            document.getElementById('passo1').innerHTML = "⚠️ ERRO DE CORS/REQUISIÇÃO: " + e.message;
+        }
 
         // --- PASSO 2: TESTAR SUPABASE ---
         try {
             document.getElementById('passo2').innerHTML = "⏳ Enviando para o Banco...";
             
             const { error } = await supabase.from('access_logs').insert([{
-                user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8', // Usei seu ID real do CSV para evitar erro de Foreign Key
-                ip_address: geoData.ip,
-                city: geoData.city || geoData.city,
-                region: geoData.region || geoData.regionName
+                user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8', 
+                ip_address: dadosParaBanco.ip,
+                city: dadosParaBanco.cidade,
+                region: dadosParaBanco.regiao,
+                country: 'Brasil'
             }]);
 
             if (error) {
                 resDiv.innerHTML = `❌ ERRO NO BANCO (FAULT CODE): ${error.code} - ${error.message}`;
                 resDiv.style.color = "#ff4d4d";
             } else {
-                resDiv.innerHTML = "🚀 SUCESSO TOTAL! Linha criada na tabela.";
+                resDiv.innerHTML = "🚀 SUCESSO TOTAL! Localização gravada na tabela.";
                 resDiv.style.color = "#2ecc71";
             }
 
