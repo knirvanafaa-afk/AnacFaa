@@ -77,14 +77,12 @@ import {
             return;
         }
 
-const { data: { session } } = await supabase.auth.getSession();
-            const user = session.user;
-
-            // 1. Registra IP/Cidade e analisa comportamento
-            await analisarSeguranca(user.id);
+const { data: { session: logSession } } = await supabase.auth.getSession();
+ 
+// 1. Registra IP/Cidade e analisa comportamento
+         if (logSession) { await analisarSeguranca(logSession.user.id);  }
 
 document.getElementById('codigo-mfa').value = ''; 
-
 
 // --- INÍCIO DA VALIDAÇÃO DE DISPOSITIVO (PASSKEY) ---
         try {
