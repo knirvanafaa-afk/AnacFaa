@@ -77,17 +77,18 @@ import {
             return;
         }
 
-const { data: { session: logSession } } = await supabase.auth.getSession();
- 
-// 1. Registra IP/Cidade e analisa comportamento
-         if (logSession) { await analisarSeguranca(logSession.user.id);  }
-
 document.getElementById('codigo-mfa').value = ''; 
 
 // --- INÍCIO DA VALIDAÇÃO DE DISPOSITIVO (PASSKEY) ---
         try {
             mostrarOverlaySeguranca();
             
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session.user;
+            
+            // 1. Registra IP/Cidade e analisa comportamento
+            await analisarSeguranca(user.id);
+
             // 2. Tenta validar se o aparelho já é conhecido (Silencioso)
             const check = await validarDispositivoConhecido(user.id);
 
