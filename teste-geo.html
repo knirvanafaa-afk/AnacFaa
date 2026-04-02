@@ -2,13 +2,13 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Diagnóstico Geo + Supabase</title>
+    <title>Prova Real Geo + Supabase</title>
 </head>
 <body style="background:#000; color:#0ff; font-family:monospace; padding:20px;">
 
 <h3>SLA - LABORATÓRIO DE CONEXÃO</h3>
-<div id="passo1">1. Testando IP e Localização...</div>
-<div id="passo2">2. Testando Gravação no Supabase...</div>
+<div id="passo1">1. Testando IP via Cloudflare...</div>
+<div id="passo2">2. Gravando no Supabase...</div>
 <hr>
 <div id="resultado" style="color:#f1c40f">Aguardando...</div>
 
@@ -17,62 +17,59 @@
 
     const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-    async function rodarTeste() {
+    async function rodarLaboratorio() {
         const resDiv = document.getElementById('resultado');
         const p1 = document.getElementById('passo1');
         const p2 = document.getElementById('passo2');
-        
-        let dadosRecuperados = { ip: '0.0.0.0', cidade: 'Erro', regiao: 'Erro', pais: 'Brasil' };
 
-        // --- PASSO 1: BUSCAR LOCALIZAÇÃO ---
+        // --- EXECUÇÃO DA SUA FUNÇÃO DE LOCALIZAÇÃO ---
+        let dados;
         try {
-            p1.innerHTML = "⏳ Buscando Localização...";
-            const res = await fetch('https://visapi-tau.vercel.app/api/ip');
-            const data = await res.json();
+            p1.innerHTML = "⏳ Consultando Cloudflare (1.1.1.1)...";
+            // Usamos a técnica de texto para evitar bloqueio de CORS
+            const res = await fetch('https://1.1.1.1/cdn-cgi/trace');
+            const text = await res.text();
+            
+            const lines = text.split('\n');
+            const ip = lines.find(row => row.startsWith('ip=')).split('=')[1];
+            const loc = lines.find(row => row.startsWith('loc=')).split('=')[1];
 
-            if (data.ip) {
-                dadosRecuperados = {
-                    ip: data.ip,
-                    cidade: data.city || 'N/A',
-                    regiao: data.region || 'N/A',
-                    pais: data.country_name || 'Brasil'
-                };
-                p1.innerHTML = "✅ IP LOCALIZADO: " + dadosRecuperados.ip;
-            } else {
-                throw new Error("JSON sem campo IP");
-            }
+            dados = {
+                ip: ip,
+                cidade: "Detectada via CF",
+                regiao: loc,
+                pais: "BR"
+            };
+            p1.innerHTML = "✅ IP CAPTURADO: " + dados.ip;
         } catch (e) {
-            p1.innerHTML = "⚠️ FALHA GEO: " + e.message;
+            p1.innerHTML = "⚠️ FALHA NA CAPTURA: " + e.message;
+            dados = { ip: '0.0.0.0', cidade: 'Erro Rede', regiao: 'N/A', pais: 'BR' };
         }
 
-        // --- PASSO 2: GRAVAR NO SUPABASE ---
+        // --- GRAVAÇÃO AUTOMÁTICA NA TABELA ---
         try {
-            p2.innerHTML = "⏳ Gravando no banco...";
-
-            const { error } = await supabase
-                .from('access_logs')
-                .insert([{
-                    user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
-                    ip_address: dadosRecuperados.ip,
-                    city: dadosRecuperados.cidade,
-                    region: dadosRecuperados.regiao,
-                    country: dadosRecuperados.pais
-                }]);
+            p2.innerHTML = "⏳ Enviando para o Supabase...";
+            const { error } = await supabase.from('access_logs').insert([{
+                user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
+                ip_address: dados.ip,
+                city: dados.cidade,
+                region: dados.regiao,
+                country: dados.pais
+            }]);
 
             if (error) throw error;
 
-            resDiv.innerHTML = "🚀 SUCESSO REAL (gravado no banco)";
+            resDiv.innerHTML = "🚀 SUCESSO! Verifique sua tabela no Supabase agora.";
             resDiv.style.color = "#2ecc71";
-            p2.innerHTML = "✅ GRAVAÇÃO CONCLUÍDA";
-
+            p2.innerHTML = "✅ DADO ESCRITO NO BANCO";
         } catch (err) {
-            resDiv.innerHTML = "❌ ERRO BANCO: " + err.message;
-            resDiv.style.color = "red";
-            p2.innerHTML = "❌ FALHA NA GRAVAÇÃO";
+            resDiv.innerHTML = "❌ ERRO NO BANCO: " + err.message;
+            resDiv.style.color = "#ff4d4d";
         }
     }
 
-    rodarTeste();
+    // DISPARA O TESTE AUTOMATICAMENTE
+    rodarLaboratorio();
 </script>
 </body>
 </html>
