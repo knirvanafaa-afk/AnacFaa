@@ -76,73 +76,59 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
 
 // Função para capturar IP e Cidade (Gratuita via ipapi.co)
 
-async function obterLocalizacao() {
-  try {
-    // 1ª Tentativa: Cloudflare (Mais rápida/estável)
-    let response = await fetch('https://visapi-tau.vercel.app/api/ip');
-    
-    // Se a primeira falhar ou der erro, tenta a segunda (ipapi)
-    if (!response.ok) {
-        response = await fetch('https://ipapi.co/json/');
-    }
-
-    const data = await response.json();
-    
-    return {
-      ip: data.ip || '0.0.0.0',
-      cidade: data.city || 'Desconhecida',
-      regiao: data.region || 'N/A',
-      pais: data.country_name || 'Brasil'
-    };
-  } catch (error) {
-    // Mantendo seu padrão preferido de log e valores genéricos
-    console.warn("Erro ao obter localização, usando valores genéricos:", error);
-    return { 
-      ip: '0.0.0.0', 
-      cidade: 'Desconhecida', 
-      regiao: 'N/A', 
-      pais: 'N/A' 
-    };
-  }
-}
-
 export async function analisarSeguranca(userId) {
-try {
-  const loc = await obterLocalizacao();
+  let loc = { ip: '0.0.0.0', city: 'Desconhecida', region: 'N/A', country: 'BR' };
 
-  // 1. Registrar o Log de Acesso no Banco
-const { error } =
+  // A. Captura de Localização (Invisível com Fallback)
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    if (res.ok) {
+      const data = await res.json();
+      loc = { ip: data.ip, city: data.city, region: data.region, country: data.country_name };
+    } else {
+      throw new Error("Falha na principal");
+    }
+  } catch (e) {
+    try {
+      const res2 = await fetch('https://api.db-ip.com/v2/free/self');
+      const data2 = await res2.json();
+      loc.ip = data2.ipAddress || '0.0.0.0';
+      loc.city = data2.city || 'Via Fallback';
+      loc.region = data2.stateProv || 'SP';
+    } catch(e2) {
+      console.warn("Telemetria indisponível");
+    }
+  }
+
+  // B. Gravação do Log no Supabase (O que gravou no laboratório)
   await supabase.from('access_logs').insert([{
     user_id: userId,
     ip_address: loc.ip,
-    city: loc.cidade,
-    region: loc.regiao,
-    country: loc.pais
+    city: loc.city,
+    region: loc.region,
+    country: loc.country
   }]);
 
-if (error) console.error("Erro ao gravar log:", error);
+  // C. Sua função original de Checar quantidade de dispositivos
+  try {
+    const { data: passkeys } = await supabase
+      .from('user_passkeys')
+      .select('id')
+      .eq('user_id', userId);
 
-  // 2. Checar quantidade de dispositivos
-  const { data: passkeys } = await supabase
-    .from('user_passkeys')
-    .select('id')
-    .eq('user_id', userId);
-
-  if (passkeys && passkeys.length > 5) {
-    // Alerta de muitos dispositivos (O seu limite de 5)
-    await supabase.from('security_alerts').insert([{
-      user_id: userId,
-      type: 'Muitos Dispositivos',
-      details: { quantidade: passkeys.length, mensagem: "Usuário passou de 5 aparelhos vinculados." }
-    }]);
-    console.log("⚠️ Alerta: Muitos dispositivos detectados.");
+    if (passkeys && passkeys.length > 5) {
+      await supabase.from('security_alerts').insert([{
+        user_id: userId,
+        type: 'Muitos Dispositivos',
+        details: { quantidade: passkeys.length, mensagem: "Usuário passou de 5 aparelhos vinculados." }
+      }]);
+      console.log("⚠️ Alerta: Muitos dispositivos detectados.");
+    }
+  } catch (deviceError) {
+    console.error("Erro ao validar dispositivos:", deviceError);
   }
-  
-  return loc;
-} catch (e) {
 
-console.error("Falha no monitoramento:", e); 
-        }
+  return true; 
 }
 
 // Função para registrar um novo aparelho (Passkey)
@@ -215,4 +201,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-        }
+}
