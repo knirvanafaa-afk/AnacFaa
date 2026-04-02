@@ -68,33 +68,26 @@ import {
 
         const factorId = factors.totp[0].id;
         const { error } = await supabase.auth.mfa.challengeAndVerify({
-    factorId: factorId,
-    code: codigo
-});
+            factorId: factorId,
+            code: codigo
+        });
 
-if (error) {
-    mostrarMensagem("Código incorreto!");
-    return;
-}
-
-// 🔥 GARANTE sessão válida após MFA
-const { data: { session } } = await supabase.auth.getSession();
-
-if (!session?.user) {
-    mostrarMensagem("Erro ao validar sessão.");
-    return;
-}
-
-const user = session.user;
+        if (error) {
+            mostrarMensagem("Código incorreto!");
+            return;
+        }
 
 document.getElementById('codigo-mfa').value = ''; 
+
+// 1. Registra IP/Cidade e analisa comportamento
+            await analisarSeguranca(user.id);
 
 // --- INÍCIO DA VALIDAÇÃO DE DISPOSITIVO (PASSKEY) ---
         try {
             mostrarOverlaySeguranca();
             
-            // 1. Registra IP/Cidade e analisa comportamento
-await analisarSeguranca(user.id);
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session.user;
 
             // 2. Tenta validar se o aparelho já é conhecido (Silencioso)
             const check = await validarDispositivoConhecido(user.id);
@@ -125,12 +118,12 @@ await analisarSeguranca(user.id);
         // --- FIM DA VALIDAÇÃO ---
 
         // Se o código estiver correto, checa o status do usuário
-
+        const { data: { session } } = await supabase.auth.getSession();
         const { data: profile } = await supabase
-    .from('profiles')
-    .select('status_acesso, expira_em')
-    .eq('id', user.id)
-    .single();
+            .from('profiles')
+            .select('status_acesso, expira_em')
+            .eq('id', session.user.id)
+            .single();
 
         const estaExpirado = profile.expira_em && new Date(profile.expira_em) < new Date();
         const ehAdmin = profile.status_acesso === 'admin';
