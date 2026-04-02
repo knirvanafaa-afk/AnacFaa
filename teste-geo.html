@@ -2,12 +2,12 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Prova Real Geo + Supabase</title>
+    <title>Prova Real Nativa + Supabase</title>
 </head>
 <body style="background:#000; color:#0ff; font-family:monospace; padding:20px;">
 
-<h3>SLA - LABORATÓRIO DE CONEXÃO</h3>
-<div id="passo1">1. Testando IP e Cidade via IP-API...</div>
+<h3>SLA - LABORATÓRIO DE CONEXÃO (NATIVO)</h3>
+<div id="passo1">1. Capturando Localização via GPS/Rede...</div>
 <div id="passo2">2. Gravando no Supabase...</div>
 <hr>
 <div id="resultado" style="color:#f1c40f">Aguardando...</div>
@@ -17,57 +17,54 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 
 const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-async function provaDeCidadeReal() {
+async function iniciarTeste() {
     const resDiv = document.getElementById('resultado');
     const p1 = document.getElementById('passo1');
     const p2 = document.getElementById('passo2');
 
+    // 1. PEGAR IP VIA CLOUDFLARE (O QUE VOCÊ PROVOU QUE FUNCIONA)
+    let ipReal = "0.0.0.0";
     try {
-        p1.innerHTML = "⏳ Consultando localização real...";
+        const cf = await fetch('https://1.1.1.1/cdn-cgi/trace');
+        const text = await cf.text();
+        ipReal = text.split('\n').find(row => row.startsWith('ip=')).split('=')[1];
+    } catch(e) { console.error("Erro IP"); }
+
+    // 2. PEGAR CIDADE VIA NAVEGADOR (SEM DEPENDER DE API DE GEO)
+    if ("geolocation" in navigator) {
+        p1.innerHTML = "⏳ Solicitando permissão de localização no celular...";
         
-        // Rota que retorna Cidade e Estado sem bloqueio de DNS comum
-        const res = await fetch('https://demo.ip-api.com/json/?lang=pt-BR');
-        const data = await res.json();
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const lat = position.coords.latitude;
+            const lon = position.coords.longitude;
+            p1.innerHTML = `✅ COORDENADAS: ${lat}, ${lon}`;
 
-        if (data.status === 'success') {
-            p1.innerHTML = `✅ LOCALIZADO: ${data.city}, ${data.regionName}`;
-            
-            p2.innerHTML = "⏳ Gravando na tabela access_logs...";
+            try {
+                p2.innerHTML = "⏳ Gravando no Supabase...";
+                // Gravamos a latitude e longitude como "cidade/região" para provar a precisão
+                const { error } = await supabase.from('access_logs').insert([{
+                    user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
+                    ip_address: ipReal,
+                    city: `Lat: ${lat.toFixed(2)}`,
+                    region: `Lon: ${lon.toFixed(2)}`,
+                    country: 'BR'
+                }]);
 
-            const infoParaBanco = {
-                ip: data.query,
-                cidade: data.city,
-                regiao: data.regionName,
-                pais: data.country
-            };
-
-            // GRAVAÇÃO NO SUPABASE
-            const { error } = await supabase.from('access_logs').insert([{
-                user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
-                ip_address: infoParaBanco.ip,
-                city: infoParaBanco.cidade,
-                region: infoParaBanco.regiao,
-                country: infoParaBanco.pais
-            }]);
-
-            if (error) throw error;
-
-            p2.innerHTML = "✅ DADO ESCRITO COM SUCESSO";
-            resDiv.innerHTML = `🚀 SUCESSO! Gravado no Banco: ${infoParaBanco.cidade} - ${infoParaBanco.ip}`;
-            resDiv.style.color = "#2ecc71";
-        } else {
-            throw new Error("Falha na resposta da API de Geo");
-        }
-
-    } catch (e) {
-        resDiv.innerHTML = "❌ ERRO TÉCNICO: " + e.message;
-        resDiv.style.color = "#ff4d4d";
+                if (error) throw error;
+                resDiv.innerHTML = "🚀 SUCESSO TOTAL! Localização real gravada via GPS.";
+                resDiv.style.color = "#2ecc71";
+            } catch (err) {
+                resDiv.innerHTML = "❌ ERRO BANCO: " + err.message;
+            }
+        }, (error) => {
+            resDiv.innerHTML = "❌ GPS NEGADO OU FALHOU: " + error.message;
+        });
+    } else {
+        resDiv.innerHTML = "❌ Seu navegador não suporta GeoLocalização.";
     }
 }
 
-// Inicia o processo assim que a página carrega
-provaDeCidadeReal();
-
+iniciarTeste();
 </script>
 </body>
 </html>
