@@ -76,51 +76,35 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
 
 // Função para capturar IP e Cidade (Gratuita via ipapi.co)
 
-async function obterLocalizacao() {
+export async function analisarSeguranca(userId) {
   try {
-    // 1ª Tentativa: Cloudflare (Mais rápida/estável)
-    let response = await fetch('https://visapi-tau.vercel.app/api/ip');
-    
-    // Se a primeira falhar ou der erro, tenta a segunda (ipapi)
-    if (!response.ok) {
-        response = await fetch('https://ipapi.co/json/');
-    }
-
+    // 1. O código vai na página do Whois e lê os dados sozinho
+    const response = await fetch('https://ipwho.is/');
     const data = await response.json();
-    
-    return {
-      ip: data.ip || '0.0.0.0',
-      cidade: data.city || 'Desconhecida',
-      regiao: data.region || 'N/A',
-      pais: data.country_name || 'Brasil'
-    };
-  } catch (error) {
-    // Mantendo seu padrão preferido de log e valores genéricos
-    console.warn("Erro ao obter localização, usando valores genéricos:", error);
-    return { 
-      ip: '0.0.0.0', 
-      cidade: 'Desconhecida', 
-      regiao: 'N/A', 
-      pais: 'N/A' 
-    };
+
+    // 2. Ele pega esses dados e joga no seu banco de dados automaticamente
+    const { error } = await supabase
+      .from('access_logs')
+      .insert([{
+        user_id: userId,
+        ip_address: data.ip,
+        city: data.city,
+        region: data.region,
+        country: data.country,
+        // O device_id será preenchido pela biometria depois, se houver
+        created_at: new Date().toISOString()
+      }]);
+
+    if (error) throw error;
+    return true;
+
+  } catch (err) {
+    // Se o Whois falhar, ele grava pelo menos o ID do usuário para você não perder o log
+    console.error("Erro na automação de segurança:", err);
+    await supabase.from('access_logs').insert([{ user_id: userId }]);
+    return false;
   }
 }
-
-export async function analisarSeguranca(userId) {
-try {
-  const loc = await obterLocalizacao();
-
-  // 1. Registrar o Log de Acesso no Banco
-const { error } =
-  await supabase.from('access_logs').insert([{
-    user_id: userId,
-    ip_address: loc.ip,
-    city: loc.cidade,
-    region: loc.regiao,
-    country: loc.pais
-  }]);
-
-if (error) console.error("Erro ao gravar log:", error);
 
   // 2. Checar quantidade de dispositivos
   const { data: passkeys } = await supabase
@@ -215,4 +199,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-        }
+      } 
