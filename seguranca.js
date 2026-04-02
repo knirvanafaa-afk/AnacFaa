@@ -97,6 +97,7 @@ async function obterLocalizacao() {
     };
   }
 }
+
 export async function analisarSeguranca(userId) {
 try {
   const loc = await obterLocalizacao();
@@ -206,4 +207,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-}
+            }
