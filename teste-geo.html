@@ -7,62 +7,85 @@
 </div>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+const supabase = createClient(
+'https://ymyxikhlhkkvcufgwufe.supabase.co',
+'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+);
 
-    async function rodarTeste() {
-        const resDiv = document.getElementById('resultado');
-        
-        // Dados padrão caso tudo falhe
-        let dadosParaBanco = {
-            ip: '0.0.0.0',
-            cidade: 'Erro CORS',
-            regiao: 'N/A'
+async function obterLocalizacaoREAL() {
+    try {
+        // 🔥 MESMO PADRÃO DO SEU SISTEMA REAL
+        let response = await fetch('https://visapi-tau.vercel.app/api/ip');
+
+        if (!response.ok) {
+            response = await fetch('https://ipapi.co/json/');
+        }
+
+        const data = await response.json();
+
+        return {
+            ip: data.ip,
+            cidade: data.city,
+            regiao: data.region,
+            pais: data.country_name || 'Brasil'
         };
 
-        // --- PASSO 1: TENTAR OBTER LOCALIZAÇÃO ---
-        try {
-            // Usando a demo da ip-api que permite acesso do GitHub Pages
-            const geoRes = await fetch('https://demo.ip-api.com/json/?lang=pt-BR'); 
-            const geoData = await geoRes.json();
-            
-            if(geoData && geoData.status !== 'fail') {
-                document.getElementById('passo1').innerHTML = "✅ CONEXÃO OK: " + geoData.query;
-                dadosParaBanco.ip = geoData.query;
-                dadosParaBanco.cidade = geoData.city;
-                dadosParaBanco.regiao = geoData.regionName;
-            } else {
-                throw new Error("Resposta inválida da API");
-            }
-        } catch (e) {
-            document.getElementById('passo1').innerHTML = "⚠️ ERRO DE CORS/REQUISIÇÃO: " + e.message;
-        }
-
-        // --- PASSO 2: TESTAR SUPABASE ---
-        try {
-            document.getElementById('passo2').innerHTML = "⏳ Enviando para o Banco...";
-            
-            const { error } = await supabase.from('access_logs').insert([{
-                user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8', 
-                ip_address: dadosParaBanco.ip,
-                city: dadosParaBanco.cidade,
-                region: dadosParaBanco.regiao,
-                country: 'Brasil'
-            }]);
-
-            if (error) {
-                resDiv.innerHTML = `❌ ERRO NO BANCO (FAULT CODE): ${error.code} - ${error.message}`;
-                resDiv.style.color = "#ff4d4d";
-            } else {
-                resDiv.innerHTML = "🚀 SUCESSO TOTAL! Localização gravada na tabela.";
-                resDiv.style.color = "#2ecc71";
-            }
-
-        } catch (err) {
-            resDiv.innerHTML = `⚠️ FALHA TÉCNICA NO SCRIPT: ${err.message}`;
-            resDiv.style.color = "#ff4d4d";
-        }
+    } catch (e) {
+        throw new Error("Falha TOTAL na geolocalização");
     }
-    rodarTeste();
+}
+
+async function rodarTeste() {
+    const resDiv = document.getElementById('resultado');
+
+    let dados;
+
+    // PASSO 1
+    try {
+        dados = await obterLocalizacaoREAL();
+
+        if (!dados.ip) throw new Error("Sem IP válido");
+
+        document.getElementById('passo1').innerHTML =
+            "✅ IP REAL: " + dados.ip + " | " + dados.cidade;
+
+    } catch (e) {
+        document.getElementById('passo1').innerHTML =
+            "❌ FALHA REAL: " + e.message;
+
+        resDiv.innerHTML = "❌ TESTE CANCELADO (sem geolocalização)";
+        resDiv.style.color = "red";
+        return; // 🔥 TRAVA TOTAL (sem fallback fake)
+    }
+
+    // PASSO 2
+    try {
+        document.getElementById('passo2').innerHTML = "⏳ Gravando no banco...";
+
+        const { error } = await supabase
+        .from('access_logs')
+        .insert([{
+            user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8',
+            ip_address: dados.ip,
+            city: dados.cidade,
+            region: dados.regiao,
+            country: dados.pais
+        }]);
+
+        if (error) {
+            throw error;
+        }
+
+        resDiv.innerHTML = "🚀 SUCESSO REAL (IP + LOCAL gravados)";
+        resDiv.style.color = "#2ecc71";
+
+    } catch (err) {
+        resDiv.innerHTML = "❌ ERRO BANCO: " + err.message;
+        resDiv.style.color = "red";
+    }
+}
+
+rodarTeste();
 </script>
