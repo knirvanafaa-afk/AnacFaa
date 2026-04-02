@@ -66,7 +66,8 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
     let mensagemErro = (profile.status_acesso === 'pendente')
         ? "Efetue o Pagamento para ter acesso ao conteúdo."
         : "Por favor, revalide ou renove sua assinatura para continuar com acesso.";
- window.mostrarMensagem(mensagemErro);
+
+    window.mostrarMensagem(mensagemErro);
 
     setTimeout(() => {
         window.location.href = 'index.html';
@@ -77,29 +78,23 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
 
 async function obterLocalizacao() {
   try {
-    const res = await fetch('https://ipwho.is/');
+    // Esqueça APIs externas. Vamos usar o link que você validou no navegador.
+    const res = await fetch('https://ymyxikhlhkkvcufgwufe.supabase.co/functions/v1/log-access');
+    
+    if (!res.ok) throw new Error("Erro na rede");
+
     const data = await res.json();
 
-    if (!data.success) {
-      throw new Error("API não retornou sucesso");
-    }
-
+    // Retorna os dados que a Edge já capturou
     return {
       ip: data.ip || '0.0.0.0',
-      cidade: data.city || 'Desconhecida',
-      regiao: data.region || 'N/A',
-      pais: data.country || 'N/A'
+      cidade: data.cidade || 'Desconhecida',
+      regiao: data.regiao || 'N/A',
+      pais: data.pais || 'Brasil'
     };
-
   } catch (error) {
-    console.warn("Erro ao obter localização:", error);
-
-    return { 
-      ip: '0.0.0.0', 
-      cidade: 'Desconhecida', 
-      regiao: 'N/A', 
-      pais: 'N/A' 
-    };
+    // Se até a Edge falhar, ele grava o fallback para o login seguir
+    return { ip: '0.0.0.0', cidade: 'Erro_Conexao', regiao: 'N/A', pais: 'N/A' };
   }
 }
 
@@ -212,4 +207,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-        }
+}
