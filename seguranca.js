@@ -66,29 +66,34 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
     let mensagemErro = (profile.status_acesso === 'pendente')
         ? "Efetue o Pagamento para ter acesso ao conteúdo."
         : "Por favor, revalide ou renove sua assinatura para continuar com acesso.";
-
-    window.mostrarMensagem(mensagemErro);
+ window.mostrarMensagem(mensagemErro);
 
     setTimeout(() => {
         window.location.href = 'index.html';
     }, 3000);
 }
 
-// Função para capturar IP e Cidade (Gratuita via ipwho.is) 
+// Função para capturar IP e Cidade (Gratuita via ipapi.co)
 
 async function obterLocalizacao() {
   try {
-    const res = await fetch('https://ymyxikhlhkkvcufgwufe.supabase.co/functions/v1/log-access');
+    const res = await fetch('https://ipwho.is/');
     const data = await res.json();
+
+    if (!data.success) {
+      throw new Error("API não retornou sucesso");
+    }
 
     return {
       ip: data.ip || '0.0.0.0',
-      cidade: data.cidade || 'Desconhecida',
-      regiao: data.regiao || 'N/A',
-      pais: data.pais || 'N/A'
+      cidade: data.city || 'Desconhecida',
+      regiao: data.region || 'N/A',
+      pais: data.country || 'N/A'
     };
 
   } catch (error) {
+    console.warn("Erro ao obter localização:", error);
+
     return { 
       ip: '0.0.0.0', 
       cidade: 'Desconhecida', 
@@ -207,4 +212,4 @@ export async function validarDispositivoConhecido(userId) {
     // Se der erro ou cancelar, tratamos como não reconhecido
     return { status: 'desconhecido' };
   }
-            }
+        }
