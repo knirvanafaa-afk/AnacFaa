@@ -1,10 +1,20 @@
-<div id="painel" style="background:#000; color:#0ff; padding:20px; font-family:monospace; font-size:18px;">
-    <h3>SLA - LABORATÓRIO DE CONEXÃO</h3>
-    <div id="passo1">1. Testando IP e Localização...</div>
-    <div id="passo2">2. Testando Gravação no Supabase...</div>
-    <hr>
-    <div id="resultado" style="color:#f1c40f">Aguardando...</div>
-</div>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Diagnóstico Geo + Supabase</title>
+</head>
+
+<body style="background:#000; color:#0ff; font-family:monospace; padding:20px;">
+
+<h3>SLA - LABORATÓRIO DE CONEXÃO</h3>
+
+<div id="passo1">1. Testando IP e Localização...</div>
+<div id="passo2">2. Testando Gravação no Supabase...</div>
+
+<hr>
+
+<div id="resultado" style="color:#f1c40f">Aguardando...</div>
 
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
@@ -14,27 +24,61 @@ const supabase = createClient(
 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
 );
 
+// 🔥 FUNÇÃO ROBUSTA (SEM QUEBRAR)
 async function obterLocalizacaoREAL() {
-    try {
-        const geoRes = await fetch('https://ipwho.is/');
-        const geoData = await geoRes.json();
 
-        if (!geoData.success) {
-            throw new Error("Geo falhou");
+    // Lista de APIs (ordem de tentativa)
+    const fontes = [
+        async () => {
+            const r = await fetch('https://ipwho.is/');
+            const d = await r.json();
+            if (!d.success) throw new Error("ipwho falhou");
+            return {
+                ip: d.ip,
+                cidade: d.city,
+                regiao: d.region,
+                pais: d.country
+            };
+        },
+
+        async () => {
+            const r = await fetch('https://ipapi.co/json/');
+            const d = await r.json();
+            if (!d.ip) throw new Error("ipapi falhou");
+            return {
+                ip: d.ip,
+                cidade: d.city,
+                regiao: d.region,
+                pais: d.country_name
+            };
+        },
+
+        async () => {
+            const r = await fetch('https://api.ipify.org?format=json');
+            const d = await r.json();
+            if (!d.ip) throw new Error("ipify falhou");
+
+            return {
+                ip: d.ip,
+                cidade: "Desconhecida",
+                regiao: "N/A",
+                pais: "N/A"
+            };
         }
+    ];
 
-        return {
-            ip: geoData.ip,
-            cidade: geoData.city,
-            regiao: geoData.region,
-            pais: geoData.country
-        };
-
-    } catch (e) {
-        throw new Error("Falha TOTAL: " + e.message);
+    for (const tentar of fontes) {
+        try {
+            return await tentar();
+        } catch (e) {
+            console.warn("Fonte falhou:", e.message);
+        }
     }
+
+    throw new Error("Todas APIs falharam");
 }
 
+// 🚀 EXECUÇÃO
 async function rodarTeste() {
     const resDiv = document.getElementById('resultado');
 
@@ -44,21 +88,26 @@ async function rodarTeste() {
     try {
         dados = await obterLocalizacaoREAL();
 
+        if (!dados.ip || dados.ip === "0.0.0.0") {
+            throw new Error("IP inválido");
+        }
+
         document.getElementById('passo1').innerHTML =
-            "✅ IP REAL: " + dados.ip + " | " + dados.cidade;
+            `✅ IP: ${dados.ip} | ${dados.cidade}`;
 
     } catch (e) {
         document.getElementById('passo1').innerHTML =
-            "❌ ERRO: " + e.message;
+            "❌ ERRO REAL: " + e.message;
 
-        resDiv.innerHTML = "❌ TESTE CANCELADO";
+        resDiv.innerHTML = "❌ TESTE CANCELADO (sem geo)";
         resDiv.style.color = "red";
         return;
     }
 
     // PASSO 2
     try {
-        document.getElementById('passo2').innerHTML = "⏳ Gravando no banco...";
+        document.getElementById('passo2').innerHTML =
+            "⏳ Gravando no banco...";
 
         const { error } = await supabase
         .from('access_logs')
@@ -72,7 +121,7 @@ async function rodarTeste() {
 
         if (error) throw error;
 
-        resDiv.innerHTML = "🚀 SUCESSO REAL";
+        resDiv.innerHTML = "🚀 SUCESSO REAL (gravado no banco)";
         resDiv.style.color = "#2ecc71";
 
     } catch (err) {
@@ -83,3 +132,6 @@ async function rodarTeste() {
 
 rodarTeste();
 </script>
+
+</body>
+</html>
