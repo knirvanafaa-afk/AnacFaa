@@ -1,7 +1,7 @@
 <div id="painel" style="background:#000; color:#0ff; padding:20px; font-family:monospace; font-size:18px;">
     <h3>SLA - LABORATÓRIO DE CONEXÃO</h3>
-    <div id="passo1">1. Testando IPWHO.IS...</div>
-    <div id="passo2">2. Testando SUPABASE...</div>
+    <div id="passo1">1. Testando IP e Localização...</div>
+    <div id="passo2">2. Testando Gravação no Supabase...</div>
     <hr>
     <div id="resultado" style="color:#f1c40f">Aguardando...</div>
 </div>
@@ -9,36 +9,56 @@
 <script type="module">
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
     async function rodarTeste() {
         const resDiv = document.getElementById('resultado');
-        
-        try {
-            // TESTE 1: API EXTERNA
-            const geoRes = await fetch('https://ipwho.is/');
-            if (!geoRes.ok) throw new Error(`HTTP_FAULT_${geoRes.status}`);
-            const geoData = await geoRes.json();
-            document.getElementById('passo1').innerHTML = "✅ IPWHO.IS: " + geoData.ip;
+        let geoData = null;
 
-            // TESTE 2: SUPABASE (TENTA GRAVAR)
+        // --- PASSO 1: TENTAR OBTER IP (COM FALLBACK) ---
+        try {
+            const geoRes = await fetch('https://ipwho.is/');
+            
+            if (geoRes.status === 403) {
+                console.warn("IPWhois barrou (403), tentando IP-API...");
+                const backupRes = await fetch('http://ip-api.com/json/'); 
+                geoData = await backupRes.json();
+                // Ajuste de nomes porque as APIs são diferentes
+                geoData.ip = geoData.query; 
+            } else {
+                geoData = await geoRes.json();
+            }
+
+            if (!geoData || geoData.status === 'fail') throw new Error("API_REJEITOU_CONEXAO");
+
+            document.getElementById('passo1').innerHTML = "✅ IP OK: " + (geoData.ip || geoData.query);
+        } catch (e) {
+            document.getElementById('passo1').innerHTML = "⚠️ ERRO DE REDE: " + e.message;
+            // Se falhar o IP, criamos um dado "fake" só para testar o banco
+            geoData = { ip: '0.0.0.0', city: 'ErroRede', region: 'Erro' };
+        }
+
+        // --- PASSO 2: TESTAR SUPABASE ---
+        try {
+            document.getElementById('passo2').innerHTML = "⏳ Enviando para o Banco...";
+            
             const { error } = await supabase.from('access_logs').insert([{
-                user_id: 'ID_DE_TESTE', 
+                user_id: '91da3541-bbaf-4bb6-bd35-ad4dd93821b8', // Usei seu ID real do CSV para evitar erro de Foreign Key
                 ip_address: geoData.ip,
-                city: geoData.city,
-                region: geoData.region
+                city: geoData.city || geoData.city,
+                region: geoData.region || geoData.regionName
             }]);
 
             if (error) {
-                resDiv.innerHTML = `❌ ERRO NO BANCO: ${error.code} - ${error.message}`;
+                resDiv.innerHTML = `❌ ERRO NO BANCO (FAULT CODE): ${error.code} - ${error.message}`;
                 resDiv.style.color = "#ff4d4d";
             } else {
-                resDiv.innerHTML = "🚀 SUCESSO TOTAL! Dados alimentados na tabela.";
+                resDiv.innerHTML = "🚀 SUCESSO TOTAL! Linha criada na tabela.";
                 resDiv.style.color = "#2ecc71";
             }
 
         } catch (err) {
-            resDiv.innerHTML = `⚠️ FALHA TÉCNICA: ${err.message}`;
+            resDiv.innerHTML = `⚠️ FALHA TÉCNICA NO SCRIPT: ${err.message}`;
             resDiv.style.color = "#ff4d4d";
         }
     }
