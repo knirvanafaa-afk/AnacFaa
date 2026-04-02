@@ -16,27 +16,21 @@
         let geoData = null;
 
         // --- PASSO 1: TENTAR OBTER IP (COM FALLBACK) ---
-        try {
-            const geoRes = await fetch('https://ipwho.is/');
-            
-            if (geoRes.status === 403) {
-                console.warn("IPWhois barrou (403), tentando IP-API...");
-                const backupRes = await fetch('http://ip-api.com/json/'); 
-                geoData = await backupRes.json();
-                // Ajuste de nomes porque as APIs são diferentes
-                geoData.ip = geoData.query; 
-            } else {
-                geoData = await geoRes.json();
-            }
-
-            if (!geoData || geoData.status === 'fail') throw new Error("API_REJEITOU_CONEXAO");
-
-            document.getElementById('passo1').innerHTML = "✅ IP OK: " + (geoData.ip || geoData.query);
-        } catch (e) {
-            document.getElementById('passo1').innerHTML = "⚠️ ERRO DE REDE: " + e.message;
-            // Se falhar o IP, criamos um dado "fake" só para testar o banco
-            geoData = { ip: '0.0.0.0', city: 'ErroRede', region: 'Erro' };
-        }
+        // TESTE 1: API EXTERNA (Versão para furar o bloqueio de CORS)
+try {
+    // Usaremos o ip-api.com que é mais aberto para testes em JS
+    const geoRes = await fetch('https://demo.ip-api.com/json/?lang=pt-BR'); 
+    const geoData = await geoRes.json();
+    
+    document.getElementById('passo1').innerHTML = "✅ CONEXÃO OK: " + geoData.query;
+    // Ajusta os nomes para o banco
+    var ipParaBanco = geoData.query;
+    var cidadeParaBanco = geoData.city;
+    var regiaoParaBanco = geoData.regionName;
+} catch (e) {
+    document.getElementById('passo1').innerHTML = "⚠️ ERRO DE CORS/REQUISIÇÃO: " + e.message;
+    var ipParaBanco = '0.0.0.0';
+}
 
         // --- PASSO 2: TESTAR SUPABASE ---
         try {
