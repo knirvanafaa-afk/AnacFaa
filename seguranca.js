@@ -100,6 +100,41 @@ export async function analisarSeguranca(userId) {
     }
   }
 
+  // --- INÍCIO DA LÓGICA DE VIAGEM IMPOSSÍVEL (ALERTA GEOGRÁFICO) ---
+  try {
+    const { data: lastLog } = await supabase
+      .from('access_logs')
+      .select('city, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    // Só dispara se houver log anterior, se a cidade mudou e se a cidade atual não é "Desconhecida"
+    if (lastLog && lastLog.city !== loc.city && loc.city !== 'Desconhecida') {
+      const agora = new Date();
+      const ultimoAcesso = new Date(lastLog.created_at);
+      const diferencaHoras = (agora - ultimoAcesso) / (1000 * 60 * 60);
+
+      // Se a cidade mudou em menos de 3 horas
+      if (diferencaHoras < 3) {
+        await supabase.from('security_alerts').insert([{
+          user_id: userId,
+          type: 'Suspeita de Fraude Geográfica',
+          details: {
+            mensagem: `Troca de cidade muito rápida: ${lastLog.city} -> ${loc.city}`,
+            intervalo_horas: diferencaHoras.toFixed(2),
+            dispositivo: navigator.userAgent
+          }
+        }]);
+        console.warn("Alerta Geográfico Gerado: Viagem Impossível detectada.");
+      }
+    }
+  } catch (geoErr) {
+    console.error("Erro ao processar alerta geográfico:", geoErr);
+  }
+  // --- FIM DA LÓGICA DE VIAGEM IMPOSSÍVEL ---
+
   // B. Gravação do Log no Supabase (O que gravou no laboratório)
   await supabase.from('access_logs').insert([{
     user_id: userId,
