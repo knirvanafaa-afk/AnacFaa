@@ -18,6 +18,36 @@
         .btn-principal { background-color: var(--verde-escuro); color: white; }
         .link-alternativo { text-align: center; margin-top: 20px; font-size: 13px; color: #666; }
         .link-alternativo span { color: var(--verde-escuro); font-weight: bold; cursor: pointer; text-decoration: underline; }
+
+.obrigatorio {
+    color: red;
+    font-weight: bold;
+}
+
+.aviso-obrigatorio {
+    margin: 5px 0;
+    font-size: 10px;
+}
+
+.btn-voltar {
+    background-color: #fff9c4;
+    color: #000;
+    border: 2px solid #f1c40f;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 10px;
+    transition: all 0.3s;
+}
+
+.btn-voltar:hover {
+    background-color: #fff9c4;
+    color: #333;
+    border-color: #f1c40f;
+}
+
     </style>
 </head>
 <body>
@@ -34,22 +64,29 @@
     <h2>Nova Matrícula (Trainee)</h2>
     <div class="section-interna">
   
- <label>Nome Completo</label>
+ <label>Nome Completo<span class="obrigatorio">*</span></label>
         <input type="text" id="cad-nome" placeholder="Nome do Técnico">
 
-<label for="cad-cpf">CPF (Necessário para compra)</label>
+<label for="cad-cpf">CPF (Necessário para compra)<span class="obrigatorio">*</span></label>
 <input type="text" id="cad-cpf" placeholder="000.000.000-00" maxlength="14" required>
 
-        <label>E-mail</label>
+        <label>E-mail<span class="obrigatorio">*</span></label>
         <input type="email" id="cad-email" placeholder="seu@email.com">
 
-        <label>Senha de Acesso</label>
+        <label>Senha de Acesso<span class="obrigatorio">*</span></label>
         <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres">
 
 <input type="hidden" id="plano-selecionado">
 
+<div class="aviso-obrigatorio">
+    <strong><span class="obrigatorio">*</span> CAMPOS OBRIGATÓRIOS</strong>
+</div>
+
         <button class="btn-principal" onclick="cadastrarUsuario()">Solicitar Acesso</button>
+
+<button class="btn-voltar" onclick="window.location.href='planos.html'">Escolher outro Plano</button>
     </div>
+
     <div class="link-alternativo">Já é da equipe? <span onclick="window.location.href='index.html'">Voltar ao Login</span></div>
 </div>
 
@@ -109,31 +146,73 @@ window.validarCPF = (cpf) => {
 }
 
     window.cadastrarUsuario = async () => {
-    const nome = document.getElementById('cad-nome').value;
-    const email = document.getElementById('cad-email').value;
+    // 1. Captura dos valores
+    const nome = document.getElementById('cad-nome').value.trim();
+    const email = document.getElementById('cad-email').value.trim();
     const senha = document.getElementById('cad-senha').value;
-
-// -- ADIÇÃO: PEGA OS NOVOS DADOS --
     const cpf = document.getElementById('cad-cpf').value;
     const plano = document.getElementById('plano-selecionado').value;
 
-    // -- ADIÇÃO: VALIDAÇÃO ANTES DE SEGUIR --
-    if (!validarCPF(cpf)) return mostrarMensagem("CPF inválido. Confira os números.");
-    if (!plano) return mostrarMensagem("Selecione um plano na página anterior.");
+    // 2. Validações Específicas com Alertas Personalizados
+    if (!nome) {
+        return mostrarMensagem("Por favor, digite seu nome completo.");
+    }
 
+    if (!cpf) {
+        return mostrarMensagem("Por favor, digite seu CPF.");
+    }
+
+    if (!validarCPF(cpf)) {
+        return mostrarMensagem("CPF inválido. Confira os números.");
+    }
+
+    if (!email) {
+        return mostrarMensagem("Por favor, digite seu e-mail.");
+    }
+
+    // Regra simples de validação de e-mail (presença de @ e ponto)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return mostrarMensagem("Por favor, digite um e-mail válido.");
+    }
+
+    if (!senha) {
+        return mostrarMensagem("Por favor, digite uma senha.");
+    }
+
+    if (senha.length < 6) {
+        return mostrarMensagem("A senha deve ter pelo menos 6 caracteres.");
+    }
+
+    if (!plano) {
+        return mostrarMensagem("Selecione um plano na página anterior.");
+    }
+
+    // 3. Execução do Cadastro no Supabase
     try {
         const { data, error } = await supabase.auth.signUp({
-            email, 
+            email: email, 
             password: senha, 
-            options: { data: { full_name: nome,  cpf: cpf, plano_ativo: plano }, emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  }
+            options: { 
+                data: { 
+                    full_name: nome,  
+                    cpf: cpf, 
+                    plano_ativo: plano 
+                }, 
+                emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  
+            }
         });
         
         if (error) throw error;
 
-        // Se o usuário já existe mas não confirmou, o Supabase não envia novo e-mail imediatamente (por segurança)
-        mostrarMensagem("Cadastro efetuado! Acesse o e-mail cadastrado e clique no link de confirmação para validar seu acesso.");
+        mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail para validar o acesso.");
     } catch (e) { 
-        mostrarMensagem("Erro: " + e.message); 
+        // Tratamento de erro específico para e-mail já cadastrado
+        if (e.message.includes("already registered")) {
+            mostrarMensagem("Este e-mail já está em uso. Tente recuperar sua senha.");
+        } else {
+            mostrarMensagem("Erro: " + e.message); 
+        }
     }
 };
 
