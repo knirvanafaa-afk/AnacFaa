@@ -33,12 +33,19 @@
 <div class="container">
     <h2>Nova Matrícula (Trainee)</h2>
     <div class="section-interna">
-        <label>Nome Completo</label>
+       
+ <label>Nome Completo</label>
         <input type="text" id="cad-nome" placeholder="Nome do Técnico">
+
+<label for="cad-cpf">CPF (Necessário para compra)</label>
+<input type="text" id="cad-cpf" placeholder="000.000.000-00" maxlength="14" required>
+
         <label>E-mail</label>
         <input type="email" id="cad-email" placeholder="seu@email.com">
+
         <label>Senha de Acesso</label>
         <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres">
+
         <button class="btn-principal" onclick="cadastrarUsuario()">Solicitar Acesso</button>
     </div>
     <div class="link-alternativo">Já é da equipe? <span onclick="window.location.href='index.html'">Voltar ao Login</span></div>
@@ -60,16 +67,63 @@
         document.getElementById('custom-alert').style.display = 'flex';
     };
 
+// A. Captura automática do plano ao carregar a página
+window.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const plano = urlParams.get('plano');
+    if (plano) document.getElementById('plano-selecionado').value = plano;
+});
+
+// B. Máscara visual do CPF (pontos e traços)
+document.addEventListener('DOMContentLoaded', () => {
+    const cpfInput = document.getElementById('cad-cpf');
+    if (cpfInput) {
+        cpfInput.addEventListener('input', (e) => {
+            let v = e.target.value.replace(/\D/g, '');
+            if (v.length <= 11) {
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d)/, '$1.$2');
+                v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            }
+            e.target.value = v;
+        });
+    }
+});
+
+// C. Regra matemática de validação
+function validarCPF(cpf) {
+    cpf = cpf.replace(/[^\d]+/g, '');
+    if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false;
+    let soma = 0, resto;
+    for (let i = 1; i <= 9; i++) soma = soma + parseInt(cpf.substring(i-1, i)) * (11 - i);
+    resto = (soma * 10) % 11;
+    if ((resto == 10) || (resto == 11)) resto = 0;
+    if (resto != parseInt(cpf.substring(9, 10))) return false;
+    soma = 0;
+    for (let i = 1; i <= 10; i++) soma = soma + parseInt(cpf.substring(i-1, i)) * (12 - i);
+    resto = (soma * 10) % 11;
+    if ((resto == 10) || (resto == 11)) resto = 0;
+    return resto == parseInt(cpf.substring(10, 11));
+}
+
     window.cadastrarUsuario = async () => {
     const nome = document.getElementById('cad-nome').value;
     const email = document.getElementById('cad-email').value;
     const senha = document.getElementById('cad-senha').value;
 
+// -- ADIÇÃO: PEGA OS NOVOS DADOS --
+    const cpf = document.getElementById('cad-cpf').value;
+    const plano = document.getElementById('plano-selecionado').value;
+
+    // -- ADIÇÃO: VALIDAÇÃO ANTES DE SEGUIR --
+    if (!validarCPF(cpf)) return mostrarMensagem("CPF inválido. Confira os números.");
+    if (!plano) return mostrarMensagem("Selecione um plano na página anterior.");
+
     try {
         const { data, error } = await supabase.auth.signUp({
             email, 
             password: senha, 
-            options: { data: { full_name: nome }, emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  }
+            options: { data: { full_name: nome,  cpf: cpf, plano_ativo: plano }, emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  }
         });
         
         if (error) throw error;

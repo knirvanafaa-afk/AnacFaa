@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKYLicense - Planos de Acesso FAA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --verde-sucesso: #2ecc71; 
+            --verde-escuro: #1b5e20; 
+            --verde-claro-fundo: #fafffa; 
+            --cinza-fundo: #f0f2f5; 
+            --azul-marinho: #2c3e50;
+        }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--cinza-fundo); margin: 0; padding: 20px; color: var(--azul-marinho); }
+        .logo-texto { font-family: 'Orbitron', sans-serif; font-size: 24px; color: var(--verde-escuro); text-align: center; margin-bottom: 10px; letter-spacing: 2px; }
+        .subtitulo { text-align: center; color: #666; margin-bottom: 40px; font-size: 1.1em; }
+
+        .container-planos { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; max-width: 1200px; margin: 0 auto; }
+        
+        .card-plano { 
+            background: white; 
+            border-radius: 20px; 
+            width: 260px; 
+            padding: 25px; 
+            text-align: center; 
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.05); 
+            transition: transform 0.3s ease;
+            border: 1px solid #eee;
+            display: flex;
+            flex-direction: column;
+        }
+        .card-plano:hover { transform: translateY(-10px); border-color: var(--verde-sucesso); }
+        .card-destaque { border: 2px solid var(--verde-sucesso); position: relative; scale: 1.05; z-index: 10; }
+        .selo-destaque { 
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%); 
+            background: var(--verde-sucesso); color: white; padding: 5px 15px; 
+            border-radius: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;
+        }
+
+        .nome-plano { font-size: 18px; font-weight: bold; margin-bottom: 10px; color: var(--verde-escuro); }
+        .preco { font-size: 32px; font-weight: bold; margin-bottom: 5px; }
+        .custo-diario { color: var(--verde-sucesso); font-weight: bold; font-size: 14px; margin-bottom: 20px; background: var(--verde-claro-fundo); padding: 8px; border-radius: 8px; }
+
+        .beneficios-plano { text-align: left; margin-bottom: 25px; flex-grow: 1; border-top: 1px solid #eee; padding-top: 15px; }
+        .beneficios-plano p { font-size: 13px; margin: 8px 0; color: #555; line-height: 1.4; }
+        .beneficios-plano strong { color: var(--azul-marinho); }
+
+        .btn-assinar { 
+            background-color: var(--verde-sucesso); color: white; text-decoration: none; 
+            padding: 12px; border-radius: 10px; font-weight: bold; text-transform: uppercase; 
+            transition: background 0.3s; font-size: 14px;
+        }
+        .btn-assinar:hover { background-color: #27ae60; }
+
+        .recursos-gerais { max-width: 1000px; margin: 60px auto; background: white; padding: 40px; border-radius: 25px; box-shadow: 0px 10px 25px rgba(0,0,0,0.05); }
+        .recursos-gerais h2 { font-family: 'Orbitron', sans-serif; font-size: 18px; text-align: center; color: var(--verde-escuro); margin-bottom: 30px; border-bottom: 2px solid var(--verde-claro-fundo); padding-bottom: 15px; }
+        
+        .grid-recursos { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 25px; }
+        .item-recurso { display: flex; align-items: flex-start; }
+        .recurso-icon { font-size: 20px; margin-right: 15px; background: var(--verde-claro-fundo); padding: 10px; border-radius: 50%; }
+        .recurso-info h4 { margin: 0 0 5px 0; font-size: 14px; color: var(--azul-marinho); }
+        .recurso-info p { margin: 0; font-size: 12px; color: #777; line-height: 1.5; }
+    </style>
+</head>
+<body>
+
+    <div class="logo-texto">SKYLICENSE</div>
+    <p class="subtitulo">A preparação definitiva para sua licença FAA</p>
+
+    <div class="container-planos">
+        <div class="card-plano">
+            <div class="nome-plano">Mensal</div>
+            <div class="preco">R$ 34,90</div>
+            <div class="custo-diario">Menos de R$ 1,17 por dia</div>
+            <div class="beneficios-plano">
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Acesso Total por <strong>30 dias</strong></p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> +2.710 Questões Atualizadas</p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span><strong> Ideal para revisões e estudos dinâmicos</strong></p>
+
+            </div>
+            <a href="cadastro.html?plano=30" class="btn-assinar">Assinar Agora</a>
+        </div>
+
+        <div class="card-plano">
+            <div class="nome-plano">Trimestral</div>
+            <div class="preco">R$ 89,90</div>
+            <div class="custo-diario">Menos de R$ 1,00 por dia</div>
+            <div class="beneficios-plano">
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Acesso Total por <strong>90 dias</strong></p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> +2.710 Questões Atualizadas</p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span><strong> Foco Total na Metodologia FAA</strong></p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Economia Real de 15%</p>
+            </div>
+            <a href="cadastro.html?plano=90" class="btn-assinar">Assinar Agora</a>
+        </div>
+
+        <div class="card-plano card-destaque">
+            <div class="selo-destaque">Recomendado</div>
+            <div class="nome-plano">Semestral</div>
+            <div class="preco">R$ 159,90</div>
+            <div class="custo-diario">Menos de R$ 0,89 por dia</div>
+            <div class="beneficios-plano">
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Acesso Total por <strong>180 dias</strong></p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> +2.710 Questões Atualizadas</p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span><strong> Treinamento de Performance Detalhado</strong></p>
+               
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Economia Real de 25%</p>
+            </div>
+            <a href="cadastro.html?plano=180" class="btn-assinar">Assinar Agora</a>
+        </div>
+
+        <div class="card-plano">
+            <div class="nome-plano">Anual</div>
+            <div class="preco">R$ 249,90</div>
+            <div class="custo-diario">Menos de R$ 0,69 por dia</div>
+            <div class="beneficios-plano">
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Acesso Total por <strong>365 dias</strong></p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> +2.710 Questões Atualizadas</p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span><strong> Melhor Custo-Benefício</strong></p>
+
+<p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Desconto de 40% OFF</p>
+            </div>
+            <a href="cadastro.html?plano=365" class="btn-assinar">Assinar Agora</a>
+        </div>
+    </div>
+
+    <div class="recursos-gerais">
+        <h2>Recursos inclusos em todos os planos</h2>
+        <div class="grid-recursos">
+            <div class="item-recurso">
+                <span class="recurso-icon">✈️</span>
+                <div class="recurso-info">
+                    <h4>Banco de Dados Completo</h4>
+                    <p>+2.710 questões FAA rigorosamente atualizadas (General, Airframe e Powerplant).</p>
+                </div>
+            </div>
+            <div class="item-recurso">
+                <span class="recurso-icon">⏱️</span>
+                <div class="recurso-info">
+                    <h4>Modo Prova e Simulado</h4>
+                    <p>Treine com tempo real e interface idêntica à banca oficial.</p>
+                </div>
+            </div>
+            <div class="item-recurso">
+                <span class="recurso-icon">📊</span>
+                <div class="recurso-info">
+                    <h4>Gráficos de Proficiência</h4>
+                    <p>Acompanhe sua evolução por matéria e por capítulos específicos.</p>
+                </div>
+            </div>
+            <div class="item-recurso">
+                <span class="recurso-icon">🚩</span>
+                <div class="recurso-info">
+                    <h4>Histórico e Favoritos</h4>
+                    <p>Marque questões críticas e revise seu histórico completo de tentativas.</p>
+                </div>
+            </div>
+            <div class="item-recurso">
+                <span class="recurso-icon">📜</span>
+                <div class="recurso-info">
+                    <h4>Emissão de Certificado</h4>
+                    <p>Gere certificados baseados nas suas métricas reais de estudo.</p>
+                </div>
+            </div>
+            <div class="item-recurso">
+                <span class="recurso-icon">🛡️</span>
+                <div class="recurso-info">
+                    <h4>Segurança Passkey</h4>
+                    <p>Acesso protegido por biometria e tecnologia de segurança bancária.</p>
+                </div>
+            </div>
+        </div>
+        <p style="text-align: center; margin-top: 30px; font-size: 13px; color: var(--verde-sucesso); font-weight: bold;">✓ Liberação imediata após confirmação do pagamento</p>
+    </div>
+
+</body>
+</html>
