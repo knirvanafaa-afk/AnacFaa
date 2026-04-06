@@ -33,7 +33,7 @@
 <div class="container">
     <h2>Nova Matrícula (Trainee)</h2>
     <div class="section-interna">
-       
+  
  <label>Nome Completo</label>
         <input type="text" id="cad-nome" placeholder="Nome do Técnico">
 
@@ -45,6 +45,8 @@
 
         <label>Senha de Acesso</label>
         <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres">
+
+<input type="hidden" id="plano-selecionado">
 
         <button class="btn-principal" onclick="cadastrarUsuario()">Solicitar Acesso</button>
     </div>
@@ -91,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // C. Regra matemática de validação
-function validarCPF(cpf) {
+window.validarCPF = (cpf) => {
     cpf = cpf.replace(/[^\d]+/g, '');
     if (cpf.length !== 11 || !!cpf.match(/(\d)\1{10}/)) return false;
     let soma = 0, resto;
