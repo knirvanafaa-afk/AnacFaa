@@ -181,7 +181,7 @@ export async function registrarDispositivo(userId) {
         displayName: "Seu Dispositivo SKY"
       },
       pubKeyCredParams: [{ alg: -7, type: "public-key" }], // Algoritmo ES256
-      authenticatorSelection: { userVerification: "required" },
+      authenticatorSelection: { authenticatorAttachment: "platform", userVerification: "required" },
       timeout: 60000
     };
 
