@@ -41,6 +41,11 @@
        <button class="btn-principal" onclick="realizarLogin()">Entrar no Sistema</button>
     </div>
     <div class="link-alternativo">Novinho na área? <span onclick="window.location.href='planos.html'">Criar Conta de Trainee</span></div>
+
+<div class="link-alternativo" style="margin-top: 10px;">
+    Esqueceu sua Senha? <span onclick="recuperarSenha()">Recuperar Senha</span>
+</div>
+
 </div>
 
 <script type="module">
@@ -100,6 +105,30 @@
 
     } catch (e) {
         mostrarMensagem("Erro de Acesso: " + e.message);
+    }
+};
+
+window.recuperarSenha = async () => {
+    // Usamos o prompt para capturar o e-mail de forma rápida
+    const email = prompt("Digite seu e-mail cadastrado para receber o link de recuperação:");
+    
+    if (!email) return;
+
+    // Regra simples de validação de e-mail antes de enviar
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        return mostrarMensagem("Por favor, digite um e-mail válido.");
+    }
+
+    // Função nativa do Supabase para enviar o link de reset
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/nova-senha.html',
+    });
+
+    if (error) {
+        mostrarMensagem("Erro ao enviar: " + error.message);
+    } else {
+        mostrarMensagem("E-mail de recuperação enviado! Verifique sua caixa de entrada e o spam.");
     }
 };
 

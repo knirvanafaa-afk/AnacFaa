@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLA - Nova Senha</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --verde-sucesso: #2ecc71; --verde-escuro: #1b5e20; --verde-claro-fundo: #fafffa; --cinza-fundo: #f0f2f5; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--cinza-fundo); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .logo-texto { font-family: 'Orbitron', sans-serif; font-size: 28px; color: var(--verde-escuro); margin-bottom: 20px; letter-spacing: 2px; }
+        .container { width: 100%; max-width: 450px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; }
+        .section-interna { border: 2px solid var(--verde-sucesso); padding: 25px; border-radius: 15px; background-color: var(--verde-claro-fundo); }
+        h2 { text-align: center; color: #333; margin-bottom: 20px; text-transform: uppercase; font-size: 18px; }
+        label { display: block; margin-top: 15px; font-weight: bold; color: #444; font-size: 13px; }
+        input { width: 100%; padding: 12px; margin-top: 5px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; background: white; }
+        button { width: 100%; padding: 16px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; margin-top: 20px; }
+        .btn-principal { background-color: var(--verde-escuro); color: white; }
+        .obrigatorio { color: red; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div id="custom-alert" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <p id="alert-message" style="color: #333; font-weight: bold; font-size: 18px; margin-bottom: 20px;"></p>
+        <button onclick="fecharAlerta()" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase;">OK</button>
+    </div>
+</div>
+
+<div class="logo-texto">SKYLicense ACADEMY</div>
+<div class="container">
+    <h2>Redefinir Senha</h2>
+    <div class="section-interna">
+        <label>Nova Senha<span class="obrigatorio">*</span></label>
+        <div style="position: relative;">
+            <input type="password" id="nova-senha" placeholder="Mínimo 6 caracteres" style="padding-right: 40px;">
+            <span onclick="toggleVerSenha('nova-senha')" style="position: absolute; right: 10px; top: 15px; cursor: pointer;">👁️</span>
+        </div>
+
+        <label>Confirme a Nova Senha<span class="obrigatorio">*</span></label>
+        <div style="position: relative;">
+            <input type="password" id="nova-senha-confirma" placeholder="Repita a nova senha" style="padding-right: 40px;">
+            <span onclick="toggleVerSenha('nova-senha-confirma')" style="position: absolute; right: 10px; top: 15px; cursor: pointer;">👁️</span>
+        </div>
+
+        <button class="btn-principal" onclick="atualizarSenha()">Atualizar Senha de Acesso</button>
+    </div>
+</div>
+
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
+
+    window.fecharAlerta = () => document.getElementById('custom-alert').style.display = 'none';
+    
+    window.mostrarMensagem = (msg) => {
+        document.getElementById('alert-message').innerText = msg;
+        document.getElementById('custom-alert').style.display = 'flex';
+    };
+
+    window.toggleVerSenha = (id) => {
+        const input = document.getElementById(id);
+        input.type = input.type === "password" ? "text" : "password";
+    };
+
+    window.atualizarSenha = async () => {
+        const senha = document.getElementById('nova-senha').value;
+        const confirma = document.getElementById('nova-senha-confirma').value;
+
+        if (!senha || senha.length < 6) {
+            return mostrarMensagem("A senha deve ter pelo menos 6 caracteres.");
+        }
+
+        if (senha !== confirma) {
+            return mostrarMensagem("As senhas não coincidem.");
+        }
+
+        try {
+            // O Supabase usa o token que está na URL automaticamente para autorizar esta troca
+            const { error } = await supabase.auth.updateUser({
+                password: senha
+            });
+
+            if (error) throw error;
+
+            mostrarMensagem("Senha atualizada com sucesso! Você será redirecionado para o login.");
+            
+            // Pequeno delay para o usuário ler a mensagem antes de voltar ao login
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 3000);
+
+        } catch (e) {
+            mostrarMensagem("Erro ao atualizar: " + e.message);
+        }
+    };
+</script>
+</body>
+</html>
