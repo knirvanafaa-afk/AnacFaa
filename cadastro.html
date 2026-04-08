@@ -74,7 +74,16 @@
         <input type="email" id="cad-email" placeholder="seu@email.com">
 
         <label>Senha de Acesso<span class="obrigatorio">*</span></label>
-        <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres">
+<div style="position: relative;">
+    <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" style="padding-right: 40px;">
+    <span id="toggle-senha" onclick="toggleVerSenha('cad-senha')" style="position: absolute; right: 10px; top: 15px; cursor: pointer;">👁️</span>
+</div>
+
+<label>Confirme sua Senha<span class="obrigatorio">*</span></label>
+<div style="position: relative;">
+    <input type="password" id="cad-senha-confirma" placeholder="Repita sua senha" style="padding-right: 40px;">
+    <span id="toggle-senha-confirma" onclick="toggleVerSenha('cad-senha-confirma')" style="position: absolute; right: 10px; top: 15px; cursor: pointer;">👁️</span>
+</div>
 
 <input type="hidden" id="plano-selecionado">
 
@@ -152,6 +161,22 @@ window.validarCPF = (cpf) => {
     const senha = document.getElementById('cad-senha').value;
     const cpf = document.getElementById('cad-cpf').value;
     const plano = document.getElementById('plano-selecionado').value;
+
+window.toggleVerSenha = (id) => {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+};
+
+window.cadastrarUsuario = async () => {
+    const senha = document.getElementById('cad-senha').value;
+    const senhaConfirma = document.getElementById('cad-senha-confirma').value;
+
+    // Trava de segurança: Senhas diferentes
+    if (senha !== senhaConfirma) {
+        return mostrarMensagem("As senhas não coincidem. Verifique a digitação.");
+    }
+    
+    // ... restante das suas validações (nome, CPF, etc)
 
     // 2. Validações Específicas com Alertas Personalizados
     if (!nome) {
