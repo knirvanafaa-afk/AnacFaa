@@ -115,6 +115,12 @@
         document.getElementById('custom-alert').style.display = 'flex';
     };
 
+window.toggleVerSenha = (id) => {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+};
+
+
 // A. Captura automática do plano ao carregar a página
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -159,17 +165,9 @@ window.validarCPF = (cpf) => {
     const nome = document.getElementById('cad-nome').value.trim();
     const email = document.getElementById('cad-email').value.trim();
     const senha = document.getElementById('cad-senha').value;
+const senhaConfirma = document.getElementById('cad-senha-confirma').value;
     const cpf = document.getElementById('cad-cpf').value;
     const plano = document.getElementById('plano-selecionado').value;
-
-window.toggleVerSenha = (id) => {
-    const input = document.getElementById(id);
-    input.type = input.type === "password" ? "text" : "password";
-};
-
-window.cadastrarUsuario = async () => {
-    const senha = document.getElementById('cad-senha').value;
-    const senhaConfirma = document.getElementById('cad-senha-confirma').value;
 
     // Trava de segurança: Senhas diferentes
     if (senha !== senhaConfirma) {
