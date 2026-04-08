@@ -58,6 +58,29 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   margin-top: 5px;
 }
 
+/* Estilo para o Alerta de Pagamento */
+.alerta-pagamento {
+    border: 2px solid #e74c3c;
+    background-color: #fdf2f2;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    text-align: center;
+    display: none; /* Inicia escondido e aparece via JS */
+}
+.alerta-pagamento b { color: #c0392b; display: block; margin-bottom: 10px; text-transform: uppercase; }
+.btn-pagar {
+    background-color: #f1c40f;
+    color: #000;
+    padding: 12px 20px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+    margin-top: 10px;
+    border: 2px solid #d4ac0d;
+}
+
     </style>
 </head>
 <body>
@@ -71,6 +94,12 @@ box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 
 <div class="container">
     <h2>Ativação de Conta</h2>
+
+<div id="area-pagamento" class="alerta-pagamento">
+    <b>⚠️ Pagamento Pendente</b>
+    <p style="font-size: 14px; margin: 5px 0;">Sua matrícula foi registrada! Finalize o pagamento via PIX para liberar seu acesso total após a ativação.</p>
+    <a id="link-pix" href="#" target="_blank" class="btn-pagar">💳 ABRIR PAGAMENTO PIX / QR CODE</a>
+</div>
 
     <div id="passo1" class="passo ativo">
         <div class="section-box">
@@ -170,8 +199,22 @@ Encerramento do acesso</p>
     window.fecharAlerta = () => { document.getElementById('custom-alert').style.display = 'none'; };
 
     async function garantirSessao() {
-        const { data } = await supabase.auth.getSession();
-        if (!data.session) {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+            // Busca o link de pagamento que o Edge Function gravou no banco
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('invoice_url')
+                .eq('id', session.user.id)
+                .single();
+
+            // Se o link existir, mostra a área vermelha com o botão
+            if (profile && profile.invoice_url) {
+                document.getElementById('area-pagamento').style.display = 'block';
+                document.getElementById('link-pix').href = profile.invoice_url;
+            }
+        } else {
             await supabase.auth.refreshSession();
         }
     }
