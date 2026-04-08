@@ -211,6 +211,17 @@ const senhaConfirma = document.getElementById('cad-senha-confirma').value;
         return mostrarMensagem("Selecione um plano na página anterior.");
     }
 
+// SENSOR: Verifica se o e-mail já existe na base antes de tentar o cadastro
+    const { data: usuarioExistente } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+    if (usuarioExistente) {
+        return mostrarMensagem("Este e-mail já está cadastrado. Tente recuperar sua senha.");
+    }
+
     // 3. Execução do Cadastro no Supabase
     try {
         const { data, error } = await supabase.auth.signUp({
