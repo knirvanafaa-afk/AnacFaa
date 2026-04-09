@@ -115,13 +115,6 @@ if (profile.status_acesso === 'expirado' || (dataExpiracao && dataExpiracao < ho
     return;
 }
 
-// 3. Se estiver tudo OK, segue o fluxo normal que você já tem
-if (factors && factors.totp && factors.totp.length > 0) {
-    window.location.href = 'verificar-mfa.html';
-} else {
-    window.location.href ='ativar-acesso.html';
-}
-
         // Se o login passou, verifica MFA
         const { data: factors } = await supabase.auth.mfa.listFactors();
 
