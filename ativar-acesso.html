@@ -198,6 +198,25 @@ Encerramento do acesso</p>
     };
     window.fecharAlerta = () => { document.getElementById('custom-alert').style.display = 'none'; };
 
+// 👉 COLOQUE AQUI
+function traduzirErro(erro) {
+const msg = erro.message || "";
+
+if (msg.includes("already exists")) {
+return "Usuário já cadastrado com MFA ativo.";
+}
+
+if (
+msg.includes("UUID") ||
+msg.includes("invalid") ||
+msg.includes("factor")
+) {
+return "Código hexadecimal inválido.";
+}
+
+return "Erro inesperado. Tente novamente.";
+}
+
     async function garantirSessao() {
         const { data: { session } } = await supabase.auth.getSession();
         
@@ -269,7 +288,7 @@ Encerramento do acesso</p>
             qrContainer.appendChild(secretKey);
 
         } catch (e) {
-            window.mostrarMensagem("Erro ao gerar segurança: " + e.message);
+window.mostrarMensagem(traduzirErro(e));
         }
     }
 
@@ -301,10 +320,10 @@ Encerramento do acesso</p>
             window.mostrarMensagem("Acesso ativado com sucesso!");
             setTimeout(() => { window.location.href = 'index.html'; }, 2000);
         } catch (e) {
-           
- window.mostrarMensagem("Código inválido ou erro: " + e.message);
+window.mostrarMensagem(traduzirErro(e));
         }
     };
+
 </script>
 </body>
 </html>
