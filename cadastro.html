@@ -74,7 +74,16 @@
         <input type="email" id="cad-email" placeholder="seu@email.com">
 
         <label>Senha de Acesso<span class="obrigatorio">*</span></label>
-        <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres">
+<div style="position: relative;">
+    <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" style="padding-right: 40px;">
+    <span id="toggle-senha" onclick="toggleVerSenha('cad-senha')" style="position: absolute; right: 10px; top: 15px; cursor: pointer;">👁️</span>
+</div>
+
+<label>Confirme sua Senha<span class="obrigatorio">*</span></label>
+<div style="position: relative;">
+    <input type="password" id="cad-senha-confirma" placeholder="Repita sua senha" style="padding-right: 40px;">
+    <span id="toggle-senha-confirma" onclick="toggleVerSenha('cad-senha-confirma')" style="position: absolute; right: 10px; top: 15px; cursor: pointer;">👁️</span>
+</div>
 
 <input type="hidden" id="plano-selecionado">
 
@@ -105,6 +114,12 @@
         document.getElementById('alert-message').innerText = msg;
         document.getElementById('custom-alert').style.display = 'flex';
     };
+
+window.toggleVerSenha = (id) => {
+    const input = document.getElementById(id);
+    input.type = input.type === "password" ? "text" : "password";
+};
+
 
 // A. Captura automática do plano ao carregar a página
 window.addEventListener('DOMContentLoaded', () => {
@@ -150,8 +165,16 @@ window.validarCPF = (cpf) => {
     const nome = document.getElementById('cad-nome').value.trim();
     const email = document.getElementById('cad-email').value.trim();
     const senha = document.getElementById('cad-senha').value;
+const senhaConfirma = document.getElementById('cad-senha-confirma').value;
     const cpf = document.getElementById('cad-cpf').value;
     const plano = document.getElementById('plano-selecionado').value;
+
+    // Trava de segurança: Senhas diferentes
+    if (senha !== senhaConfirma) {
+        return mostrarMensagem("As senhas não coincidem. Verifique a digitação.");
+    }
+    
+    // ... restante das suas validações (nome, CPF, etc)
 
     // 2. Validações Específicas com Alertas Personalizados
     if (!nome) {
@@ -186,6 +209,17 @@ window.validarCPF = (cpf) => {
 
     if (!plano) {
         return mostrarMensagem("Selecione um plano na página anterior.");
+    }
+
+// SENSOR: Verifica se o e-mail já existe na base antes de tentar o cadastro
+    const { data: usuarioExistente } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+    if (usuarioExistente) {
+        return mostrarMensagem("Este e-mail já está cadastrado. Tente recuperar sua senha.");
     }
 
     // 3. Execução do Cadastro no Supabase
