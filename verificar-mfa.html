@@ -133,7 +133,7 @@ document.getElementById('codigo-mfa').value = '';
         if (ehAdmin) {
             window.location.href = 'painel.html';
         } else if (ehAtivo && !estaExpirado) {
-            window.location.href = 'alunos.html';
+            window.location.href = 'dashboard.html';
         } else {
             // Lógica de Mensagens Específicas
             if (profile.status_acesso === 'pendente') {
