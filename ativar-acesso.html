@@ -299,9 +299,10 @@ Encerramento do acesso</p>
 
             if (confError) throw confError;
             window.mostrarMensagem("Acesso ativado com sucesso!");
-            setTimeout(() => { window.location.href = 'alunos.html'; }, 2000);
+            setTimeout(() => { window.location.href = 'verificar-mfa.html'; }, 2000);
         } catch (e) {
-            window.mostrarMensagem("Código inválido ou erro: " + e.message);
+           
+ window.mostrarMensagem("Código inválido ou erro: " + e.message);
         }
     };
 </script>
