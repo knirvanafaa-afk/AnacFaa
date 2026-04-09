@@ -83,7 +83,7 @@
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span><strong> Ideal para revisões e estudos dinâmicos</strong></p>
 
             </div>
-            <a href="#" onclick="verificarFluxo('30D')" class="btn-assinar">Assinar Agora</a>
+       <a href="cadastro.html?plano=30D" class="btn-assinar">Assinar Agora</a>
 </div>
 
         <div class="card-plano">
@@ -100,7 +100,7 @@
 
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Economia Real de 15%</p>
             </div>
-          <a href="#" onclick="verificarFluxo('90D')" class="btn-assinar">Assinar Agora</a>
+          <a href="cadastro.html?plano=90D" class="btn-assinar">Assinar Agora</a>
 </div>
 
         <div class="card-plano card-destaque">
@@ -118,7 +118,7 @@
                
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Economia Real de 25%</p>
             </div>
-           <a href="#" onclick="verificarFluxo('180D')" class="btn-assinar">Assinar Agora</a>
+           <a href="cadastro.html?plano=180D" class="btn-assinar">Assinar Agora</a>
 </div>
 
         <div class="card-plano">
@@ -135,7 +135,7 @@
 
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Desconto de 40% OFF</p>
             </div>
-          <a href="#" onclick="verificarFluxo('365D')" class="btn-assinar">Assinar Agora</a>
+          <a href="cadastro.html?plano=365D" class="btn-assinar">Assinar Agora</a>
 </div>
     </div>
 
@@ -187,32 +187,6 @@
         </div>
         <p style="text-align: center; margin-top: 30px; font-size: 13px; color: var(--verde-sucesso); font-weight: bold;">✓ Liberação imediata após confirmação do pagamento</p>
     </div>
-
-<script type="module">
-    // Importa o cliente que você já usa no resto do sistema
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    window.verificarFluxo = async (idPlano) => {
-        // 1. Salva o plano no sessionStorage para o ativacao-acesso.html ler depois
-        sessionStorage.setItem('plano_escolhido', idPlano);
-
-        // 2. Tenta pegar a sessão ativa
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session) {
-            // VETERANO: Já está logado, vai direto pagar
-            window.location.href = 'ativar-acesso.html';
-        } else {
-            // NOVATO: Não está logado, manda para o cadastro com o parâmetro que ele já espera
-            window.location.href = `cadastro.html?plano=${idPlano}`;
-        }
-    };
-
-</script>
 
 </body>
 </html>
