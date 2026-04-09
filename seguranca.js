@@ -70,7 +70,7 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
     window.mostrarMensagem(mensagemErro);
 
     setTimeout(() => {
-        window.location.href = 'index.html';
+        window.location.href = 'planos.html';
     }, 3000);
 }
 
