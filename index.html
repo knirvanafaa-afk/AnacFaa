@@ -52,8 +52,6 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
     const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-import { validarAcessoTotal } from './Segurança.js';
-
     window.fecharAlerta = () => document.getElementById('custom-alert').style.display = 'none';
     
     window.mostrarMensagem = (msg) => {
@@ -95,8 +93,6 @@ import { validarAcessoTotal } from './Segurança.js';
             }
             return;
         }
-
-await validarAcessoTotal();
 
         // Se o login passou, verifica MFA
         const { data: factors } = await supabase.auth.mfa.listFactors();
