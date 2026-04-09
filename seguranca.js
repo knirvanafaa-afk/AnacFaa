@@ -6,6 +6,17 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+function getDeviceId() {
+  let deviceId = localStorage.getItem("device_id");
+
+  if (!deviceId) {
+    deviceId = crypto.randomUUID();
+    localStorage.setItem("device_id", deviceId);
+  }
+
+  return deviceId;
+}
+
 export async function validarAcessoTotal(ehPaginaAdmin) {
 
     // 1. IDENTIDADE
@@ -66,8 +77,7 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
     let mensagemErro = (profile.status_acesso === 'pendente')
         ? "Efetue o Pagamento para ter acesso ao conteúdo."
         : "Por favor, revalide ou renove sua assinatura para continuar com acesso.";
-
-    window.mostrarMensagem(mensagemErro);
+ window.mostrarMensagem(mensagemErro);
 
     setTimeout(() => {
         window.location.href = 'planos.html';
@@ -77,6 +87,7 @@ export async function validarAcessoTotal(ehPaginaAdmin) {
 // Função para capturar IP e Cidade (Gratuita via ipapi.co)
 
 export async function analisarSeguranca(userId) {
+const deviceId = getDeviceId();
   let loc = { ip: '0.0.0.0', city: 'Desconhecida', region: 'N/A', country: 'BR' };
 
   // A. Captura de Localização (Invisível com Fallback)
@@ -138,11 +149,39 @@ export async function analisarSeguranca(userId) {
   // B. Gravação do Log no Supabase (O que gravou no laboratório)
   await supabase.from('access_logs').insert([{
     user_id: userId,
+    device_id: deviceId,
     ip_address: loc.ip,
     city: loc.city,
     region: loc.region,
     country: loc.country
   }]);
+
+try {
+  const tresHorasAtras = new Date(Date.now() - 3 * 60 * 60 * 1000).toISOString();
+
+  const { data: logs } = await supabase
+    .from('access_logs')
+    .select('device_id')
+    .eq('user_id', userId)
+    .gte('created_at', tresHorasAtras);
+
+  const dispositivosUnicos = [...new Set((logs || []).map(l => l.device_id))];
+
+  if (dispositivosUnicos.length > 3) {
+    await supabase.from('security_alerts').insert([{
+      user_id: userId,
+      type: 'Muitos dispositivos ativos',
+      details: {
+        quantidade: dispositivosUnicos.length,
+        mensagem: "Usuário acessando de múltiplos dispositivos em curto período"
+      }
+    }]);
+
+    console.warn("⚠️ Muitos dispositivos detectados");
+  }
+} catch (err) {
+  console.error("Erro ao verificar dispositivos:", err);
+}
 
   // C. Sua função original de Checar quantidade de dispositivos
   try {
