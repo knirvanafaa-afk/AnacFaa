@@ -94,27 +94,6 @@
             return;
         }
 
-// ... dentro do realizarLogin, após o login ter dado sucesso ...
-
-// 1. Pegamos os dados do perfil do aluno no banco
-const { data: profile } = await supabase
-    .from('profiles')
-    .select('status_acesso, expira_em')
-    .eq('id', data.user.id)
-    .single();
-
-const hoje = new Date();
-const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
-
-// 2. VERIFICAÇÃO: Se estiver expirado ou sem plano ativo
-if (profile.status_acesso === 'expirado' || (dataExpiracao && dataExpiracao < hoje)) {
-    mostrarMensagem("Seu período de acesso ao SKYLicense expirou. Vamos renovar?");
-    setTimeout(() => {
-        window.location.href = 'planos.html'; // Manda para escolher um novo plano
-    }, 3000);
-    return;
-}
-
         // Se o login passou, verifica MFA
         const { data: factors } = await supabase.auth.mfa.listFactors();
 
