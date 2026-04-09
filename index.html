@@ -94,6 +94,30 @@
             return;
         }
 
+
+// Busca o status real no banco
+if (data.user) {
+const { data: profile } = await supabase
+      .from('profiles')
+      .select('status_acesso, expira_em')
+      .eq('id', data.user.id)
+      .single();
+
+const vencido = profile.expira_em && new Date(profile.expira_em) < new Date();
+
+if (vencido || profile.status_acesso === 'pendente') {
+
+mostrarMensagem("Sua assinatura precisa de renovação. Redirecionando...");
+
+setTimeout(() => { window.location.href = 'planos.html'; }, 2000);
+
+return; // Para o fluxo aqui! Não deixa ir para o MFA.
+          }
+}
+
+
+
+
         // Se o login passou, verifica MFA
         const { data: factors } = await supabase.auth.mfa.listFactors();
 
