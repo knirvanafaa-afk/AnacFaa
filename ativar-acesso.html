@@ -341,7 +341,7 @@ window.mostrarMensagem(traduzirErro(e));
 async function gerarNovaCobranca(userId, plano) {
     try {
         // Faz a chamada para a sua Edge Function do Supabase
-        const { data, error } = await supabase.functions.invoke('criar-cobranca-asaas', {
+        const { data, error } = await supabase.functions.invoke('asaas', {
             body: { id: userId, plano_ativo: plano }
         });
 
