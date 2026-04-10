@@ -4,8 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ativar Acesso - SKYLicense</title>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+   
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
@@ -217,27 +216,42 @@ return "Código hexadecimal inválido.";
 return "Erro inesperado. Tente novamente.";
 }
 
-    async function garantirSessao() {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
-            // Busca o link de pagamento que o Edge Function gravou no banco
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('invoice_url')
-                .eq('id', session.user.id)
-                .single();
-
-            // Se o link existir, mostra a área vermelha com o botão
-            if (profile && profile.invoice_url) {
-                document.getElementById('area-pagamento').style.display = 'block';
-                document.getElementById('link-pix').href = profile.invoice_url;
-            }
-        } else {
-            await supabase.auth.refreshSession();
-        }
+    // Lógica unificada para evitar conflitos
+async function gerenciarAcessoEPagamento() {
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    // Se não tiver usuário, tenta dar refresh ou volta pro login
+    if (!user) {
+        await supabase.auth.refreshSession();
+        return;
     }
-    garantirSessao();
+
+    const forcarNovo = sessionStorage.getItem('solicitou_novo_pagamento');
+    const planoNoCache = sessionStorage.getItem('plano_escolhido');
+
+    // Busca o perfil atualizado
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('invoice_url')
+        .eq('id', user.id)
+        .single();
+
+    // DECISÃO: Gerar novo ou mostrar existente?
+    if (forcarNovo === 'true' || !profile?.invoice_url) {
+        sessionStorage.removeItem('solicitou_novo_pagamento'); 
+        
+        // Chame aqui a sua função que faz o FETCH para a Edge Function
+        // Certifique-se que o nome da função que envia pro Asaas seja este:
+        await gerarNovaCobranca(user.id, planoNoCache); 
+    } else if (profile?.invoice_url) {
+        // Se já tem link e não forçou novo, mostra a div do PIX
+        document.getElementById('area-pagamento').style.display = 'block';
+        document.getElementById('link-pix').href = profile.invoice_url;
+    }
+}
+
+// Executa ao carregar
+gerenciarAcessoEPagamento();
 
     // 4. LÓGICA DE SEGURANÇA (MFA)
     async function gerarMFA() {
@@ -324,6 +338,27 @@ window.mostrarMensagem(traduzirErro(e));
         }
     };
 
+async function gerarNovaCobranca(userId, plano) {
+    try {
+        // Faz a chamada para a sua Edge Function do Supabase
+        const { data, error } = await supabase.functions.invoke('criar-cobranca-asaas', {
+            body: { id: userId, plano_ativo: plano }
+        });
+
+        if (error) throw error;
+
+        // Se a função retornar o link, atualiza a tela
+        if (data && data.invoice_url) {
+            document.getElementById('area-pagamento').style.display = 'block';
+            document.getElementById('link-pix').href = data.invoice_url;
+        }
+    } catch (err) {
+        console.error("Erro ao gerar cobrança:", err);
+        window.mostrarMensagem("Erro ao gerar boleto Pix. Tente novamente.");
+    }
+}
+
 </script>
+
 </body>
 </html>
