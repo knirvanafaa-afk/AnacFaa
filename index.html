@@ -52,28 +52,6 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
     const supabase = createClient('https://ymyxikhlhkkvcufgwufe.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA');
 
-// 1. Salva o plano no sessionStorage para o ativacao-acesso.html ler depois
-
-window.verificarFluxo = async (idPlano) => {
-sessionStorage.setItem('plano_escolhido', idPlano);
-
-// 2. Tenta pegar a sessão ativa
-
-const { data: { session } } = await supabase.auth.getSession();
-if (session) {
-
-// VETERANO: Já está logado, vai direto pagar
-
-window.location.href = 'ativar-acesso.html';
-
-} else {
-
-// NOVATO: Não está logado, manda para o cadastro com o parâmetro que ele já espera
-
-window.location.href = `cadastro.html?plano=${idPlano}`;
-          }
-};
-
     window.fecharAlerta = () => document.getElementById('custom-alert').style.display = 'none';
     
     window.mostrarMensagem = (msg) => {
