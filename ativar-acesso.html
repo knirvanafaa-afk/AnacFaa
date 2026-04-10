@@ -217,6 +217,7 @@ return "Erro inesperado. Tente novamente.";
 }
 
     // Lógica unificada para evitar conflitos
+
 async function gerenciarAcessoEPagamento() {
     const { data: { user } } = await supabase.auth.getUser();
     
@@ -227,7 +228,14 @@ async function gerenciarAcessoEPagamento() {
     }
 
     const forcarNovo = sessionStorage.getItem('solicitou_novo_pagamento');
-    const planoNoCache = sessionStorage.getItem('plano_escolhido');
+        const planoNoCache = sessionStorage.getItem('plano_escolhido'); // Certifique-se que o nome é este
+
+    // Se o perfil não tem invoice_url OU se o veterano forçou um novo plano
+    if (forcarNovo === 'true' || !profile?.invoice_url) {
+        sessionStorage.removeItem('solicitou_novo_pagamento'); 
+        // Passamos o planoNoCache diretamente
+        await gerarNovaCobranca(user.id, planoNoCache); 
+    }
 
     // Busca o perfil atualizado
     const { data: profile } = await supabase
@@ -254,43 +262,43 @@ async function gerenciarAcessoEPagamento() {
 gerenciarAcessoEPagamento();
 
     // 4. LÓGICA DE SEGURANÇA (MFA)
-    async function gerarMFA() {
+
+        async function gerarMFA() {
         try {
+            // LIMPEZA DE MFA PENDENTE (Resolve o BUG 2 - "Already Exists")
+            const { data: factors } = await supabase.auth.mfa.listFactors();
+            if (factors && factors.totp) {
+                for (const f of factors.totp) {
+                    if (f.status === 'unverified') {
+                        await supabase.auth.mfa.unenroll({ factorId: f.id });
+                    }
+                }
+            }
+
             const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
             if (error) throw error;
 
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
-            qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
+            qrContainer.innerHTML = ""; 
 
-            // Gerar QR Code
-            try {
-                const url = await QRCode.toDataURL(data.totp.uri, { 
-                    width: 250, 
-                    errorCorrectionLevel: 'L'
-                });
-                
-                const img = document.createElement('img');
-                img.src = url;
-                img.style.width = "100%";
-                img.style.maxWidth = "250px";
-                qrContainer.appendChild(img);
-            } catch (err) {
-                const erroMsg = document.createElement('p');
-                erroMsg.innerText = "QR Code indisponível.";
-                qrContainer.appendChild(erroMsg);
+            // GARANTIA DO QR CODE (Resolve o BUG 1)
+            if (typeof QRCode !== 'undefined') {
+                const canvas = document.createElement('canvas');
+                await QRCode.toCanvas(canvas, data.totp.uri, { width: 250 });
+                qrContainer.appendChild(canvas);
+            } else {
+                qrContainer.innerText = "Erro: Biblioteca QR não carregada.";
             }
 
-            // Botão para mostrar chave manual (Segurança)
+            // Manter código da chave manual abaixo...
             const btnToggle = document.createElement('button');
             btnToggle.innerText = "Mostrar chave manual";
             btnToggle.style.marginTop = "10px";
-            btnToggle.style.padding = "8px";
-            btnToggle.style.cursor = "pointer";
             
             const secretKey = document.createElement('p');
             secretKey.className = 'chave-manual';
-            secretKey.style.display = "none"; // Oculto por padrão
+            secretKey.style.display = "none";
             secretKey.innerText = "Chave: " + data.totp.secret;
 
             btnToggle.onclick = () => {
@@ -298,11 +306,11 @@ gerenciarAcessoEPagamento();
                 btnToggle.style.display = "none";
             };
 
-            qrContainer.appendChild(btnToggle);
+qrContainer.appendChild(btnToggle);
             qrContainer.appendChild(secretKey);
 
         } catch (e) {
-window.mostrarMensagem(traduzirErro(e));
+            window.mostrarMensagem(traduzirErro(e));
         }
     }
 
@@ -338,25 +346,29 @@ window.mostrarMensagem(traduzirErro(e));
         }
     };
 
-async function gerarNovaCobranca(userId, plano) {
-    try {
-        // Faz a chamada para a sua Edge Function do Supabase
-        const { data, error } = await supabase.functions.invoke('asaas', {
-            body: { id: userId, plano_ativo: plano }
-        });
-
-        if (error) throw error;
-
-        // Se a função retornar o link, atualiza a tela
-        if (data && data.invoice_url) {
-            document.getElementById('area-pagamento').style.display = 'block';
-            document.getElementById('link-pix').href = data.invoice_url;
+    async function gerarNovaCobranca(userId, plano) {
+        // Se não houver plano no cache, avisa o usuário em vez de cobrar errado
+        if (!plano) {
+            window.mostrarMensagem("Plano não selecionado. Volte e escolha um plano.");
+            return;
         }
-    } catch (err) {
-        console.error("Erro ao gerar cobrança:", err);
-        window.mostrarMensagem("Erro ao gerar boleto Pix. Tente novamente.");
+
+        try {
+            const { data, error } = await supabase.functions.invoke('asaas', {
+                body: { id: userId, plano_ativo: plano }
+            });
+
+            if (error) throw error;
+
+            if (data && data.invoice_url) {
+                document.getElementById('area-pagamento').style.display = 'block';
+                document.getElementById('link-pix').href = data.invoice_url;
+            }
+        } catch (err) {
+            console.error("Erro técnico Asaas:", err);
+            window.mostrarMensagem("Erro ao gerar Pix. Verifique sua conexão ou tente novamente.");
+        }
     }
-}
 
 </script>
 
