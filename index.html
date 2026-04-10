@@ -107,9 +107,9 @@ const vencido = !profile.expira_em || new Date(profile.expira_em) < new Date();
 
 if (vencido || profile.status_acesso === 'pendente') {
 
-mostrarMensagem("Sua assinatura precisa de renovação. Redirecionando...");
+mostrarMensagem("Sua assinatura está vencida. Por favor renove seu Plano! Redirecionando...");
 
-setTimeout(() => { window.location.href = 'planos.html'; }, 3000);
+setTimeout(() => { window.location.href = 'planos.html'; }, 5000);
 
 return; // Para o fluxo aqui! Não deixa ir para o MFA.
           }
