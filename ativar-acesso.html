@@ -224,34 +224,41 @@ async function gerenciarAcessoEPagamento() {
     let plano = sessionStorage.getItem('plano_escolhido');
 
     if (user) {
-        // Busca o perfil (O antigo usava 'data', o novo usava 'profile'. Padronizei para o antigo funcionar)
+        // 1. Busca o perfil
         const { data, error } = await supabase
             .from('profiles')
             .select('*')
             .eq('id', user.id)
             .single();
 
-        // LOGICA DE RENOVAÇÃO: Se não tem plano no cache, pega o que já estava no perfil
+        // ERRO IDENTIFICADO: Se não existe dado no profile, manda para o cadastro
+        if (!data && !error) {
+            console.log("Usuário logado mas sem perfil. Redirecionando para cadastro...");
+            window.location.href = 'cadastro.html';
+            return;
+        }
+
+        // 2. Lógica de recuperação do plano (igual ao arquivo antigo)
         if (!plano && data?.plano_ativo) {
             plano = data.plano_ativo;
         }
 
-        // Se mesmo assim não tiver plano, agora sim interrompe
         if (!plano) {
-            console.error("Nenhum plano identificado para este usuário.");
+            console.error("Nenhum plano identificado.");
             return;
         }
 
-        // SE O USUÁRIO JÁ TEM INVOICE (Fluxo de e-mail / Retorno)
+        // 3. Exibição ou Geração da cobrança
         if (data?.invoice_url) {
             document.getElementById('area-pagamento').style.display = 'block';
             document.getElementById('link-pix').href = data.invoice_url;
-            // No antigo você não gerava QR Code aqui, apenas mostrava o botão. 
-            // Se quiser o QR Code automático, chame a função aqui.
         } else {
-            // SE É NOVO OU RENOVAÇÃO SEM INVOICE GERADA
+            // Se o cara existe mas não tem invoice_url, gera agora (Renovação)
             await gerarNovaCobranca(user.id, plano);
         }
+    } else {
+        // Se nem sessão tem, ele não deveria estar aqui
+        window.location.href = 'planos.html';
     }
 }
 
