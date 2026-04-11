@@ -208,8 +208,9 @@ const senhaConfirma = document.getElementById('cad-senha-confirma').value;
     }
 
     if (!plano) {
-        return mostrarMensagem("Por favor, selecione um plano antes de iniciar seu cadastro.")
+        mostrarMensagem("Por favor, selecione um plano antes de iniciar seu cadastro.");
 window.location.href = "planos.html";
+       return;
     }
 
 // SENSOR: Verifica se o e-mail já existe na base antes de tentar o cadastro
