@@ -241,7 +241,6 @@ window.selecionarPlano = async function(plano) {
             plano_ativo: plano,
             status_acesso: 'pendente',
             invoice_url: null
-            updated_at: new Date().toISOString()
         })
         .eq('id', session.user.id);
 
