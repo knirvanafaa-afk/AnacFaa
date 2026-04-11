@@ -83,7 +83,7 @@
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span><strong> Ideal para revisões e estudos dinâmicos</strong></p>
 
             </div>
-           <a href="cadastro.html?plano=30D" class="btn-assinar">Assinar Agora</a>
+           <button onclick="selecionarPlano('30D')">Assinar Agora</button>
 </div>
 
         <div class="card-plano">
@@ -100,7 +100,7 @@
 
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Economia Real de 15%</p>
             </div>
-            <a href="cadastro.html?plano=90D" class="btn-assinar">Assinar Agora</a>
+            <button onclick="selecionarPlano('90D')">Assinar Agora</button>
 </div>
 
         <div class="card-plano card-destaque">
@@ -118,7 +118,7 @@
                
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Economia Real de 25%</p>
             </div>
-            <a href="cadastro.html?plano=180D" class="btn-assinar">Assinar Agora</a>
+            <button onclick="selecionarPlano('180D')">Assinar Agora</button>
 </div>
 
         <div class="card-plano">
@@ -135,7 +135,7 @@
 
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Desconto de 40% OFF</p>
             </div>
-            <a href="cadastro.html?plano=365D" class="btn-assinar">Assinar Agora</a>
+            <button onclick="selecionarPlano('3650D')">Assinar Agora</button>
 </div>
 
     <div class="recursos-gerais">
@@ -186,6 +186,72 @@
         </div>
         <p style="text-align: center; margin-top: 30px; font-size: 13px; color: var(--verde-sucesso); font-weight: bold;">✓ Liberação imediata após confirmação do pagamento</p>
     </div>
+
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co'
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
+    const supabase = createClient(supabaseUrl, supabaseKey)
+
+const { data: { session } } = await supabase.auth.getSession();
+
+if (session) {
+    window.location.href = "planos.html";
+}
+
+
+async function selecionarPlano(plano) {
+
+    const { data: { session } } = await supabase.auth.getSession();
+
+    // =========================
+    // USUÁRIO NÃO LOGADO (NOVO)
+    // =========================
+    if (!session) {
+        window.location.href = `cadastro.html?plano=${plano}`;
+        return;
+    }
+
+    // =========================
+    // USUÁRIO LOGADO (VETERANO)
+    // =========================
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('expira_em')
+        .eq('id', session.user.id)
+        .single();
+
+    const agora = new Date();
+
+    if (profile && profile.expira_em) {
+        const expira = new Date(profile.expira_em);
+
+        // =========================
+        // BLOQUEIO: PLANO ATIVO
+        // =========================
+        if (expira > agora) {
+            alert("Você já possui um plano ativo.");
+            return;
+        }
+    }
+
+    // =========================
+    // RENOVAÇÃO (PLANO VENCIDO)
+    // =========================
+    await supabase
+        .from('profiles')
+        .update({
+            plano_ativo: plano,
+            status_acesso: 'pendente',
+            invoice_url: null
+        })
+        .eq('id', session.user.id);
+
+    // Redireciona direto pra ativação
+    window.location.href = "ativar-acesso.html";
+}
+
+</script>
 
 </body>
 </html>
