@@ -83,7 +83,7 @@
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span><strong> Ideal para revisões e estudos dinâmicos</strong></p>
 
             </div>
-          <a href="#" onclick="verificarFluxo('30D')" class="btn-assinar">Assinar Agora</a>
+           <a href="cadastro.html?plano=30D" class="btn-assinar">Assinar Agora</a>
 </div>
 
         <div class="card-plano">
@@ -100,7 +100,7 @@
 
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Economia Real de 15%</p>
             </div>
-            <a href="#" onclick="verificarFluxo('90D')" class="btn-assinar">Assinar Agora</a>
+            <a href="cadastro.html?plano=90D" class="btn-assinar">Assinar Agora</a>
 </div>
 
         <div class="card-plano card-destaque">
@@ -118,7 +118,7 @@
                
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Economia Real de 25%</p>
             </div>
-            <a href="#" onclick="verificarFluxo('180D')" class="btn-assinar">Assinar Agora</a>
+            <a href="cadastro.html?plano=180D" class="btn-assinar">Assinar Agora</a>
 </div>
 
         <div class="card-plano">
@@ -135,7 +135,7 @@
 
 <p><span style="color: var(--verde-sucesso); font-weight: bold;">✓</span> Desconto de 40% OFF</p>
             </div>
-            <a href="#" onclick="verificarFluxo('365D')" class="btn-assinar">Assinar Agora</a>
+            <a href="cadastro.html?plano=365D" class="btn-assinar">Assinar Agora</a>
 </div>
 
     <div class="recursos-gerais">
@@ -186,59 +186,6 @@
         </div>
         <p style="text-align: center; margin-top: 30px; font-size: 13px; color: var(--verde-sucesso); font-weight: bold;">✓ Liberação imediata após confirmação do pagamento</p>
     </div>
-
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
-
-    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
-
-    const supabase = createClient(supabaseUrl, supabaseKey);
-
-    // Esta é a única função necessária para os botões
-    window.verificarFluxo = async (plano) => {
-        try {
-            console.log("Plano selecionado:", plano);
-            // Salva o plano escolhido (30D, 90D, 180D ou 365D)
-            sessionStorage.setItem('plano_escolhido', plano);
-
-            const { data: { session } } = await supabase.auth.getSession();
-
-            // 1. Se não está logado, vai para o cadastro
-            if (!session) {
-                window.location.href = 'cadastro.html';
-                return;
-            }
-
-            const user = session.user;
-
-            // 2. Verifica se o perfil existe na tabela 'profiles'
-            const { data: profile, error } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('id', user.id)
-                .maybeSingle();
-
-            if (error) throw error;
-
-            // 3. DECISÃO DE ROTA:
-            if (!profile) {
-                // Logado no Auth, mas sem dados na tabela profile -> Vai para Cadastro
-                window.location.href = 'cadastro.html';
-            } else {
-                // Já tem perfil -> Vai para Ativação (Pagamento/MFA)
-                window.location.href = 'ativar-acesso.html';
-            }
-
-        } catch (e) {
-            console.error("Erro ao verificar perfil:", e);
-            window.location.href = 'cadastro.html';
-        }
-    };
-
-    // REMOVIDO O CÓDIGO SOLTO QUE CAUSAVA O BUG DE REDIRECIONAMENTO AUTOMÁTICO
-
-</script>
 
 </body>
 </html>

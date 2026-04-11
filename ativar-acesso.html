@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ativar Acesso - SKYLicense</title>
-   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
@@ -216,91 +217,66 @@ return "Código hexadecimal inválido.";
 return "Erro inesperado. Tente novamente.";
 }
 
-    // Lógica unificada para evitar conflitos
+    async function garantirSessao() {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+            // Busca o link de pagamento que o Edge Function gravou no banco
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('invoice_url')
+                .eq('id', session.user.id)
+                .single();
 
-async function gerenciarAcessoEPagamento() {
-    const { data: { session } } = await supabase.auth.getSession();
-    const user = session?.user;
-    let plano = sessionStorage.getItem('plano_escolhido');
-
-    if (user) {
-        // 1. Busca o perfil
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', user.id)
-            .single();
-
-        // ERRO IDENTIFICADO: Se não existe dado no profile, manda para o cadastro
-        if (!data && !error) {
-            console.log("Usuário logado mas sem perfil. Redirecionando para cadastro...");
-            window.location.href = 'cadastro.html';
-            return;
-        }
-
-        // 2. Lógica de recuperação do plano (igual ao arquivo antigo)
-        if (!plano && data?.plano_ativo) {
-            plano = data.plano_ativo;
-        }
-
-        if (!plano) {
-            console.error("Nenhum plano identificado.");
-            return;
-        }
-
-        // 3. Exibição ou Geração da cobrança
-        if (data?.invoice_url) {
-            document.getElementById('area-pagamento').style.display = 'block';
-            document.getElementById('link-pix').href = data.invoice_url;
+            // Se o link existir, mostra a área vermelha com o botão
+            if (profile && profile.invoice_url) {
+                document.getElementById('area-pagamento').style.display = 'block';
+                document.getElementById('link-pix').href = profile.invoice_url;
+            }
         } else {
-            // Se o cara existe mas não tem invoice_url, gera agora (Renovação)
-            await gerarNovaCobranca(user.id, plano);
+            await supabase.auth.refreshSession();
         }
-    } else {
-        // Se nem sessão tem, ele não deveria estar aqui
-        window.location.href = 'planos.html';
     }
-}
-
+    garantirSessao();
 
     // 4. LÓGICA DE SEGURANÇA (MFA)
-
-        async function gerarMFA() {
+    async function gerarMFA() {
         try {
-            // LIMPEZA DE MFA PENDENTE (Resolve o BUG 2 - "Already Exists")
-            const { data: factors } = await supabase.auth.mfa.listFactors();
-            if (factors && factors.totp) {
-                for (const f of factors.totp) {
-                    if (f.status === 'unverified') {
-                        await supabase.auth.mfa.unenroll({ factorId: f.id });
-                    }
-                }
-            }
-
             const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
             if (error) throw error;
 
             currentFactorId = data.id;
             const qrContainer = document.getElementById('qr-container');
-            qrContainer.innerHTML = ""; 
+            qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
 
-            // GARANTIA DO QR CODE (Resolve o BUG 1)
-            if (typeof QRCode !== 'undefined') {
-                const canvas = document.createElement('canvas');
-                await QRCode.toCanvas(canvas, data.totp.uri, { width: 250 });
-                qrContainer.appendChild(canvas);
-            } else {
-                qrContainer.innerText = "Erro: Biblioteca QR não carregada.";
+            // Gerar QR Code
+            try {
+                const url = await QRCode.toDataURL(data.totp.uri, { 
+                    width: 250, 
+                    errorCorrectionLevel: 'L'
+                });
+                
+                const img = document.createElement('img');
+                img.src = url;
+                img.style.width = "100%";
+                img.style.maxWidth = "250px";
+                qrContainer.appendChild(img);
+            } catch (err) {
+                const erroMsg = document.createElement('p');
+                erroMsg.innerText = "QR Code indisponível.";
+                qrContainer.appendChild(erroMsg);
             }
 
-            // Manter código da chave manual abaixo...
+            // Botão para mostrar chave manual (Segurança)
             const btnToggle = document.createElement('button');
             btnToggle.innerText = "Mostrar chave manual";
             btnToggle.style.marginTop = "10px";
+            btnToggle.style.padding = "8px";
+            btnToggle.style.cursor = "pointer";
             
             const secretKey = document.createElement('p');
             secretKey.className = 'chave-manual';
-            secretKey.style.display = "none";
+            secretKey.style.display = "none"; // Oculto por padrão
             secretKey.innerText = "Chave: " + data.totp.secret;
 
             btnToggle.onclick = () => {
@@ -308,11 +284,11 @@ async function gerenciarAcessoEPagamento() {
                 btnToggle.style.display = "none";
             };
 
-qrContainer.appendChild(btnToggle);
+            qrContainer.appendChild(btnToggle);
             qrContainer.appendChild(secretKey);
 
         } catch (e) {
-            window.mostrarMensagem(traduzirErro(e));
+window.mostrarMensagem(traduzirErro(e));
         }
     }
 
@@ -348,27 +324,6 @@ window.mostrarMensagem(traduzirErro(e));
         }
     };
 
-    async function gerarNovaCobranca(userId, plano) {
-    try {
-        const { data, error } = await supabase.functions.invoke('asaas', {
-            body: { 
-                action: 'criar_cobranca', // Certifique-se que sua function tem esse switch
-                userId: userId, 
-                plano: plano 
-            }
-        });
-
-        if (data?.invoice_url) {
-            document.getElementById('area-pagamento').style.display = 'block';
-            document.getElementById('link-pix').href = data.invoice_url;
-            // Opcional: Gerar QR Code do link se o Asaas não retornar a imagem direta
-        }
-    } catch (err) {
-        console.error("Erro ao processar cobrança:", err);
-    }
-}
-
 </script>
-
 </body>
 </html>

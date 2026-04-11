@@ -115,9 +115,6 @@ return; // Para o fluxo aqui! Não deixa ir para o MFA.
           }
 }
 
-
-
-
         // Se o login passou, verifica MFA
         const { data: factors } = await supabase.auth.mfa.listFactors();
 
