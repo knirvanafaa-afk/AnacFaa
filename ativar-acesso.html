@@ -218,47 +218,42 @@ return "Erro inesperado. Tente novamente.";
 
     // Lógica unificada para evitar conflitos
 
-async function inicializarAtivacao() {
+async function gerenciarAcessoEPagamento() {
     const { data: { session } } = await supabase.auth.getSession();
-    const planoEscolhido = sessionStorage.getItem('plano_escolhido');
+    const user = session?.user;
+    let plano = sessionStorage.getItem('plano_escolhido');
 
-    // CASO 1: USUÁRIO NOVO (SEM SESSÃO)
-    if (!session) {
-        console.log("Usuário novo detectado. Aguardando cadastro...");
-        // Aqui ele preenche o formulário e o fluxo segue pelo btn-avancar
-        return;
-    }
+    if (user) {
+        // Busca o perfil (O antigo usava 'data', o novo usava 'profile'. Padronizei para o antigo funcionar)
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
 
-    // CASO 2: USUÁRIO JÁ CADASTRADO (LOGADO) - RENOVAÇÃO OU PENDÊNCIA
-    const user = session.user;
-    
-    // Busca o status atual no banco
-    const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
+        // LOGICA DE RENOVAÇÃO: Se não tem plano no cache, pega o que já estava no perfil
+        if (!plano && data?.plano_ativo) {
+            plano = data.plano_ativo;
+        }
 
-    if (profile) {
-        // Se o plano expirou ou ele está logado mas não pagou
-        if (profile.status_pagamento !== 'pago' || !profile.invoice_url) {
-            console.log("Usuário antigo com plano pendente/vencido. Gerando nova cobrança...");
-            
-            // Se ele veio da página de planos, usamos o novo plano, senão mantemos o atual
-            const planoParaCobrar = planoEscolhido || profile.plano_ativo;
-            
-            if (planoParaCobrar) {
-                await gerarNovaCobranca(user.id, planoParaCobrar);
-            }
+        // Se mesmo assim não tiver plano, agora sim interrompe
+        if (!plano) {
+            console.error("Nenhum plano identificado para este usuário.");
+            return;
+        }
+
+        // SE O USUÁRIO JÁ TEM INVOICE (Fluxo de e-mail / Retorno)
+        if (data?.invoice_url) {
+            document.getElementById('area-pagamento').style.display = 'block';
+            document.getElementById('link-pix').href = data.invoice_url;
+            // No antigo você não gerava QR Code aqui, apenas mostrava o botão. 
+            // Se quiser o QR Code automático, chame a função aqui.
         } else {
-            // Se ele já está pago, manda para a dashboard
-            window.location.href = 'dashboard.html';
+            // SE É NOVO OU RENOVAÇÃO SEM INVOICE GERADA
+            await gerarNovaCobranca(user.id, plano);
         }
     }
 }
-
-// Chamar ao carregar a página
-document.addEventListener('DOMContentLoaded', inicializarAtivacao);
 
 
     // 4. LÓGICA DE SEGURANÇA (MFA)
