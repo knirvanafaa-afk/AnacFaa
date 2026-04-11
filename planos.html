@@ -188,63 +188,55 @@
     </div>
 
 <script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
-    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
+    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
 
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
-    window.verificarFluxo = async (plano) => {
-    // Salva o plano escolhido
-    sessionStorage.setItem('plano_escolhido', plano);
+    // Esta é a única função necessária para os botões
+    window.verificarFluxo = async (plano) => {
+        try {
+            console.log("Plano selecionado:", plano);
+            // Salva o plano escolhido (30D, 90D, 180D ou 365D)
+            sessionStorage.setItem('plano_escolhido', plano);
 
-    const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await supabase.auth.getSession();
 
-    // 1. Se não está logado, vai para o cadastro
-    if (!session) {
-        window.location.href = 'cadastro.html';
-        return;
-    }
+            // 1. Se não está logado, vai para o cadastro
+            if (!session) {
+                window.location.href = 'cadastro.html';
+                return;
+            }
 
-    const user = session.user;
+            const user = session.user;
 
-    try {
-        // 2. Verifica se o perfil existe na tabela 'profiles'
-        const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('id')
-            .eq('id', user.id)
-            .maybeSingle();
+            // 2. Verifica se o perfil existe na tabela 'profiles'
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('id')
+                .eq('id', user.id)
+                .maybeSingle();
 
-        if (error) throw error;
+            if (error) throw error;
 
-        // 3. DECISÃO DE ROTA:
-        if (!profile) {
-            // Logado no Auth, mas sem dados na tabela profile -> Vai para Cadastro
+            // 3. DECISÃO DE ROTA:
+            if (!profile) {
+                // Logado no Auth, mas sem dados na tabela profile -> Vai para Cadastro
+                window.location.href = 'cadastro.html';
+            } else {
+                // Já tem perfil -> Vai para Ativação (Pagamento/MFA)
+                window.location.href = 'ativar-acesso.html';
+            }
+
+        } catch (e) {
+            console.error("Erro ao verificar perfil:", e);
             window.location.href = 'cadastro.html';
-        } else {
-            // Já tem perfil -> Vai para Ativação (Pagamento/MFA)
-            window.location.href = 'ativar-acesso.html';
         }
+    };
 
-    } catch (e) {
-        console.error("Erro ao verificar perfil:", e);
-        // Em caso de erro técnico, melhor garantir o cadastro
-        window.location.href = 'cadastro.html';
-    }
-};
-
-
-    // 2. Tenta pegar a sessão ativa
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (session) {
-        window.location.href = 'ativar-acesso.html';
-    } else {
-        window.location.href = `cadastro.html?plano=${idPlano}`;
-    }
-};
+    // REMOVIDO O CÓDIGO SOLTO QUE CAUSAVA O BUG DE REDIRECIONAMENTO AUTOMÁTICO
 
 </script>
 
