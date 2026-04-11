@@ -193,14 +193,7 @@
     const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA'
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-const { data: { session } } = await supabase.auth.getSession();
-
-if (session) {
-    window.location.href = "planos.html";
-}
-
-
-async function selecionarPlano(plano) {
+window.selecionarPlano = async function(plano) {
 
     const { data: { session } } = await supabase.auth.getSession();
 
@@ -219,7 +212,7 @@ async function selecionarPlano(plano) {
         .from('profiles')
         .select('expira_em')
         .eq('id', session.user.id)
-        .single();
+        .maybesingle();
 
     const agora = new Date();
 
