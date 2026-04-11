@@ -216,7 +216,7 @@ window.selecionarPlano = async function(plano) {
         .from('profiles')
         .select('expira_em')
         .eq('id', session.user.id)
-        .maybesingle();
+        .maybeSingle();
 
     const agora = new Date();
 
