@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ativar Acesso - SKYLicense</title>
-   
+   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; padding: 20px; display: flex; justify-content: center; }
         .container { width: 100%; max-width: 600px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); }
@@ -218,48 +218,48 @@ return "Erro inesperado. Tente novamente.";
 
     // Lógica unificada para evitar conflitos
 
-async function gerenciarAcessoEPagamento() {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    // Se não tiver usuário, tenta dar refresh ou volta pro login
-    if (!user) {
-        await supabase.auth.refreshSession();
+async function inicializarAtivacao() {
+    const { data: { session } } = await supabase.auth.getSession();
+    const planoEscolhido = sessionStorage.getItem('plano_escolhido');
+
+    // CASO 1: USUÁRIO NOVO (SEM SESSÃO)
+    if (!session) {
+        console.log("Usuário novo detectado. Aguardando cadastro...");
+        // Aqui ele preenche o formulário e o fluxo segue pelo btn-avancar
         return;
     }
 
-    const forcarNovo = sessionStorage.getItem('solicitou_novo_pagamento');
-        const planoNoCache = sessionStorage.getItem('plano_escolhido'); // Certifique-se que o nome é este
-
-    // Se o perfil não tem invoice_url OU se o veterano forçou um novo plano
-    if (forcarNovo === 'true' || !profile?.invoice_url) {
-        sessionStorage.removeItem('solicitou_novo_pagamento'); 
-        // Passamos o planoNoCache diretamente
-        await gerarNovaCobranca(user.id, planoNoCache); 
-    }
-
-    // Busca o perfil atualizado
-    const { data: profile } = await supabase
+    // CASO 2: USUÁRIO JÁ CADASTRADO (LOGADO) - RENOVAÇÃO OU PENDÊNCIA
+    const user = session.user;
+    
+    // Busca o status atual no banco
+    const { data: profile, error } = await supabase
         .from('profiles')
-        .select('invoice_url')
+        .select('*')
         .eq('id', user.id)
         .single();
 
-    // DECISÃO: Gerar novo ou mostrar existente?
-    if (forcarNovo === 'true' || !profile?.invoice_url) {
-        sessionStorage.removeItem('solicitou_novo_pagamento'); 
-        
-        // Chame aqui a sua função que faz o FETCH para a Edge Function
-        // Certifique-se que o nome da função que envia pro Asaas seja este:
-        await gerarNovaCobranca(user.id, planoNoCache); 
-    } else if (profile?.invoice_url) {
-        // Se já tem link e não forçou novo, mostra a div do PIX
-        document.getElementById('area-pagamento').style.display = 'block';
-        document.getElementById('link-pix').href = profile.invoice_url;
+    if (profile) {
+        // Se o plano expirou ou ele está logado mas não pagou
+        if (profile.status_pagamento !== 'pago' || !profile.invoice_url) {
+            console.log("Usuário antigo com plano pendente/vencido. Gerando nova cobrança...");
+            
+            // Se ele veio da página de planos, usamos o novo plano, senão mantemos o atual
+            const planoParaCobrar = planoEscolhido || profile.plano_ativo;
+            
+            if (planoParaCobrar) {
+                await gerarNovaCobranca(user.id, planoParaCobrar);
+            }
+        } else {
+            // Se ele já está pago, manda para a dashboard
+            window.location.href = 'dashboard.html';
+        }
     }
 }
 
-// Executa ao carregar
-gerenciarAcessoEPagamento();
+// Chamar ao carregar a página
+document.addEventListener('DOMContentLoaded', inicializarAtivacao);
+
 
     // 4. LÓGICA DE SEGURANÇA (MFA)
 
@@ -347,28 +347,24 @@ window.mostrarMensagem(traduzirErro(e));
     };
 
     async function gerarNovaCobranca(userId, plano) {
-        // Se não houver plano no cache, avisa o usuário em vez de cobrar errado
-        if (!plano) {
-            window.mostrarMensagem("Plano não selecionado. Volte e escolha um plano.");
-            return;
-        }
-
-        try {
-            const { data, error } = await supabase.functions.invoke('asaas', {
-                body: { id: userId, plano_ativo: plano }
-            });
-
-            if (error) throw error;
-
-            if (data && data.invoice_url) {
-                document.getElementById('area-pagamento').style.display = 'block';
-                document.getElementById('link-pix').href = data.invoice_url;
+    try {
+        const { data, error } = await supabase.functions.invoke('asaas', {
+            body: { 
+                action: 'criar_cobranca', // Certifique-se que sua function tem esse switch
+                userId: userId, 
+                plano: plano 
             }
-        } catch (err) {
-            console.error("Erro técnico Asaas:", err);
-            window.mostrarMensagem("Erro ao gerar Pix. Verifique sua conexão ou tente novamente.");
+        });
+
+        if (data?.invoice_url) {
+            document.getElementById('area-pagamento').style.display = 'block';
+            document.getElementById('link-pix').href = data.invoice_url;
+            // Opcional: Gerar QR Code do link se o Asaas não retornar a imagem direta
         }
+    } catch (err) {
+        console.error("Erro ao processar cobrança:", err);
     }
+}
 
 </script>
 
