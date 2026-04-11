@@ -209,7 +209,10 @@ const senhaConfirma = document.getElementById('cad-senha-confirma').value;
 
     if (!plano) {
         mostrarMensagem("Por favor, selecione um plano antes de iniciar seu cadastro.");
+
+setTimeout(() => {
 window.location.href = "planos.html";
+}, 10000);
        return;
     }
 
