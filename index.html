@@ -96,6 +96,7 @@
 
 
 // Busca o status real no banco
+
 if (data.user) {
 const { data: profile } = await supabase
       .from('profiles')
@@ -105,6 +106,25 @@ const { data: profile } = await supabase
 
 const vencido = !profile.expira_em || new Date(profile.expira_em) < new Date();
 
+// ===== NOVAS REGRAS (sem remover nada do código antigo) =====
+const isAdmin = profile.status_acesso === 'admin';
+const isBeta = profile.status_acesso === 'beta';
+
+// admin sempre libera (ignora vencimento)
+if (isAdmin) {
+  // não faz nada, segue o fluxo normal
+} 
+// beta só bloqueia se estiver vencido
+else if (isBeta) {
+  if (vencido) {
+    mostrarMensagem("Sua assinatura está vencida. Por favor renove seu Plano! Redirecionando...");
+    setTimeout(() => { window.location.href = 'planos.html'; }, 5000);
+    return;
+  }
+} 
+// ===== FIM DAS NOVAS REGRAS =====
+
+// Código original (inalterado)
 if (vencido || profile.status_acesso === 'pendente') {
 
 mostrarMensagem("Sua assinatura está vencida. Por favor renove seu Plano! Redirecionando...");
@@ -114,6 +134,7 @@ setTimeout(() => { window.location.href = 'planos.html'; }, 5000);
 return; // Para o fluxo aqui! Não deixa ir para o MFA.
           }
 }
+
 
         // Se o login passou, verifica MFA
         const { data: factors } = await supabase.auth.mfa.listFactors();
