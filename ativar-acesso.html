@@ -218,9 +218,14 @@ return "Erro inesperado. Tente novamente.";
 }
 
     async function garantirSessao() {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session) {
+    const { data: { session } } = await supabase.auth.getSession();
+    
+    if (session) {
+
+        let tentativas = 0;
+
+        const intervalo = setInterval(async () => {
+
             // Busca o link de pagamento que o Edge Function gravou no banco
             const { data: profile } = await supabase
                 .from('profiles')
@@ -230,14 +235,27 @@ return "Erro inesperado. Tente novamente.";
 
             // Se o link existir, mostra a área vermelha com o botão
             if (profile && profile.invoice_url) {
+                clearInterval(intervalo);
+
                 document.getElementById('area-pagamento').style.display = 'block';
                 document.getElementById('link-pix').href = profile.invoice_url;
             }
-        } else {
-            await supabase.auth.refreshSession();
-        }
+
+            tentativas++;
+
+            if (tentativas >= 10) {
+                clearInterval(intervalo);
+                alert("Erro ao gerar cobrança. Tente novamente.");
+            }
+
+        }, 1500);
+
+    } else {
+        await supabase.auth.refreshSession();
     }
-    garantirSessao();
+}
+
+garantirSessao();
 
     // 4. LÓGICA DE SEGURANÇA (MFA)
     async function gerarMFA() {
