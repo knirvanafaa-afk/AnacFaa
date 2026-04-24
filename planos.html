@@ -201,10 +201,17 @@ window.selecionarPlano = async function(plano) {
 
     const { data: { session } } = await supabase.auth.getSession();
 
+// VALIDAÇÃO REAL: Verifica se o usuário ainda existe no servidor 
+
+const { data: { user }, error } = await supabase.auth.getUser(); 
+
     // =========================
     // USUÁRIO NÃO LOGADO (NOVO)
     // =========================
-    if (!session) {
+   if (!session || !user || error) { 
+
+// Limpa qualquer lixo que tenha ficado no navegador 
+await supabase.auth.signOut(); 
         window.location.href = `cadastro.html?plano=${plano}`;
         return;
     }
