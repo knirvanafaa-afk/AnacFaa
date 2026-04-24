@@ -219,6 +219,11 @@ await supabase.auth.signOut();
         .eq('id', session.user.id)
         .maybeSingle();
 
+if (!profile) {
+await supabase.auth.signOut();
+window.location.href = `cadastro.html?plano=${plano}`;
+return;
+}
     const agora = new Date();
 
     if (profile && profile.expira_em) {
