@@ -96,33 +96,24 @@
 
 
 // Busca o status real no banco
-
 if (data.user) {
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('status_acesso, expira_em')
-        .eq('id', data.user.id)
-        .single();
+const { data: profile } = await supabase
+      .from('profiles')
+      .select('status_acesso, expira_em')
+      .eq('id', data.user.id)
+      .single();
 
-    const vencido = !profile.expira_em || new Date(profile.expira_em) < new Date();
-    const isAdmin = profile.status_acesso === 'admin';
-    const isPendente = profile.status_acesso === 'pendente';
+const vencido = !profile.expira_em || new Date(profile.expira_em) < new Date();
 
-    // 1. Regra de Ouro: Se for Admin, ignora todas as verificações de bloqueio abaixo
-    if (!isAdmin) {
-        
-        // 2. Se for pendente OU se estiver vencido (seja beta ou qualquer outro status não-admin)
-        if (isPendente || vencido) {
-            mostrarMensagem("Sua assinatura está vencida. Por favor renove seu Plano! Redirecionando...");
-            setTimeout(() => { window.location.href = 'planos.html'; }, 5000);
-            return; // Bloqueia o acesso
-        }
-    }
-    
-    // Se chegou aqui, ou é Admin, ou é um usuário ativo dentro do prazo.
+if (vencido || profile.status_acesso === 'pendente') {
+
+mostrarMensagem("Sua assinatura está vencida. Por favor renove seu Plano! Redirecionando...");
+
+setTimeout(() => { window.location.href = 'planos.html'; }, 5000);
+
+return; // Para o fluxo aqui! Não deixa ir para o MFA.
+          }
 }
-
-// ===== FIM DAS NOVAS REGRAS =====
 
         // Se o login passou, verifica MFA
         const { data: factors } = await supabase.auth.mfa.listFactors();
