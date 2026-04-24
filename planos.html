@@ -204,7 +204,10 @@ window.selecionarPlano = async function(plano) {
     // =========================
     // USUÁRIO NÃO LOGADO (NOVO)
     // =========================
-   if (!session) {
+   if (!session || !profile) {
+await supabase.auth.signOut(); 
+localStorage.clear();
+sessionStorage.clear();
         window.location.href = `cadastro.html?plano=${plano}`;
         return;
     }
