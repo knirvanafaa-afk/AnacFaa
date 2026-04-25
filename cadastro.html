@@ -224,7 +224,7 @@ window.location.href = "planos.html";
         const { data: profile, error: searchError} = await supabase
        .from('profiles')
        .select('*')
-       .ilike('email', email.trim())
+       .eq('email', email)
        .maybeSingle();
 
 if (searchError) {
