@@ -224,18 +224,13 @@ window.location.href = "planos.html";
         const { data: profile, error: searchError} = await supabase
        .from('profiles')
        .select('*')
-      .eq('email', email)
+       .ilike('email', email.trim())
        .maybeSingle();
 
 if (searchError) {
     return mostrarMensagem("Erro ao verificar cadastro.");
 }
-
-
-// 👇 COLOQUE AQUI
-mostrarMensagem("EMAIL DIGITADO: " + email);
-mostrarMensagem("DEBUG PROFILE: " + JSON.stringify(profile));
-       
+   
  const agora = new Date();
 
         if (profile) {
