@@ -216,50 +216,98 @@ window.location.href = "planos.html";
        return;
     }
 
-// SENSOR: Verifica se o e-mail já existe na base antes de tentar o cadastro
-    const { data: usuarioExistente } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
+// SENSOR INTELIGENTE: Verifica Status, vencimento e Plano
 
-    if (usuarioExistente) {
-        return mostrarMensagem("Este e-mail já está cadastrado. Tente recuperar sua senha. SENSOR1");
+const { data: profile, error: searchError } = await supabase
+    .from('profiles')
+    .select('id, status_acesso, expira_em')
+    .eq('email', email)
+    .maybeSingle();
+
+if (searchError) {
+    return mostrarMensagem("Erro ao verificar cadastro.");
+}
+
+const agora = new Date();
+let deveCriarAuth = false;
+
+if (profile) {
+    const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
+
+    // 3️⃣ BLOQUEIA SE PAGO VÁLIDO
+    if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) {
+        return mostrarMensagem("SEU PLANO AINDA ESTÁ VÁLIDO NO SKYLicence ACADEMY!!!");
     }
+
+    // 4️⃣ PAGO VENCIDO → RESET (E DEIXA FLUXO CONTINUAR)
+    if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                status_acesso: 'pendente',
+                expira_em: null,
+                plano_ativo: plano
+            })
+            .eq('id', profile.id);
+
+        if (error) {
+            return mostrarMensagem("Erro ao atualizar plano.");
+        }
+    }
+
+    // 2️⃣ PENDENTE → ATUALIZA PLANO
+  else  if (profile.status_acesso === 'pendente' && !dataExpiracao) {
+        const { error } = await supabase
+            .from('profiles')
+            .update({
+                plano_ativo: plano
+            })
+            .eq('id', profile.id);
+
+        if (error) {
+            return mostrarMensagem("Erro ao atualizar plano.");
+        }
+    }
+
+} else {
+    // 1️⃣ NOVO USUÁRIO
+    deveCriarAuth = true;
+}
 
     // 3. Execução do Cadastro no Supabase
     try {
 
-// --- SENSOR EXTRA: Checa se o e-mail já existe na sua tabela de perfis ---
+        let data = null;
+let error = null;
 
-        const { data: existente } = await supabase
-            .from('profiles') 
-            .select('id')
-            .eq('email', email)
-            .maybeSingle();
+if (deveCriarAuth) {
+    const resposta = await supabase.auth.signUp({
+        email: email, 
+        password: senha, 
+        options: { 
+            data: { 
+                full_name: nome,  
+                cpf: cpf, 
+                plano_ativo: plano 
+            }, 
+            emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  
+        }
+    });
 
-        if (existente) {
-            return mostrarMensagem("Este e-mail já está em uso no SKYLicense. Tente recuperar sua senha. SENSOR EXTRA");
-        }
-
-        // --- FIM DO SENSOR ---
-
-        const { data, error } = await supabase.auth.signUp({
-            email: email, 
-            password: senha, 
-            options: { 
-                data: { 
-                    full_name: nome,  
-                    cpf: cpf, 
-                    plano_ativo: plano 
-                }, 
-                emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  
-            }
-        });
+    data = resposta.data;
+    error = resposta.error;
+}
         
         if (error) throw error;
 
-        mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail para validar o acesso.");
+        if (deveCriarAuth) {
+
+        mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
+
+} else if {
+mostrarMensagem("Plano atualizado com sucesso!");
+}
+
     } catch (e) { 
         // Tratamento de erro específico para e-mail já cadastrado
         if (e.message.includes("already registered")) {
