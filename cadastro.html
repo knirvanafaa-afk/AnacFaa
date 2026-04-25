@@ -224,7 +224,7 @@ window.location.href = "planos.html";
         .maybeSingle();
 
     if (usuarioExistente) {
-        return mostrarMensagem("Este e-mail já está cadastrado. Tente recuperar sua senha.");
+        return mostrarMensagem("Este e-mail já está cadastrado. Tente recuperar sua senha. SENSOR1");
     }
 
     // 3. Execução do Cadastro no Supabase
@@ -239,7 +239,7 @@ window.location.href = "planos.html";
             .maybeSingle();
 
         if (existente) {
-            return mostrarMensagem("Este e-mail já está em uso no SKYLicense. Tente recuperar sua senha.");
+            return mostrarMensagem("Este e-mail já está em uso no SKYLicense. Tente recuperar sua senha. SENSOR EXTRA");
         }
 
         // --- FIM DO SENSOR ---
