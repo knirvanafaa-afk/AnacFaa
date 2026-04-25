@@ -219,10 +219,12 @@ window.location.href = "planos.html";
 
     try {
         let deveCriarAuth = false;
+        let atualizou = false;
+
         const { data: profile, error: searchError} = await supabase
        .from('profiles')
        .select('*')
-       .eq('email', email.trim().toLowerCase()) 
+      .eq('email', email)
        .maybeSingle();
 
 if (searchError) {
@@ -256,7 +258,9 @@ if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) 
        cpf: cpf
                 })
      .eq('id', profile.id);
-            }
+
+atualizou = true;
+}
 
             // REGRA 2: PENDENTE e NULL -> ATUALIZA PLANO
             if (profile.status_acesso === 'pendente' && !profile.expira_em) {
@@ -269,7 +273,9 @@ await supabase
        cpf: cpf
  })
        .eq('id', profile.id);
-            }
+
+atualizou = true;
+}
      
    } else {
             // REGRA 1: NOVO USUÁRIO
@@ -288,10 +294,11 @@ await supabase
             });
 
             if (signUpError) throw signUpError;
-           
+   
+   if (deveCriarAuth) {     
  mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
 
-        } else {
+        } else if (atualizou) {
          
    // Se já existia e foi atualizado pelas regras acima
             mostrarMensagem("Plano atualizado com sucesso! Verifique seu E-MAIL");
