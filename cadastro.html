@@ -230,6 +230,11 @@ window.location.href = "planos.html";
 if (searchError) {
     return mostrarMensagem("Erro ao verificar cadastro.");
 }
+
+
+// 👇 COLOQUE AQUI
+mostrarMensagem("EMAIL DIGITADO: " + email);
+mostrarMensagem("DEBUG PROFILE: " + JSON.stringify(profile));
        
  const agora = new Date();
 
