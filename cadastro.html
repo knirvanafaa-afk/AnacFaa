@@ -256,7 +256,7 @@ if (profile) {
     }
 
     // 2️⃣ PENDENTE → ATUALIZA PLANO
-  else  if (profile.status_acesso === 'pendente' && !dataExpiracao) {
+  if (profile.status_acesso === 'pendente' && !dataExpiracao) {
         const { error } = await supabase
             .from('profiles')
             .update({
@@ -304,7 +304,7 @@ if (deveCriarAuth) {
 
         mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
 
-} else if {
+} if {
 mostrarMensagem("Plano atualizado com sucesso!");
 }
 
