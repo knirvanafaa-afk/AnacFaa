@@ -222,7 +222,7 @@ window.location.href = "planos.html";
         const { data: profile, error: searchError} = await supabase
        .from('profiles')
        .select('*')
-       .eq('email', email)
+       .eq('email', email.trim().toLowerCase()) 
        .maybeSingle();
 
 if (searchError) {
