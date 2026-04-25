@@ -253,8 +253,7 @@ if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) 
       expira_em: null,
       plano_ativo: plano,
        username: nome,
-       cpf: cpf,
-      email: email
+       cpf: cpf
                 })
      .eq('id', profile.id);
             }
@@ -267,8 +266,7 @@ await supabase
        .update({ 
        plano_ativo: plano,
        username: nome,
-       cpf: cpf,
-       email: email
+       cpf: cpf
  })
        .eq('id', profile.id);
             }
@@ -278,8 +276,9 @@ await supabase
             deveCriarAuth = true;
         }
 
-        if (deveCriarAuth) {
-            const { error: signUpError } = await supabase.auth.signUp({
+      if (deveCriarAuth) {
+            const { error: signUpError } = await supabase
+.auth.signUp({
                 email: email,
                 password: senha,
                 options: {
@@ -287,10 +286,14 @@ await supabase
                     emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
                 }
             });
+
             if (signUpError) throw signUpError;
-            mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
+           
+ mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
+
         } else {
-            // Se já existia e foi atualizado pelas regras acima
+         
+   // Se já existia e foi atualizado pelas regras acima
             mostrarMensagem("Plano atualizado com sucesso! Verifique seu E-MAIL");
         }
 
