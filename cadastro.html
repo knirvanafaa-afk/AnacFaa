@@ -283,11 +283,12 @@ await supabase
             mostrarMensagem("Plano atualizado com sucesso! Verifique seu E-MAIL");
         }
 
-        // Limpeza de campos
-        document.getElementById('nome').value = '';
-        document.getElementById('email').value = '';
-        document.getElementById('cpf').value = '';
-        document.getElementById('senha').value = '';
+        // Limpeza de campos corrigida
+document.getElementById('cad-nome').value = '';
+document.getElementById('cad-email').value = '';
+document.getElementById('cad-cpf').value = '';
+document.getElementById('cad-senha').value = '';
+document.getElementById('cad-senha-confirma').value = '';
 
     } catch (e) {
         mostrarMensagem("Erro: " + e.message);
