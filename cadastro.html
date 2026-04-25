@@ -232,6 +232,9 @@ if (searchError) {
  const agora = new Date();
 
         if (profile) {
+
+deveCriarAuth = false; 
+
             const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
 
             // REGRA 3: STATUS PAGO e Expire Válido -> IMPEDE
@@ -250,7 +253,8 @@ if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) 
       expira_em: null,
       plano_ativo: plano,
        username: nome,
-       cpf: cpf
+       cpf: cpf,
+      email: email
                 })
      .eq('id', profile.id);
             }
@@ -263,7 +267,8 @@ await supabase
        .update({ 
        plano_ativo: plano,
        username: nome,
-       cpf: cpf
+       cpf: cpf,
+       email: email
  })
        .eq('id', profile.id);
             }
