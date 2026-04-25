@@ -278,7 +278,7 @@ await supabase
                 email: email,
                 password: senha,
                 options: {
-                    data: { full_name: nome, cpf: cpf, plano_ativo: plano },
+                    data: { username: nome, cpf: cpf, plano_ativo: plano },
                     emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
                 }
             });
