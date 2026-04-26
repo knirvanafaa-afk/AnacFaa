@@ -218,41 +218,80 @@ window.location.href = "planos.html";
 
     // Execução do Cadastro no Supabase
   
-  // 1. Tenta buscar o ID do perfil pelo e-mail
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-
     try {
-        // CONDIÇÃO: Se o ID do profile existir, apenas atualiza o plano
-        if (profile && profile.id) {
+        // --- SENSOR: BUSCA NA TABELA PROFILES ---
+        const { data: usuarioExistente, error: searchError } = await supabase
+            .from('profiles')
+            .select('id, status_acesso, expira_em')
+            .eq('email', email)
+            .maybeSingle();
+
+        if (searchError) throw new Error("Erro ao verificar cadastro.");
+
+        const agora = new Date();
+
+        // --- CAMINHO A: O USUÁRIO JÁ EXISTE (APENAS UPDATE) ---
+        if (usuarioExistente) {
+            const dataExpiracao = usuarioExistente.expira_em ? new Date(usuarioExistente.expira_em) : null;
+
+            // 🔴 BLOQUEIO: Se o plano ainda é válido
+            if (usuarioExistente.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) {
+                return mostrarMensagem("PLANO VÁLIDO!!! Você já possui acesso ativo.");
+            }
+
+            // 🔄 EXECUÇÃO DO UPDATE (Pendente ou Vencido)
+            // Aqui atualizamos apenas a tabela, sem tocar no Auth
             const { error: updateError } = await supabase
                 .from('profiles')
-                .update({ plano_ativo: plano })
-                .eq('id', profile.id);
+                .update({
+                    status_acesso: 'pendente',
+                    expira_em: null,
+                    plano_ativo: plano,
+                    username: nome,
+                    cpf: cpf
+                })
+                .eq('id', usuarioExistente.id);
 
             if (updateError) throw updateError;
-            return mostrarMensagem("Plano atualizado com sucesso!");
-        } 
 
-        // Se não caiu no IF acima, ele segue para o cadastro normal que já funciona
+            limparCampos();
+            return mostrarMensagem("Plano atualizado com sucesso!"); 
+            // O return acima mata a função aqui. O código abaixo é ignorado.
+        }
+
+        // --- CAMINHO B: NOVO USUÁRIO (APENAS SIGNUP) ---
+        // Este bloco só é lido se o "usuarioExistente" for nulo
         const { error: signUpError } = await supabase.auth.signUp({
-            email: email, 
-            password: senha, 
-            options: { 
-                data: { full_name: nome, cpf: cpf, plano_ativo: plano }, 
-                emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  
+            email: email,
+            password: senha,
+            options: {
+                data: { 
+                    full_name: nome, 
+                    cpf: cpf, 
+                    plano_ativo: plano 
+                },
+                emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
             }
         });
-        
+
         if (signUpError) throw signUpError;
-        mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail.");
+
+        limparCampos();
+        return mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
 
     } catch (e) {
         mostrarMensagem("Erro: " + e.message);
     }
+}; // Fim da função cadastrarUsuario
+
+function limparCampos() {
+    const campos = ['cad-nome', 'cad-email', 'cad-cpf', 'cad-senha', 'cad-senha-confirma'];
+    campos.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+}
+
 </script>
 </body>
 </html>
