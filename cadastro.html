@@ -120,6 +120,7 @@ window.toggleVerSenha = (id) => {
     input.type = input.type === "password" ? "text" : "password";
 };
 
+
 // A. Captura automática do plano ao carregar a página
 window.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -218,109 +219,111 @@ window.location.href = "planos.html";
 // SENSOR INTELIGENTE: Verifica Status, vencimento e Plano
 
     try {
-        let deveCriarAuth = false;
-        let atualizou = false;
 
-        const emailTratado = email.trim().toLowerCase();
+    const emailTratado = email.trim().toLowerCase();
 
-const { data: profile, error: searchError } = await supabase
-  .from('profiles')
-  .select('*')
-  .eq('email', emailTratado)
-  .maybeSingle();
+    // 🔎 BUSCA PROFILE EXISTENTE
+    const { data: profile, error: searchError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('email', emailTratado)
+        .maybeSingle();
 
-if (searchError) {
-    return mostrarMensagem("Erro ao verificar cadastro.");
-}
+    if (searchError) {
+        return mostrarMensagem("Erro ao verificar cadastro.");
+    }
 
- const agora = new Date();
+    const agora = new Date();
+    let deveCriarAuth = false;
+    let atualizou = false;
 
-        if (profile) {
+    // 🧠 SE JÁ EXISTE PROFILE
+    if (profile) {
 
-            const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
+        const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
 
-            // REGRA 3: STATUS PAGO e Expire Válido -> IMPEDE
-            
-if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) {
-                return mostrarMensagem("PLANO VÁLIDO!!! Você já possui acesso ativo.");
+        // ❌ BLOQUEIA: PAGO E VÁLIDO
+        if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) {
+            return mostrarMensagem("PLANO VÁLIDO!!! Você já possui acesso ativo.");
+        }
+
+        // 🔄 PAGO VENCIDO → RESET
+        if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
+
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({
+                    status_acesso: 'pendente',
+                    expira_em: null,
+                    plano_ativo: plano,
+                    username: nome,
+                    cpf: cpf
+                })
+                .eq('id', profile.id);
+
+            if (updateError) {
+                return mostrarMensagem("Erro ao atualizar plano.");
             }
 
-            // REGRA 4: PAGO e VENCIDO -> RESET PARA PENDENTE
-       if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
-               
- const { error: updateError } = await supabase
-  .from('profiles')
-  .update({
-    status_acesso: 'pendente',
-    expira_em: null,
-    plano_ativo: plano,
-    username: nome,
-    cpf: cpf
-  })
-  .eq('id', profile.id);
+            atualizou = true;
 
-if (updateError) {
-return mostrarMensagem("ERRO UPDATE: " + updateError.message);
-}
+        } else if (profile.status_acesso === 'pendente' && !profile.expira_em) {
 
-atualizou = true;
+            // ✏️ PENDENTE → ATUALIZA PLANO
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({
+                    plano_ativo: plano,
+                    username: nome,
+                    cpf: cpf
+                })
+                .eq('id', profile.id);
 
-            // REGRA 2: PENDENTE e NULL -> ATUALIZA PLANO
-      } else if (profile.status_acesso === 'pendente' && !profile.expira_em) {
-                
-const { error: updateError } = await supabase
-         .from('profiles') 
-         .update({ 
-         plano_ativo: plano, 
-         username: nome, 
-         cpf: cpf
-}) 
-        .eq('id', profile.id);
+            if (updateError) {
+                return mostrarMensagem("Erro ao atualizar plano.");
+            }
 
-if (updateError) {
-return mostrarMensagem("ERRO UPDATE: " + updateError.message);
-}
-
-atualizou = true;
-}
-     
-   } else {
-            // REGRA 1: NOVO USUÁRIO
-            deveCriarAuth = true;
+            atualizou = true;
         }
 
-      if (deveCriarAuth) {
-            const { error: signUpError } = await supabase
-.auth.signUp({
-                email: email,
-                password: senha,
-                options: {
-                    data: { full_name: nome, cpf: cpf, plano_ativo: plano },
-                    emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
-                }
-            });
+    } else {
+        // 🆕 NOVO USUÁRIO
+        deveCriarAuth = true;
+    }
 
-            if (signUpError) throw signUpError;
-   
- mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
+    // 🔐 CRIA AUTH APENAS SE NÃO EXISTE
+    if (deveCriarAuth) {
 
-        } else if (atualizou) {
-         
-   // Se já existia e foi atualizado pelas regras acima
-            mostrarMensagem("Plano atualizado com sucesso! Verifique seu E-MAIL");
-        }
+        const { error: signUpError } = await supabase.auth.signUp({
+            email: emailTratado,
+            password: senha,
+            options: {
+                data: {
+                    full_name: nome,
+                    cpf: cpf,
+                    plano_ativo: plano
+                },
+                emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
+            }
+        });
 
-        // Limpeza de campos corrigida
-document.getElementById('cad-nome').value = '';
-document.getElementById('cad-email').value = '';
-document.getElementById('cad-cpf').value = '';
-document.getElementById('cad-senha').value = '';
-document.getElementById('cad-senha-confirma').value = '';
+        if (signUpError) throw signUpError;
 
-    } catch (e) {
-        mostrarMensagem("Erro: " + e.message);
-         }
-};
+        return mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
+
+    }
+
+    // 🔁 SE ATUALIZOU
+    if (atualizou) {
+        return mostrarMensagem("Plano atualizado com sucesso!");
+    }
+
+    // ⚠️ FALLBACK (CASO NÃO CAIA EM NENHUMA REGRA)
+    return mostrarMensagem("Nenhuma ação necessária.");
+
+} catch (e) {
+    mostrarMensagem("Erro: " + e.message);
+}
 
 </script>
 </body>
