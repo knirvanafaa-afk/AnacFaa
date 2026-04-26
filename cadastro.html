@@ -218,75 +218,116 @@ window.location.href = "planos.html";
 
 // SENSOR: Verifica se o e-mail já existe na base antes de tentar o cadastro
 
-try {
-        let deveCriarAuth = false;
-        const { data: profile, error: searchError } = await supabase
+const { data: usuarioExistente, error: searchError } = await supabase
+    .from('profiles')
+    .select('id, status_acesso, expira_em')
+    .eq('email', email)
+    .maybeSingle();
+
+if (searchError) {
+    return mostrarMensagem("Erro ao verificar cadastro.");
+}
+
+const agora = new Date();
+let deveCriarAuth = false;
+let atualizou = false;
+
+if (usuarioExistente) {
+
+    const dataExpiracao = usuarioExistente.expira_em 
+        ? new Date(usuarioExistente.expira_em) 
+        : null;
+
+    // 🔴 BLOQUEIA: PAGO E VÁLIDO
+    if (
+        usuarioExistente.status_acesso === 'pago' &&
+        dataExpiracao &&
+        dataExpiracao > agora
+    ) {
+        return mostrarMensagem("PLANO VÁLIDO!!! Você já possui acesso ativo.");
+    }
+
+    // 🔄 PAGO VENCIDO → RESET
+    if (
+        usuarioExistente.status_acesso === 'pago' &&
+        dataExpiracao &&
+        dataExpiracao < agora
+    ) {
+
+        const { error: updateError } = await supabase
             .from('profiles')
-            .select('*')
-            .eq('email', email)
-            .maybeSingle();
+            .update({
+                status_acesso: 'pendente',
+                expira_em: null,
+                plano_ativo: plano,
+                username: nome,
+                cpf: cpf
+            })
+            .eq('id', usuarioExistente.id);
 
-        const agora = new Date();
-
-        if (profile) {
-            // Se o profile existe, NUNCA deve criar Auth
-            deveCriarAuth = false; 
-
-            const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
-
-            // REGRA 3: STATUS PAGO e VÁLIDO
-            if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) {
-                return mostrarMensagem("PLANO VÁLIDO!!! Você já possui acesso ativo.");
-            }
-
-           // REGRA 4: PAGO e VENCIDO -> RESET E ATUALIZA TUDO
-if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
-    await supabase
-        .from('profiles')
-        .update({
-            status_acesso: 'pendente',
-            expira_em: null,
-            plano_ativo: plano,
-            username: nome, // <--- CONFIRME SE NO BANCO É 'username' OU 'full_name'
-            cpf: cpf
-        })
-        .eq('id', profile.id);
-}
-
-// REGRA 2: PENDENTE e NULL -> ATUALIZA TUDO
-if (profile.status_acesso === 'pendente' && !profile.expira_em) {
-    await supabase
-        .from('profiles')
-        .update({ 
-            plano_ativo: plano,
-            username: nome, // <--- SE O NOME NÃO MUDAR, TROQUE PARA full_name: nome
-            cpf: cpf 
-        })
-        .eq('id', profile.id);
-}
-
-        } else {
-            // Só vira TRUE se realmente não achar o e-mail
-            deveCriarAuth = true; 
+        if (updateError) {
+            return mostrarMensagem("Erro ao atualizar.");
         }
 
-        // --- EXECUÇÃO FINAL ---
-        if (deveCriarAuth) {
-            const { error: signUpError } = await supabase.auth.signUp({
-                email: email,
-                password: senha,
-                options: {
-                    data: { full_name: nome, cpf: cpf, plano_ativo: plano },
-                    emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
-                }
-            });
-            if (signUpError) throw signUpError;
-            mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
-        } else {
-            // AGORA essa mensagem vai aparecer, porque o signUp não será chamado
-            mostrarMensagem("Plano atualizado com sucesso! Verifique seu E-MAIL");
+        atualizou = true;
+
+    } else if (
+        usuarioExistente.status_acesso === 'pendente' &&
+        !usuarioExistente.expira_em
+    ) {
+
+        // ✏️ ATUALIZA PLANO
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update({
+                plano_ativo: plano,
+                username: nome,
+                cpf: cpf
+            })
+            .eq('id', usuarioExistente.id);
+
+        if (updateError) {
+            return mostrarMensagem("Erro ao atualizar.");
         }
 
+        atualizou = true;
+    }
+
+} else {
+    // 🆕 NOVO USUÁRIO
+    deveCriarAuth = true;
+}
+
+
+// --- EXECUÇÃO FINAL ---
+if (deveCriarAuth) {
+
+    const { error: signUpError } = await supabase.auth.signUp({
+        email: email,
+        password: senha,
+        options: {
+            data: {
+                full_name: nome,
+                cpf: cpf,
+                plano_ativo: plano
+            },
+            emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
+        }
+    });
+
+    if (signUpError) throw signUpError;
+
+    return mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
+}
+
+
+// 🔁 SE ATUALIZOU
+if (atualizou) {
+    return mostrarMensagem("Plano atualizado com sucesso!");
+}
+
+// fallback
+return mostrarMensagem("Nenhuma ação necessária.");
         // Limpeza dos campos (IDs com cad-)
         document.getElementById('cad-nome').value = '';       document.getElementById('cad-email').value = '';     document.getElementById('cad-cpf').value = ''; document.getElementById('cad-senha').value = ''; document.getElementById('cad-senha-confirma').value = '';
 
@@ -297,65 +338,3 @@ if (profile.status_acesso === 'pendente' && !profile.expira_em) {
 </script>
 </body>
 </html>
-
-mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail para validar o acesso.");
-
-
-
-
-const { data: usuarioExistente } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', email)
-        .maybeSingle();
-
-    if (usuarioExistente) {
-        return mostrarMensagem("Este e-mail já está cadastrado. Tente recuperar sua senha.");
-    }
-
-    // 3. Execução do Cadastro no Supabase
-    try {
-
-// --- SENSOR EXTRA: Checa se o e-mail já existe na sua tabela de perfis ---
-
-        const { data: existente } = await supabase
-            .from('profiles') 
-            .select('id')
-            .eq('email', email)
-            .maybeSingle();
-
-        if (existente) {
-            return mostrarMensagem("Este e-mail já está em uso no SKYLicense. Tente recuperar sua senha.");
-        }
-
-        // --- FIM DO SENSOR ---
-
-        const { data, error } = await supabase.auth.signUp({
-            email: email, 
-            password: senha, 
-            options: { 
-                data: { 
-                    full_name: nome,  
-                    cpf: cpf, 
-                    plano_ativo: plano 
-                }, 
-                emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  
-            }
-        });
-        
-        if (error) throw error;
-
-        
-    } catch (e) { 
-        // Tratamento de erro específico para e-mail já cadastrado
-        if (e.message.includes("already registered")) {
-            mostrarMensagem("Este e-mail já está em uso. Tente recuperar sua senha.");
-        } else {
-            mostrarMensagem("Erro: " + e.message); 
-        }
-    }
-};
-
-
-
-
