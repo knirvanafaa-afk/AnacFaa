@@ -223,7 +223,7 @@ window.location.href = "planos.html";
 
         const emailTratado = email.trim().toLowerCase();
 
-const { data: profile } = await supabase
+const { data: profile, error: searchError } = await supabase
   .from('profiles')
   .select('*')
   .eq('email', emailTratado)
@@ -248,29 +248,26 @@ if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) 
             }
 
             // REGRA 4: PAGO e VENCIDO -> RESET PARA PENDENTE
-            if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
+        } else if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
                
- await supabase 
-      .from('profiles') 
-      .update({ 
-       status_acesso: 'pendente',                      
-       expira_em: null, 
-       plano_ativo: plano, 
-       username: nome, 
-       cpf: cpf
-}) 
-       .eq('id', profile.id);
+ const { error: updateError } = await supabase
+  .from('profiles')
+  .update({
+    status_acesso: 'pendente',
+    expira_em: null,
+    plano_ativo: plano,
+    username: nome,
+    cpf: cpf
+  })
+  .eq('id', profile.id);
 
-if (updateError) {
-  return mostrarMensagem("ERRO UPDATE: " + updateError.message);
-}
 atualizou = true;
-}
+    }
 
             // REGRA 2: PENDENTE e NULL -> ATUALIZA PLANO
-            if (profile.status_acesso === 'pendente' && !profile.expira_em) {
+      } else if (profile.status_acesso === 'pendente' && !profile.expira_em) {
                 
-await supabase 
+const { error: updateError } = await supabase
          .from('profiles') 
          .update({ 
          plano_ativo: plano, 
@@ -279,12 +276,8 @@ await supabase
 }) 
         .eq('id', profile.id);
 
-if (updateError) {
-  return mostrarMensagem("ERRO UPDATE: " + updateError.message);
-}
-
 atualizou = true;
-}
+    }
      
    } else {
             // REGRA 1: NOVO USUÁRIO
