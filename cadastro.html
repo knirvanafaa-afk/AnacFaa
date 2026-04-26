@@ -231,10 +231,6 @@ if (searchError) {
     return mostrarMensagem("Erro ao verificar cadastro.");
 }
    
-// 👇 COLOQUE AQUI
-mostrarMensagem("DEBUG PROFILE: " + JSON.stringify(profile));
-mostrarMensagem("EMAIL DIGITADO: " + email);
-
  const agora = new Date();
 
         if (profile) {
@@ -269,14 +265,18 @@ atualizou = true;
             // REGRA 2: PENDENTE e NULL -> ATUALIZA PLANO
             if (profile.status_acesso === 'pendente' && !profile.expira_em) {
                 
-await supabase
-       .from('profiles')
-       .update({ 
-       plano_ativo: plano,
-       username: nome,
-       cpf: cpf
- })
-       .eq('id', profile.id);
+const { error: updateError } = await supabase
+  .from('profiles')
+  .update({
+    plano_ativo: plano,
+    username: nome,
+    cpf: cpf
+  })
+  .eq('id', profile.id);
+
+if (updateError) {
+  return mostrarMensagem("ERRO UPDATE: " + updateError.message);
+}
 
 atualizou = true;
 }
