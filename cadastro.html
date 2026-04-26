@@ -237,8 +237,6 @@ if (searchError) {
 
         if (profile) {
 
-deveCriarAuth = false; 
-
             const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
 
             // REGRA 3: STATUS PAGO e Expire Válido -> IMPEDE
@@ -248,7 +246,7 @@ if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) 
             }
 
             // REGRA 4: PAGO e VENCIDO -> RESET PARA PENDENTE
-        } else if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
+       if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
                
  const { error: updateError } = await supabase
   .from('profiles')
@@ -261,8 +259,11 @@ if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) 
   })
   .eq('id', profile.id);
 
+if (updateError) {
+return mostrarMensagem("ERRO UPDATE: " + updateError.message);
+}
+
 atualizou = true;
-    }
 
             // REGRA 2: PENDENTE e NULL -> ATUALIZA PLANO
       } else if (profile.status_acesso === 'pendente' && !profile.expira_em) {
@@ -276,8 +277,12 @@ const { error: updateError } = await supabase
 }) 
         .eq('id', profile.id);
 
+if (updateError) {
+return mostrarMensagem("ERRO UPDATE: " + updateError.message);
+}
+
 atualizou = true;
-    }
+}
      
    } else {
             // REGRA 1: NOVO USUÁRIO
