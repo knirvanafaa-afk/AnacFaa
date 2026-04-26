@@ -216,46 +216,43 @@ window.location.href = "planos.html";
        return;
     }
 
-// SENSOR: Verifica se o e-mail já existe na base antes de tentar o cadastro
-    const { data: usuarioExistente } = await supabase
+    // Execução do Cadastro no Supabase
+  
+  // 1. Tenta buscar o ID do perfil pelo e-mail
+    const { data: profile } = await supabase
         .from('profiles')
         .select('id')
         .eq('email', email)
         .maybeSingle();
 
-    if (usuarioExistente) {
-        return mostrarMensagem("Este e-mail já está cadastrado no SKYLicense. Tente recuperar sua senha.");
-    }
-
-    // 3. Execução do Cadastro no Supabase
     try {
+        // CONDIÇÃO: Se o ID do profile existir, apenas atualiza o plano
+        if (profile && profile.id) {
+            const { error: updateError } = await supabase
+                .from('profiles')
+                .update({ plano_ativo: plano })
+                .eq('id', profile.id);
 
-        const { data, error } = await supabase.auth.signUp({
+            if (updateError) throw updateError;
+            return mostrarMensagem("Plano atualizado com sucesso!");
+        } 
+
+        // Se não caiu no IF acima, ele segue para o cadastro normal que já funciona
+        const { error: signUpError } = await supabase.auth.signUp({
             email: email, 
             password: senha, 
             options: { 
-                data: { 
-                    full_name: nome,  
-                    cpf: cpf, 
-                    plano_ativo: plano 
-                }, 
+                data: { full_name: nome, cpf: cpf, plano_ativo: plano }, 
                 emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  
             }
         });
         
-        if (error) throw error;
+        if (signUpError) throw signUpError;
+        mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail.");
 
-        mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail para validar o acesso.");
-    } catch (e) { 
-        // Tratamento de erro específico para e-mail já cadastrado
-        if (e.message.includes("already registered")) {
-            mostrarMensagem("Este e-mail já está em uso. Tente recuperar sua senha.");
-        } else {
-            mostrarMensagem("Erro: " + e.message); 
-        }
+    } catch (e) {
+        mostrarMensagem("Erro: " + e.message);
     }
-};
-
 </script>
 </body>
 </html>
