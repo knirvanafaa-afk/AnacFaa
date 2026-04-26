@@ -217,7 +217,80 @@ window.location.href = "planos.html";
     }
 
 // SENSOR: Verifica se o e-mail já existe na base antes de tentar o cadastro
-    const { data: usuarioExistente } = await supabase
+
+try {
+        let deveCriarAuth = false;
+        const { data: profile, error: searchError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('email', email)
+            .maybeSingle();
+
+        const agora = new Date();
+
+        if (profile) {
+            // Se o profile existe, NUNCA deve criar Auth
+            deveCriarAuth = false; 
+
+            const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
+
+            // REGRA 3: STATUS PAGO e VÁLIDO
+            if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) {
+                return mostrarMensagem("PLANO VÁLIDO!!! Você já possui acesso ativo.");
+            }
+
+            // REGRA 4 e REGRA 2 (Unificadas para atualizar TUDO)
+            // Se cair aqui, ele VAI fazer o update
+            await supabase
+                .from('profiles')
+                .update({
+                    status_acesso: 'pendente',
+                    expira_em: null,
+                    plano_ativo: plano,
+                    username: nome, // Use 'username' se for igual ao CSV ou 'full_name' se mudou no banco
+                    cpf: cpf
+                })
+                .eq('id', profile.id);
+
+        } else {
+            // Só vira TRUE se realmente não achar o e-mail
+            deveCriarAuth = true; 
+        }
+
+        // --- EXECUÇÃO FINAL ---
+        if (deveCriarAuth) {
+            const { error: signUpError } = await supabase.auth.signUp({
+                email: email,
+                password: senha,
+                options: {
+                    data: { full_name: nome, cpf: cpf, plano_ativo: plano },
+                    emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
+                }
+            });
+            if (signUpError) throw signUpError;
+            mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
+        } else {
+            // AGORA essa mensagem vai aparecer, porque o signUp não será chamado
+            mostrarMensagem("Plano atualizado com sucesso! Verifique seu E-MAIL");
+        }
+
+        // Limpeza dos campos (IDs com cad-)
+        document.getElementById('cad-nome').value = '';       document.getElementById('cad-email').value = '';     document.getElementById('cad-cpf').value = ''; document.getElementById('cad-senha').value = ''; document.getElementById('cad-senha-confirma').value = '';
+
+    } catch (e) {
+        mostrarMensagem("Erro: " + e.message);
+    }
+    
+</script>
+</body>
+</html>
+
+mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail para validar o acesso.");
+
+
+
+
+const { data: usuarioExistente } = await supabase
         .from('profiles')
         .select('id')
         .eq('email', email)
@@ -259,7 +332,7 @@ window.location.href = "planos.html";
         
         if (error) throw error;
 
-        mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail para validar o acesso.");
+        
     } catch (e) { 
         // Tratamento de erro específico para e-mail já cadastrado
         if (e.message.includes("already registered")) {
@@ -270,6 +343,6 @@ window.location.href = "planos.html";
     }
 };
 
-</script>
-</body>
-</html>
+
+
+
