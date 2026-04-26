@@ -216,114 +216,59 @@ window.location.href = "planos.html";
        return;
     }
 
-// SENSOR INTELIGENTE: Verifica Status, vencimento e Plano
-
-    try {
-
-    const emailTratado = email.trim().toLowerCase();
-
-    // 🔎 BUSCA PROFILE EXISTENTE
-    const { data: profile, error: searchError } = await supabase
+// SENSOR: Verifica se o e-mail já existe na base antes de tentar o cadastro
+    const { data: usuarioExistente } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('email', emailTratado)
+        .select('id')
+        .eq('email', email)
         .maybeSingle();
 
-    if (searchError) {
-        return mostrarMensagem("Erro ao verificar cadastro.");
+    if (usuarioExistente) {
+        return mostrarMensagem("Este e-mail já está cadastrado. Tente recuperar sua senha.");
     }
 
-    const agora = new Date();
-    let deveCriarAuth = false;
-    let atualizou = false;
+    // 3. Execução do Cadastro no Supabase
+    try {
 
-    // 🧠 SE JÁ EXISTE PROFILE
-    if (profile) {
+// --- SENSOR EXTRA: Checa se o e-mail já existe na sua tabela de perfis ---
 
-        const dataExpiracao = profile.expira_em ? new Date(profile.expira_em) : null;
+        const { data: existente } = await supabase
+            .from('profiles') 
+            .select('id')
+            .eq('email', email)
+            .maybeSingle();
 
-        // ❌ BLOQUEIA: PAGO E VÁLIDO
-        if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) {
-            return mostrarMensagem("PLANO VÁLIDO!!! Você já possui acesso ativo.");
-        }
+        if (existente) {
+            return mostrarMensagem("Este e-mail já está em uso no SKYLicense. Tente recuperar sua senha.");
+        }
 
-        // 🔄 PAGO VENCIDO → RESET
-        if (profile.status_acesso === 'pago' && dataExpiracao && dataExpiracao < agora) {
+        // --- FIM DO SENSOR ---
 
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({
-                    status_acesso: 'pendente',
-                    expira_em: null,
-                    plano_ativo: plano,
-                    username: nome,
-                    cpf: cpf
-                })
-                .eq('id', profile.id);
-
-            if (updateError) {
-                return mostrarMensagem("Erro ao atualizar plano.");
-            }
-
-            atualizou = true;
-
-        } else if (profile.status_acesso === 'pendente' && !profile.expira_em) {
-
-            // ✏️ PENDENTE → ATUALIZA PLANO
-            const { error: updateError } = await supabase
-                .from('profiles')
-                .update({
-                    plano_ativo: plano,
-                    username: nome,
-                    cpf: cpf
-                })
-                .eq('id', profile.id);
-
-            if (updateError) {
-                return mostrarMensagem("Erro ao atualizar plano.");
-            }
-
-            atualizou = true;
-        }
-
-    } else {
-        // 🆕 NOVO USUÁRIO
-        deveCriarAuth = true;
-    }
-
-    // 🔐 CRIA AUTH APENAS SE NÃO EXISTE
-    if (deveCriarAuth) {
-
-        const { error: signUpError } = await supabase.auth.signUp({
-            email: emailTratado,
-            password: senha,
-            options: {
-                data: {
-                    full_name: nome,
-                    cpf: cpf,
-                    plano_ativo: plano
-                },
-                emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'
+        const { data, error } = await supabase.auth.signUp({
+            email: email, 
+            password: senha, 
+            options: { 
+                data: { 
+                    full_name: nome,  
+                    cpf: cpf, 
+                    plano_ativo: plano 
+                }, 
+                emailRedirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html'  
             }
         });
+        
+        if (error) throw error;
 
-        if (signUpError) throw signUpError;
-
-        return mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu E-MAIL para validar o acesso.");
-
+        mostrarMensagem("Cadastro efetuado com sucesso! Acesse seu e-mail para validar o acesso.");
+    } catch (e) { 
+        // Tratamento de erro específico para e-mail já cadastrado
+        if (e.message.includes("already registered")) {
+            mostrarMensagem("Este e-mail já está em uso. Tente recuperar sua senha.");
+        } else {
+            mostrarMensagem("Erro: " + e.message); 
+        }
     }
-
-    // 🔁 SE ATUALIZOU
-    if (atualizou) {
-        return mostrarMensagem("Plano atualizado com sucesso!");
-    }
-
-    // ⚠️ FALLBACK (CASO NÃO CAIA EM NENHUMA REGRA)
-    return mostrarMensagem("Nenhuma ação necessária.");
-
-} catch (e) {
-    mostrarMensagem("Erro: " + e.message);
-}
+};
 
 </script>
 </body>
