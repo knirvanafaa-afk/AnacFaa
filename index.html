@@ -75,24 +75,26 @@
         });
 
         if (error) {
-            // Se der erro de login, verificamos se o e-mail existe
-            // Usamos o 'maybeSingle' para não travar se não encontrar nada
-            const { data: checkEmail, error: errorCheck } = await supabase
-                .from('profiles')
-                .select('id')
-                .eq('email', email)
-                .maybeSingle();
 
-            // Se não encontrar o e-mail OU se der erro de permissão (PGRSTP11),
-            // mas o erro original do login for "Invalid login credentials",
-            // fazemos uma segunda checagem lógica.
-            if (!checkEmail) {
-                mostrarMensagem("E-mail não cadastrado.");
-            } else {
-                mostrarMensagem("Senha inválida.");
-            }
-            return;
-        }
+    // 🔥 NOVO: verifica se é e-mail não confirmado
+    if (error.message && error.message.toLowerCase().includes("email not confirmed")) {
+        mostrarMensagem("E-mail pendente de confirmação. Clique no link enviado no seu e-mail para liberar o acesso.");
+        return;
+    }
+
+    const { data: checkEmail } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', email)
+        .maybeSingle();
+
+    if (!checkEmail) {
+        mostrarMensagem("E-mail não cadastrado.");
+    } else {
+        mostrarMensagem("Senha inválida.");
+    }
+    return;
+}
 
 
 // Busca o status real no banco
