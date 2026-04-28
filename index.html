@@ -114,9 +114,21 @@ if (data.user) {
     if (!isAdmin) {
         
         // 2. Se for pendente OU se estiver vencido (seja beta ou qualquer outro status não-admin)
+
+if (!isAdmin) {
+
+    // NOVA REGRA: pendente sem data (não pagou ainda)
+
+    if (isPendente && !profile.expira_em) {
+        mostrarMensagem("Por favor efetue o pagamento para ter acesso ao nosso conteúdo!!!");
+        return; // Bloqueia o acesso
+    }
+
         if (isPendente || vencido) {
             mostrarMensagem("Sua assinatura está vencida. Por favor renove seu Plano! Redirecionando...");
+
             setTimeout(() => { window.location.href = 'planos.html'; }, 5000);
+
             return; // Bloqueia o acesso
         }
     }
