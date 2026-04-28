@@ -111,13 +111,10 @@ if (data.user) {
     const isPendente = profile.status_acesso === 'pendente';
 
     // 1. Regra de Ouro: Se for Admin, ignora todas as verificações de bloqueio abaixo
+
     if (!isAdmin) {
         
         // 2. Se for pendente OU se estiver vencido (seja beta ou qualquer outro status não-admin)
-
-if (!isAdmin) {
-
-    // NOVA REGRA: pendente sem data (não pagou ainda)
 
     if (isPendente && !profile.expira_em) {
         mostrarMensagem("Por favor efetue o pagamento para ter acesso ao nosso conteúdo!!!");
