@@ -77,6 +77,16 @@ import {
             return;
         }
 
+    // --- RESET SENHA ---
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('reset') === 'true') {
+        window.location.href = 'nova-senha.html';
+    } else {
+        window.location.href = 'dashboard.html';
+    }
+    // --- FIM DA ALTERAÇÃO ---
+    
 document.getElementById('codigo-mfa').value = ''; 
 
 // --- INÍCIO DA VALIDAÇÃO DE DISPOSITIVO (PASSKEY) ---
