@@ -163,7 +163,7 @@ window.recuperarSenha = async () => {
 
     // Função nativa do Supabase para enviar o link de reset
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/ativar-acesso.html?reset=true'
+        redirectTo: 'https://knirvanafaa-afk.github.io/AnacFaa/verificar-mfa.html?reset=true'
     });
 
     if (error) {
