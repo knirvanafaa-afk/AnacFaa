@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SLA - Suporte MFA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Segoe+UI:wght@400;700&display=swap" rel="stylesheet">
+ 
+   <style>
+        /* MANTENDO SEU CSS ORIGINAL */
+        :root { --verde-sucesso: #2ecc71; --verde-escuro: #1b5e20; --verde-claro-fundo: #fafffa; --cinza-fundo: #f0f2f5; }
+     
+   body { font-family: 'Segoe UI', sans-serif; background-color: var(--cinza-fundo); display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+    
+    .logo-texto { font-family: 'Orbitron', sans-serif; font-size: 28px; color: var(--verde-escuro); margin-bottom: 20px; letter-spacing: 2px; }
+   
+     .container { width: 100%; max-width: 450px; background: white; padding: 30px; border-radius: 20px; box-shadow: 0px 10px 25px rgba(0,0,0,0.1); box-sizing: border-box; }
+      
+  /* 1. H2 com fundo verde e letra branca */
+h2 { 
+    background-color: var(--verde-escuro); 
+    color: white; 
+    text-align: center; 
+    padding: 15px; 
+    border-radius: 12px; 
+    font-weight: bold; 
+    font-size: 16px; 
+    text-transform: uppercase; 
+    margin-top: 0; 
+    margin-bottom: 20px; 
+    box-shadow: 0px 4px 10px rgba(0,0,0,0.1); 
+}
+
+/* 2. Caixa com contorno e fundo verde claro para os campos */
+.section-box { 
+    border: 2px solid #27ae60; 
+    padding: 20px; 
+    border-radius: 15px; 
+    background-color: #f1f9f1; 
+    margin-bottom: 20px; 
+}
+   
+     .input-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; color: #666; font-size: 14px; }
+      
+  input, textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 10px; box-sizing: border-box; font-size: 16px; outline: none; }
+      
+  textarea { height: 100px; resize: none; font-family: inherit; }
+        .btn-reset { width: 100%; padding: 15px; border: none; border-radius: 12px; cursor: pointer; font-weight: bold; text-transform: uppercase; background-color: var(--verde-escuro); color: white; margin-top: 10px; transition: 0.3s; }
+     
+   .btn-reset:hover { background-color: #0e3d14; }
+    
+    .voltar { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; font-size: 14px; }
+        p { font-size: 14px; color: #555; line-height: 1.6; text-align: center; margin-bottom: 20px; }
+  
+  </style>
+</head>
+<body>
+
+    <div class="logo-texto">SKYLicense ACADEMY</div>
+
+    <div class="container">
+        <h2>Solicitar Reset de MFA</h2>
+        <p><b>Perdeu o acesso ao seu autenticador?</b> Preencha os dados abaixo para que possamos validar sua identidade e resetar sua chave manualmente.</p>
+        
+        <form action="https://formspree.io/f/knirvy@gmail.com" method="POST">
+<div class="section-box">
+            <div class="input-group">
+                <label><b>Nome Completo:</b></label>
+                <input type="text" name="nome" required placeholder="Seu nome completo">
+            </div>
+
+            <div class="input-group">
+                <label><b>E-mail Cadastrado:</b></label>
+                <input type="email" name="email" required placeholder="email@exemplo.com">
+            </div>
+
+            <div class="input-group">
+                <label><b>CPF:</b></label>
+                <input type="text" name="cpf" required placeholder="000.000.000-00">
+            </div>
+
+            <div class="input-group">
+                <label><b>Motivo da Solicitação:</b></label>
+                <textarea name="mensagem" required placeholder="Ex: Troquei de celular e perdi o acesso ao Google Authenticator."></textarea>
+            </div>
+
+            <button type="submit" class="btn-reset">Enviar Solicitação</button>
+</div>
+        </form>
+
+        <a href="index.html" class="voltar">← Voltar para o Login</a>
+    </div>
+
+</body>
+</html>
