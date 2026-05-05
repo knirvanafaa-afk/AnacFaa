@@ -235,7 +235,12 @@ window.location.href = "planos.html";
             const dataExpiracao = usuarioExistente.expira_em ? new Date(usuarioExistente.expira_em) : null;
 
             // 🔴 BLOQUEIO: Se o plano ainda é válido
-            if (usuarioExistente.status_acesso === 'pago' && dataExpiracao && dataExpiracao > agora) {
+            if (
+    (usuarioExistente.status_acesso === 'pago' ||
+     usuarioExistente.status_acesso === 'beta') &&
+    dataExpiracao &&
+    dataExpiracao > agora
+) {
                 return mostrarMensagem("PLANO VÁLIDO!!! Você já possui acesso ativo.");
             }
 
