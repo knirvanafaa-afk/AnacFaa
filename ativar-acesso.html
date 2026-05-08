@@ -259,19 +259,51 @@ if (profile && profile.status_acesso !== 'pago') {
 garantirSessao();
 
 
-    // 4. LÓGICA DE SEGURANÇA (MFA)
+  // 4. LÓGICA DE SEGURANÇA (MFA)
     async function gerarMFA() {
         try {
-            const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
-            if (error) throw error;
+            // ✅ CHECK REAL: Verifica se já existe um fator pendente antes de criar um novo
+            const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
+            if (listError) throw listError;
 
-            currentFactorId = data.id;
+            // Filtra por fatores que ainda não foram verificados (unverified)
+            const fatorPendente = factors.all.find(f => f.status === 'unverified');
+
+            let uriFinal;
+            let secretFinal;
+
+            if (fatorPendente) {
+                // Se já existe, usamos o ID e recuperamos o que salvamos no localStorage
+                currentFactorId = fatorPendente.id;
+                uriFinal = localStorage.getItem('mfa_uri');
+                secretFinal = localStorage.getItem('mfa_secret');
+            } else {
+                // Se não existe nada, chama o enroll
+                const { data: enrollData, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+                if (error) throw error;
+                
+                currentFactorId = enrollData.id;
+                uriFinal = enrollData.totp.uri;
+                secretFinal = enrollData.totp.secret;
+                
+                // Salva para persistir no refresh
+                localStorage.setItem('mfa_uri', uriFinal);
+                localStorage.setItem('mfa_secret', secretFinal);
+            }
+
+            // Se por algum motivo o refresh limpou o localStorage e o fator ainda tá unverified no Supabase
+            // precisamos tratar para não dar erro de variável nula
+            if (!uriFinal || !secretFinal) {
+                // Opcional: Se quiser resetar o processo aqui, mas o ideal é apenas avisar
+                console.warn("Dados de MFA perdidos no refresh.");
+            }
+
             const qrContainer = document.getElementById('qr-container');
             qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
 
-            // Gerar QR Code
+            // Gerar QR Code usando a uriFinal (que veio do enroll ou do localStorage)
             try {
-                const url = await QRCode.toDataURL(data.totp.uri, { 
+                const url = await QRCode.toDataURL(uriFinal, { 
                     width: 250, 
                     errorCorrectionLevel: 'L'
                 });
@@ -287,7 +319,7 @@ garantirSessao();
                 qrContainer.appendChild(erroMsg);
             }
 
-            // Botão para mostrar chave manual (Segurança)
+            // Botão para mostrar chave manual (Mantendo seu estilo original)
             const btnToggle = document.createElement('button');
             btnToggle.innerText = "Mostrar chave manual";
             btnToggle.style.marginTop = "10px";
@@ -296,8 +328,9 @@ garantirSessao();
             
             const secretKey = document.createElement('p');
             secretKey.className = 'chave-manual';
-            secretKey.style.display = "none"; // Oculto por padrão
-            secretKey.innerText = "Chave: " + data.totp.secret;
+            secretKey.style.display = "none"; 
+// secreta por padrao
+            secretKey.innerText = "Chave: " + secretFinal; // Usando a variável corrigida
 
             btnToggle.onclick = () => {
                 secretKey.style.display = "block";
@@ -308,7 +341,7 @@ garantirSessao();
             qrContainer.appendChild(secretKey);
 
         } catch (e) {
-window.mostrarMensagem(traduzirErro(e));
+            window.mostrarMensagem(traduzirErro(e));
         }
     }
 
@@ -337,6 +370,9 @@ window.mostrarMensagem(traduzirErro(e));
             });
 
             if (confError) throw confError;
+
+localStorage.removeItem('mfa_uri');
+localStorage.removeItem('mfa_secret');
             window.mostrarMensagem("Acesso ativado com sucesso!");
             setTimeout(() => { window.location.href = 'index.html'; }, 2000);
         } catch (e) {
