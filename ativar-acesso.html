@@ -261,12 +261,39 @@ garantirSessao();
 
     // 4. LÓGICA DE SEGURANÇA (MFA)
     async function gerarMFA() {
-        try {
-            const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
-            if (error) throw error;
+       
+ try {
+            // ✅ CHECK REAL: Verifica se já existe um fator pendente antes de criar um novo
+            const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
+            if (listError) throw listError;
 
-            currentFactorId = data.id;
+            // Filtra por fatores que ainda não foram verificados (unverified)
+            const fatorPendente = factors.all.find(f => f.status === 'unverified');
+
+            let data;
+            if (fatorPendente) {
+                // Se já existe, apenas usamos o ID dele ao invés de criar um novo
+                currentFactorId = fatorPendente.id;
+                // Como o segredo/QR original não pode ser recuperado da lista, 
+                // aqui entra a necessidade de manter o que foi gerado na tela.
+            } else {
+                // Se não existe nada, aí sim chamamos o enroll
+                const { data: enrollData, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+                if (error) throw error;
+                data = enrollData;
+                currentFactorId = data.id;
+                
+                // ✅ Única linha de persistência necessária: salvar o URI e Secret para o Refresh
+                localStorage.setItem('mfa_uri', data.totp.uri);
+                localStorage.setItem('mfa_secret', data.totp.secret);
+            }
+
+            // Recupera os dados para exibição (ou do recém-gerado ou do localStorage)
+            const uriDisplay = data ? data.totp.uri : localStorage.getItem('mfa_uri');
+            const secretDisplay = data ? data.totp.secret : localStorage.getItem('mfa_secret');
+
             const qrContainer = document.getElementById('qr-container');
+
             qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
 
             // Gerar QR Code
@@ -337,6 +364,9 @@ window.mostrarMensagem(traduzirErro(e));
             });
 
             if (confError) throw confError;
+
+localStorage.removeItem('mfa_uri');
+localStorage.removeItem('mfa_secret');
             window.mostrarMensagem("Acesso ativado com sucesso!");
             setTimeout(() => { window.location.href = 'index.html'; }, 2000);
         } catch (e) {
