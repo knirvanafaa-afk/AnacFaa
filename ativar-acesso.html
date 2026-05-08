@@ -260,25 +260,28 @@ garantirSessao();
 
 
   // 4. LÓGICA DE SEGURANÇA (MFA)
-    async function gerarMFA() {
+    
+async function gerarMFA() {
         try {
-            // ✅ CHECK REAL: Verifica se já existe um fator pendente antes de criar um novo
             const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
             if (listError) throw listError;
 
-            // Filtra por fatores que ainda não foram verificados (unverified)
             const fatorPendente = factors.all.find(f => f.status === 'unverified');
 
-            let uriFinal;
-            let secretFinal;
+            let uriFinal = localStorage.getItem('mfa_uri');
+            let secretFinal = localStorage.getItem('mfa_secret');
 
-            if (fatorPendente) {
-                // Se já existe, usamos o ID e recuperamos o que salvamos no localStorage
+            // LÓGICA DE RECUPERAÇÃO OU NOVO ENROLL
+            if (fatorPendente && uriFinal && secretFinal) {
+                // Cenário A: Tem fator no Supabase E dados no navegador (Refresh funcionou)
                 currentFactorId = fatorPendente.id;
-                uriFinal = localStorage.getItem('mfa_uri');
-                secretFinal = localStorage.getItem('mfa_secret');
             } else {
-                // Se não existe nada, chama o enroll
+                // Cenário B: Não tem fator OU os dados do navegador sumiram
+                // Se houver um fator pendente "órfão" no Supabase, removemos para não dar conflito
+                if (fatorPendente) {
+                    await supabase.auth.mfa.unenroll({ factorId: fatorPendente.id });
+                }
+
                 const { data: enrollData, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
                 if (error) throw error;
                 
@@ -286,22 +289,14 @@ garantirSessao();
                 uriFinal = enrollData.totp.uri;
                 secretFinal = enrollData.totp.secret;
                 
-                // Salva para persistir no refresh
                 localStorage.setItem('mfa_uri', uriFinal);
                 localStorage.setItem('mfa_secret', secretFinal);
             }
 
-            // Se por algum motivo o refresh limpou o localStorage e o fator ainda tá unverified no Supabase
-            // precisamos tratar para não dar erro de variável nula
-            if (!uriFinal || !secretFinal) {
-                // Opcional: Se quiser resetar o processo aqui, mas o ideal é apenas avisar
-                console.warn("Dados de MFA perdidos no refresh.");
-            }
-
+            // RENDERIZAÇÃO (Mantendo exatamente seu estilo original)
             const qrContainer = document.getElementById('qr-container');
-            qrContainer.innerHTML = ""; // Limpa o "Aguarde..."
+            qrContainer.innerHTML = ""; 
 
-            // Gerar QR Code usando a uriFinal (que veio do enroll ou do localStorage)
             try {
                 const url = await QRCode.toDataURL(uriFinal, { 
                     width: 250, 
@@ -314,12 +309,9 @@ garantirSessao();
                 img.style.maxWidth = "250px";
                 qrContainer.appendChild(img);
             } catch (err) {
-                const erroMsg = document.createElement('p');
-                erroMsg.innerText = "QR Code indisponível.";
-                qrContainer.appendChild(erroMsg);
+                qrContainer.innerHTML = "<p>Erro ao gerar QR Code gráfico. Use a chave manual.</p>";
             }
 
-            // Botão para mostrar chave manual (Mantendo seu estilo original)
             const btnToggle = document.createElement('button');
             btnToggle.innerText = "Mostrar chave manual";
             btnToggle.style.marginTop = "10px";
@@ -329,8 +321,7 @@ garantirSessao();
             const secretKey = document.createElement('p');
             secretKey.className = 'chave-manual';
             secretKey.style.display = "none"; 
-// secreta por padrao
-            secretKey.innerText = "Chave: " + secretFinal; // Usando a variável corrigida
+            secretKey.innerText = "Chave: " + secretFinal;
 
             btnToggle.onclick = () => {
                 secretKey.style.display = "block";
