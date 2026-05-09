@@ -263,8 +263,12 @@ garantirSessao();
     
 async function gerarMFA() {
         try {
+
+// ✅ CHECK REAL: Verifica se já existe um fator pendente antes de criar um novo
             const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
             if (listError) throw listError;
+
+// Filtra por fatores que ainda não foram verificados (unverified)
 
             const fatorPendente = factors.all.find(f => f.status === 'unverified');
 
@@ -272,12 +276,18 @@ async function gerarMFA() {
             let secretFinal = localStorage.getItem('mfa_secret');
 
             // LÓGICA DE RECUPERAÇÃO OU NOVO ENROLL
+
             if (fatorPendente && uriFinal && secretFinal) {
+
                 // Cenário A: Tem fator no Supabase E dados no navegador (Refresh funcionou)
+
                 currentFactorId = fatorPendente.id;
             } else {
+
                 // Cenário B: Não tem fator OU os dados do navegador sumiram
+
                 // Se houver um fator pendente "órfão" no Supabase, removemos para não dar conflito
+
                 if (fatorPendente) {
                     await supabase.auth.mfa.unenroll({ factorId: fatorPendente.id });
                 }
@@ -313,7 +323,8 @@ async function gerarMFA() {
             }
 
             const btnToggle = document.createElement('button');
-            btnToggle.innerText = "Mostrar chave manual";
+            btnToggle.innerText = "🔑
+Mostrar chave manual";
             btnToggle.style.marginTop = "10px";
             btnToggle.style.padding = "8px";
             btnToggle.style.cursor = "pointer";
