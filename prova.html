@@ -470,29 +470,48 @@ const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identifica
 }
 
 function navegarSimulado(direcao) {
+    // Busca todos os cards de perguntas
     const cards = document.querySelectorAll('.pergunta-card');
     if (cards.length === 0) return;
 
-    const questaoAtualIndex = [...cards].findIndex(card => card.getBoundingClientRect().top > 0);
+    // Identifica qual questão está mais visível no topo da tela agora
+    let questaoAtualIndex = 0;
+    for (let i = 0; i < cards.length; i++) {
+        const rect = cards[i].getBoundingClientRect();
+        if (rect.top > -50) { // Tolerância de 50px para capturar a questão atual
+            questaoAtualIndex = i;
+            break;
+        }
+    }
 
     switch (direcao) {
         case 'topo':
             window.scrollTo({ top: 0, behavior: 'smooth' });
             break;
+            
         case 'fim':
-            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            // Rola até o botão de concluir no final
+            const btnConcluir = document.getElementById('btn-concluir');
+            if (btnConcluir) {
+                btnConcluir.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            } else {
+                window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+            }
             break;
+            
         case 'sobe10':
+            // Garante que não suba além da questão 0
             let alvoSobe = Math.max(0, questaoAtualIndex - 10);
             cards[alvoSobe].scrollIntoView({ behavior: 'smooth', block: 'start' });
             break;
+            
         case 'desce10':
+            // Garante que não desça além da última questão
             let alvoDesce = Math.min(cards.length - 1, questaoAtualIndex + 10);
             cards[alvoDesce].scrollIntoView({ behavior: 'smooth', block: 'start' });
             break;
     }
 }
-
 </script>
 </body>
 </html>
