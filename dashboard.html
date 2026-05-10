@@ -886,7 +886,18 @@ async function carregarDadosCertificados() {
     const mA = acumulador.Airframe.qtdSimulados > 0 ? (acumulador.Airframe.somaNotas / acumulador.Airframe.qtdSimulados) : 0;
     const mP = acumulador.Powerplant.qtdSimulados > 0 ? (acumulador.Powerplant.somaNotas / acumulador.Powerplant.qtdSimulados) : 0;
     
-    const mediaGlobal = ((mG + mA + mP) / 3).toFixed(1);
+
+    // ✅ INSERIR APENAS ESTA LÓGICA DE CONTADOR:
+    let divisor = 0;
+    if (acumulador.General.totalQuestoes > 0) divisor++;
+    if (acumulador.Airframe.totalQuestoes > 0) divisor++;
+    if (acumulador.Powerplant.totalQuestoes > 0) divisor++;
+
+    // Se o aluno não fez nada ainda, divide por 1 para evitar erro de NaN
+    const divisorFinal = divisor > 0 ? divisor : 1;
+
+    // ✅ ALTERAR APENas O DIVISOR NA SUA LINHA ORIGINAL:
+    const mediaGlobal = ((mG + mA + mP) / divisorFinal).toFixed(1);
 
 // Atualizar Tabela de Cobre
 atualizarSistemaNivel(totalQuestoesGeral, parseFloat(mediaGlobal));
