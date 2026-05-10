@@ -491,17 +491,13 @@ window.navegarSimulado = function(direcao) {
 
         case 'topo':
 
-    cards[0].scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
+            cards[0].scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
 
-    window.scrollBy({
-        top: -5000,
-        behavior: 'smooth'
-    });
+            break;
 
-    break;
         case 'fim':
 
             cards[cards.length - 1].scrollIntoView({
