@@ -469,36 +469,42 @@ const tipoExecucao = sessionStorage.getItem('modo_execucao') || 'Não Identifica
     }
 }
 
-function navegarSimulado(direcao) {
+window.navegarSimulado = function(direcao) {
+
     const cards = document.querySelectorAll('.pergunta-card');
 
     if (!cards.length) return;
 
-    // Descobre qual questão está mais próxima do topo da tela
     let questaoAtualIndex = 0;
 
-    cards.forEach((card, index) => {
-        const rect = card.getBoundingClientRect();
+    for (let i = 0; i < cards.length; i++) {
 
-        if (rect.top <= 150) {
-            questaoAtualIndex = index;
+        const rect = cards[i].getBoundingClientRect();
+
+        if (rect.top >= 0) {
+            questaoAtualIndex = i;
+            break;
         }
-    });
+    }
 
     switch (direcao) {
 
         case 'topo':
+
             cards[0].scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
+
             break;
 
         case 'fim':
+
             cards[cards.length - 1].scrollIntoView({
                 behavior: 'smooth',
                 block: 'start'
             });
+
             break;
 
         case 'sobe10':
