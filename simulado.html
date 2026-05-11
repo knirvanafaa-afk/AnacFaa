@@ -108,6 +108,25 @@ display: flex; flex-direction: column; box-sizing: border-box;
     color: #34495e;
 }
 
+.btn-voltar {
+    width: 100%;
+    padding: 15px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: white;
+    background-color: #7f8c8d; /* Cinza do original */
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    text-transform: uppercase;
+    margin-top: 20px;
+}
+
+.btn-voltar:hover {
+    background-color: #95a5a6;
+}
+
 </style>
 </head>
 <body>
@@ -183,6 +202,10 @@ display: flex; flex-direction: column; box-sizing: border-box;
     outline-offset: -100px;
 "onclick="window.location.href='index_simulado.html'">NEW TEST</button>
     </div>
+
+<button class="btn-voltar" onclick="window.location.href='dashboard.html'">⬅ BACK</button>
+</div> ```
+
 </div>
 
 <script type="module">
