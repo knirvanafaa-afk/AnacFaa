@@ -1090,11 +1090,18 @@ async function carregarDadosCertificados() {
     };
 
     historico.forEach(item => {
-        const matBruta = (item.materia || '').trim().toLowerCase();
-        const mat = matBruta.charAt(0).toUpperCase() + matBruta.slice(1);
+        // Normaliza a matéria para padronizar (Ex: 'airframe' vira 'Airframe')
+        let matBruta = (item.materia || '').trim().toLowerCase();
+        let mat = '';
+        if (matBruta.includes('gen')) mat = 'General';
+        if (matBruta.includes('air')) mat = 'Airframe';
+        if (matBruta.includes('pow')) mat = 'Powerplant';
+
         if (acumulador[mat]) {
-            acumulador[mat].somaNotas += parseFloat(item.nota || 0);
-            acumulador[mat].totalQuestoes += parseInt(item.total_questoes || 0);
+            acumulador[mat].somaNotas += parseFloat(item.nota || item.pontuacao || 0);
+            // Garante a leitura correta das questões independentemente do nome da coluna no banco
+            let qtdQ = parseInt(item.total_questoes || item.questoes_respondidas || item.quantidade || 0);
+            acumulador[mat].totalQuestoes += qtdQ;
             acumulador[mat].qtdSimulados++;
         }
     });
