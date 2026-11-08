@@ -1090,7 +1090,8 @@ async function carregarDadosCertificados() {
     };
 
     historico.forEach(item => {
-        const mat = item.materia;
+        const matBruta = (item.materia || '').trim().toLowerCase();
+        const mat = matBruta.charAt(0).toUpperCase() + matBruta.slice(1);
         if (acumulador[mat]) {
             acumulador[mat].somaNotas += parseFloat(item.nota || 0);
             acumulador[mat].totalQuestoes += parseInt(item.total_questoes || 0);
