@@ -3,6 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google Fonts: Nunito & Fredoka for playful typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+
     <title>Dashboard - Perfil do Mecânico</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -25,11 +29,11 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 /* HEADER */
 
 .perfil-header { 
-    background-color: #fff9c4; /* IGUAL AO ALUNOS.HTML */
-    border: 2px solid #f1c40f; /* IGUAL AO ALUNOS.HTML */
-    border-radius: 10px;       /* IGUAL AO ALUNOS.HTML */
+    background-color: #fff9c4;
+    border: 2.5px solid #f1c40f;
+    border-radius: 20px; 
     padding: 30px; 
-    box-shadow: 0px 10px 25px rgba(0,0,0,0.1); 
+    box-shadow: 0px 8px 0px #d1d5db;
     display: flex; 
     flex-wrap: wrap; 
     align-items: flex-start; 
@@ -141,8 +145,36 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 .card-modo:focus, .card-modo:active { outline: none; } 
 
 /* 2. Cores base dos modos */
-.modo-revisao { background-color: #2ecc71 !important; border-bottom: 6px solid #27ae60 !important; color: white !important; }
-.modo-simulado { background-color: #3498db !important; border-bottom: 6px solid #2980b9 !important; color: white !important; }
+
+.modo-revisao { 
+   background-color: #2ecc71 !important; 
+    border: 2.5px solid #219653; 
+    border-radius: 20px;       
+    padding: 15px 15px; 
+    box-shadow: 0px 8px 0px #1e824c;
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.modo-simulado { 
+    background-color: #3498db !important; 
+    border: 2.5px solid #2574a9; 
+    border-radius: 20px;       
+    padding: 15px 15px; 
+    box-shadow: 0px 8px 0px #1c5980; 
+    box-sizing: border-box;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
 
 /* 3. CORREÇÃO DO ERRO: Adicionado o ponto antes de modo-revisao */
 .modo-revisao h3, .modo-revisao p, .modo-simulado h3, .modo-simulado p { color: white !important; }
@@ -151,8 +183,22 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 .modo-revisao:active { box-shadow: 0 0 15px rgba(46, 204, 113, 0.8); transform: scale(0.98); }
 .modo-simulado:active { box-shadow: 0 0 15px rgba(52, 152, 219, 0.8); transform: scale(0.98); }
 
-        .secao-branca { background: #white; padding: 25px; border-radius: 20px; box-shadow: 0px 8px 20px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        .secao-titulo { border-left: 5px solid #f1c40f; padding-left: 15px; margin-bottom: 20px; font-weight: bold; text-transform: uppercase; }
+        .secao-branca { 
+  background: #ffffff; 
+  border: 2px solid #d1d5db;
+  border-radius: 20px;
+  padding: 30px;  
+  box-shadow: 0px 8px 0px #d1d5db; 
+  margin-bottom: 20px; 
+}
+     
+   .secao-titulo { 
+border-left: 5px solid #f1c40f; padding-left: 15px; 
+margin-bottom: 20px; 
+font-weight: bold; 
+text-transform: uppercase; 
+font-family: 'Nunito', sans-serif; 
+}
         .favorito-item { background: #f4faff; border: 1px solid #d6eaf8; padding: 15px; border-radius: 12px; margin-bottom: 10px; }
         .explica-asa { font-size: 13px; color: #27ae60; margin-top: 8px; font-style: italic; }
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
@@ -161,13 +207,29 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 
 .coluna-remover { width: 40px; text-align: center; padding-left: 10px !important; }
 
-/* Nova classe exclusiva para o LogBook, sem afetar o resto */
 .secao-verde {
-    background-color: #27ae60; /* Fundo VERDE total */
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 20px;
-    color: white; /* Texto padrão branco */
+       background: linear-gradient(135deg, #065f46 0%, #022c22 100%); 
+     padding: 20px; 
+     border-radius: 24px; 
+     border: 2.5px solid #064e3b; 
+     box-shadow: 0px 8px 0px #064e3b;
+     color: #ffffff; 
+     display: flex; 
+     flex-direction: column; 
+     gap: 16px; 
+     box-sizing: border-box; 
+     width: 100%;
+}
+
+.titulo-tabela-historico {
+    font-family: 'Nunito', sans-serif;
+    font-size: 12px; 
+    font-weight: 800; 
+    background-color: rgba(15, 118, 110, 0.5); 
+    color: #a7f3d0; 
+    padding: 4px 12px; 
+    border-radius: 9999px; 
+    border: 1px solid rgba(16, 185, 129, 0.3); white-space: nowrap;
 }
 
 /* Títulos da tabela em AMARELO */
@@ -188,21 +250,13 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     font-size: 14px;
 }
 
-.titulo-tabela-historico {
-    text-align: center;      /* Centraliza */
-    font-weight: bold;       /* Deixa em negrito */
-    color: white;            /* Cor branca para destacar no fundo verde */
-    margin-bottom: 15px;     /* Espaçamento entre o título e a tabela */
-    font-size: 16px;         /* Tamanho ideal */
-    text-transform: uppercase;
-}
-
-/* Container do Radar com o fundo amarelo e borda */
+/* Container do radar */
 .secao-radar-personalizada {
-    background-color: #fff9c4; /* O amarelo que você pediu */
-    border: 2px solid #f1c40f; 
-    padding: 25px;
+    background-color: #fff9c4; 
+    border: 2.5px solid #f1c40f; 
     border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0px 8px 0px #d1d5db;
     margin-bottom: 20px;
 }
 
@@ -231,7 +285,7 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     transition: 0.1s;
     border: none;
     /* SOMBRA 3D IDENTICA AO BOTAO VOLTAR */
-    box-shadow: 0px 4px 0px #1e8449; 
+    box-shadow: 0px 6px 0px #1e8449; 
     width: 100%;
     box-sizing: border-box;
 }
@@ -376,8 +430,32 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
 <span id="user-display-name" style="font-size: 18px; font-weight: bold; color: #2c3e50;">Carregando...</span>
 
 <input type="text" id="display-name-input" style="display: none;" onblur="saveName()">
+</div>
 
 </div>
+
+<!-- CAIXAS DE ESTATÍSTICAS (REVISÕES E SIMULADOS) -->
+<div style="display: flex; gap: 10px; margin-top: 15px; width: 100%;">
+    
+    <!-- Caixa Revisões (Verde) -->
+    <div style="flex: 1; background: #ffffff; border: 2px solid #2ecc71; border-radius: 12px; padding: 10px; text-align: center;">
+        <div style="font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 0.5px;">Revisões</div>
+        <div id="contador-revisoes" style="font-size: 18px; font-weight: bold; color: #219653; margin-top: 2px;">
+
+<span id="contador-revisoes">0</span> Concluídas
+
+</div>
+    </div>
+
+    <!-- Caixa Simulados (Azul) -->
+    <div style="flex: 1; background: #ffffff; border: 2px solid #3498db; border-radius: 12px; padding: 10px; text-align: center;">
+        <div style="font-size: 10px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 0.5px;">Simulados</div>
+        <div id="contador-simulados" style="font-size: 18px; font-weight: bold; color: #2574a9; margin-top: 2px;">
+
+<span id="contador-simulados">0</span> Concluídos
+
+</div>
+    </div>
 
 </div>
 
@@ -390,22 +468,34 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
             <div style="font-size: 40px;">📚</div>
             <h3>MODO REVISÃO</h3>
             <p>Lista completa de questões. Ideal para estudo rápido.</p>
+
+        <div style="margin-top: 6px; display: inline-block; background: #ffffff; color: #27ae60; font-family: 'Fredoka', sans-serif; font-size: 11px; text-transform: uppercase; font-weight: bold; padding: 8px 16px; border-radius: 12px; box-shadow: 0px 4px 0px rgba(0,0,0,0.1); white-space: nowrap;">
+                INICIAR REVISÃO ➔
+            </div>
         </div>
+
         <div class="card-modo modo-simulado" onclick="window.location.href='index_simulado.html'">
             <div style="font-size: 40px;">⏱️</div>
             <h3>MODO SIMULADO</h3>
             <p>Uma questão por vez. Simulação real dos exames.</p>
+
+<div style="margin-top: 6px; display: inline-block; background: #ffffff; color: #2980b9; font-family: 'Fredoka', sans-serif; font-size: 11px; text-transform: uppercase; font-weight: bold; padding: 8px 16px; border-radius: 12px; box-shadow: 0px 4px 0px rgba(0,0,0,0.1); white-space: nowrap;">
+                INICIAR SIMULADO ➔
+            </div>
         </div>
     </div>
 
     <div class="secao-branca">
     <div class="secao-titulo">🚩Questões Favoritas (FLAGGED)</div>
+
+<hr style="border: none; border-top: 2px solid #f3f4f6; margin: 15px 0;">
+
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th style="color: black;">MATÉRIA</th>
-                <th style="color: black;">PERGUNTA</th>
-                <th style="color: black;">RESPOSTA</th>
+                <th style="color: grey;">MATÉRIA</th>
+                <th style="color: grey;">PERGUNTA</th>
+                <th style="color: grey;">RESPOSTA</th>
             </tr>
         </thead>
         <tbody id="tabela-favoritos">
@@ -413,22 +503,29 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
          </table>
     </div>
 
-<div class="secao-titulo">Histórico de LogBook</div>
+<div class="secao-verde" style="margin-bottom: 20px;">
 
-<div class="secao-verde">
-    <div class="titulo-tabela-historico">Simulados Realizados</div>
+    <!-- CABEÇALHO DO LOGBOOK COM A TAG DIV CORRETAMENTE FECHADA -->
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(15, 118, 110, 0.6); padding-bottom: 12px; width: 100%;">
+        <div class="secao-titulo" style="margin: 0; border-left: 5px solid #f1c40f; padding-left: 15px;">
+            Histórico de LogBook
+        </div>
+        <div class="titulo-tabela-historico" style="margin: 0;">
+            Últimos Simulados
+        </div>
+    </div> <!-- Fim da div flex do cabeçalho corrigida -->
 
  <table style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
- <th style="color: #f1c40f;">DATA</th>
+                <th style="color: #f1c40f;">DATA</th>
                 <th style="color: #f1c40f;">MATÉRIA</th>
                 <th style="color: #f1c40f;">DESEMPENHO</th>
                 <th style="color: #f1c40f;">TEMPO</th>
             </tr>
         </thead>
         <tbody id="tabela-historico">
-            </tbody>
+        </tbody>
     </table>
 </div>
 
@@ -448,7 +545,7 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
     </div>
 </div>
 
-    <div class="secao-radar-personalizada">
+      <div class="secao-radar-personalizada">
         <div class="radar-header">
             <svg width="40" height="40" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="200" cy="200" r="190" fill="#1a2e1a" stroke="#27ae60" stroke-width="2"/>
@@ -457,107 +554,240 @@ font-family: 'Segoe UI', sans-serif; background-color: #f0f2f5; margin: 0; paddi
                 </path>
                 <defs>
                     <linearGradient id="gradientSweep" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#27ae60" stop-opacity="0.8"/>
-                    <stop offset="100%" stop-color="#27ae60" stop-opacity="0"/>
+                        <stop offset="0%" stop-color="#27ae60" stop-opacity="0.8"/>
+                        <stop offset="100%" stop-color="#27ae60" stop-opacity="0"/>
                     </linearGradient>
                 </defs>
             </svg>
-            <span>WXR - Radar de Competência</span> </div> <div style="text-align: center; font-weight: bold; color: #2c3e50; margin-bottom: 10px;"> Foco de Estudo (%) </div> <div id="legenda-radar" style="display: flex; justify-content: center; gap: 9px; margin-bottom: 20px; font-size: 11px; font-weight: bold;"> <div style="display: flex; align-items: center; gap: 5px;"> <div style="width: 12px; height: 12px; background: #3498db; border-radius: 2px;"></div> GENERAL: <span id="legenda-g">0%</span> </div> <div style="display: flex; align-items: center; gap: 5px;"> <div style="width: 12px; height: 12px; background: #e74c3c; border-radius: 2px;"></div> AIRFRAME: <span id="legenda-a">0%</span> </div> <div style="display: flex; align-items: center; gap: 5px;"> <div style="width: 12px; height: 12px; background: #27ae60; border-radius: 2px;"></div> POWERPLANT: <span id="legenda-p">0%</span> </div> </div> <div style="max-width: 400px; margin: 0 auto;"> <canvas id="radarChart"></canvas>
+            <div style="font-size: 16px; font-weight: bold; color: #78350f;">WXR - Radar de Competência</div>
+
+        </div> 
+
+<hr style="border: none; border-top: 2px solid #f1c40f; margin: 15px 0;">
+
+        <div style="text-align: center; font-weight: bold; color: #2c3e50; margin-bottom: 10px;"> 
+            Foco de Estudo (%) 
+        </div> 
+
+        <!-- LEGENDA BADGES -->
+        <div id="legenda-radar" style="display: flex; flex-wrap: wrap; justify-content: center; gap: 9px; margin-bottom: 20px; font-size: 11px; font-weight: bold;"> 
+
+            <!-- GENERAL (Azul) -->
+            <div style="background: #ffffff; border: 2px solid #93c5fd; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                <div style="width: 12px; height: 12px; background: #3498db; border-radius: 2px;"></div>
+                <span style="color: #4b4b4b;">GENERAL:</span> 
+                <span id="legenda-g" style="color: #2563eb;">0%</span>
+            </div>
+
+            <!-- AIRFRAME (Vermelho) -->
+            <div style="background: #ffffff; border: 2px solid #fca5a5; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                <div style="width: 12px; height: 12px; background: #e74c3c; border-radius: 2px;"></div>
+                <span style="color: #4b4b4b;">AIRFRAME:</span> 
+                <span id="legenda-a" style="color: #dc2626;">0%</span>
+            </div>
+
+            <!-- POWERPLANT (Verde) -->
+            <div style="background: #ffffff; border: 2px solid #86efac; padding: 6px 12px; border-radius: 12px; display: flex; align-items: center; gap: 6px; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                <div style="width: 12px; height: 12px; background: #27ae60; border-radius: 2px;"></div>
+                <span style="color: #4b4b4b;">POWERPLANT:</span> 
+                <span id="legenda-p" style="color: #16a34a;">0%</span>
+            </div>
+
+        </div> 
+
+                <!-- GRÁFICO RADAR (Dentro de um subcard branco com borda dourada) -->
+        <div style="background-color: #ffffff; border: 2.5px solid #f1c40f; border-radius: 16px; padding: 15px; box-shadow: 0px 4px 6px rgba(0,0,0,0.04); max-width: 400px; margin: 0 auto; box-sizing: border-box;">
+            <div style="position: relative; width: 100%; height: 260px;">
+                <canvas id="radarChart"></canvas>
+            </div>
         </div>
 
-<div class="btn-acessar-graficos" onclick="window.location.href='analise_detalhada.html'">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="18" y1="20" x2="18" y2="10"></line>
-        <line x1="12" y1="20" x2="12" y2="4"></line>
-        <line x1="6" y1="20" x2="6" y2="14"></line>
-    </svg>
-    <span style="color: white; font-weight: bold; text-transform: uppercase; font-size: 14px;">
-        Acessar Gráficos Detalhados
-    </span>
-</div> 
+
+        <div class="btn-acessar-graficos" onclick="window.location.href='analise_detalhada.html'" style="margin-top: 20px;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span style="color: white; font-weight: bold; text-transform: uppercase; font-family: 'Fredoka', sans-serif; font-size: 15px; white-space: nowrap;">
+                Acessar Gráficos Detalhados
+            </span>
+        </div> 
     </div>
 
-    <div class="secao-branca">
+            <div class="secao-branca">
         <div class="secao-titulo">Registros de TLB (Certificados)</div>
+
+<hr style="border: none; border-top: 2px solid #f3f4f6; margin: 15px 0;">
+
         <div id="lista-certificados">
-            <div class="favorito-item" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong style="color: #2c3e50; display:block; margin-bottom:10px;">Certificados Gerais de Estudos</strong>
+            <div class="favorito-item" style="display: flex; justify-content: space-between; flex-direction: column; align-items: stretch; background: #ffffff; border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px;">
 
-<div id="container-certificados-lista" style="margin-top: 10px;">
-    
-    <div class="linha-certificado">
-        <div class="nome-materia-cert">GENERAL</div>
-        <div class="status-media-cert">Média: <span id="cert-media-general">--</span>% </div>
-        <div class="icone-diploma-wrapper">
-           <img src="diplomaazul.jpg" id="img-cert-general" class="icone-diploma-cert">
-           
-        </div>
-    </div>
+                <strong style="color: #2c3e50; display: block; margin-bottom: 15px; font-size: 15px;">Certificados Gerais de Estudos</strong>
 
-    <div class="linha-certificado">
-        <div class="nome-materia-cert">AIRFRAME</div>
-        <div class="status-media-cert">Média: <span id="cert-media-airframe">--</span>% </div>
-        <div class="icone-diploma-wrapper">
-          <img src="diplomavermelho.jpg" id="img-cert-airframe" class="icone-diploma-cert">
-            
-        </div>
-    </div>
+                <div id="container-certificados-lista" style="display: flex; flex-direction: column; gap: 12px;">
+                    
+                    <!-- GENERAL (Caixa Azul) -->
+                    <div style="background: #ffffff; border: 2px solid #93c5fd; padding: 14px 18px; border-radius: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 12px; height: 12px; background: #3498db; border-radius: 2px;"></div>
+                                <span class="nome-materia-cert" style="color: #2563eb; font-weight: bold;">GENERAL</span>
+                            </div>
+                            <div class="status-media-cert" style="color: #4b4b4b; font-weight: bold;">Média: <span id="cert-media-general" style="color: #2563eb;">--</span>%</div>
+                            <div class="icone-diploma-wrapper">
+                                <img src="diplomaazul.jpg" id="img-cert-general" class="icone-diploma-cert" style="width: 35px; height: auto;">
+                            </div>
+                        </div>
+                        <!-- Pílula de Bloqueio com o estilo exato -->
+                        <div id="status-bloqueio-general" style="text-align: center; background: #f3f4f6; border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: bold; color: #9ca3af; letter-spacing: 0.5px;">
+                            BLOQUEADO (Requer Média 70%, Faltam 500 Questões)
+                        </div>
+                    </div>
 
-    <div class="linha-certificado">
-        <div class="nome-materia-cert">POWERPLANT</div>
-        <div class="status-media-cert">Média: <span id="cert-media-powerplant">--</span>% </div>
-        <div class="icone-diploma-wrapper">
-            <img src="diplomaverde.jpg" id="img-cert-powerplant" class="icone-diploma-cert">
+                    <!-- AIRFRAME (Caixa Vermelha) -->
+                    <div style="background: #ffffff; border: 2px solid #fca5a5; padding: 14px 18px; border-radius: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 12px; height: 12px; background: #e74c3c; border-radius: 2px;"></div>
+                                <span class="nome-materia-cert" style="color: #dc2626; font-weight: bold;">AIRFRAME</span>
+                            </div>
+                            <div class="status-media-cert" style="color: #4b4b4b; font-weight: bold;">Média: <span id="cert-media-airframe" style="color: #dc2626;">--</span>%</div>
+                            <div class="icone-diploma-wrapper">
+                                <img src="diplomavermelho.jpg" id="img-cert-airframe" class="icone-diploma-cert" style="width: 35px; height: auto;">
+                            </div>
+                        </div>
+                        <!-- Pílula de Bloqueio com o estilo exato -->
+                        <div id="status-bloqueio-airframe" style="text-align: center; background: #f3f4f6; border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: bold; color: #9ca3af; letter-spacing: 0.5px;">
+                            BLOQUEADO (Requer Média 70%, Faltam 500 Questões)
+                        </div>
+                    </div>
 
-        </div>
-    </div>
+                    <!-- POWERPLANT (Caixa Verde) -->
+                    <div style="background: #ffffff; border: 2px solid #86efac; padding: 14px 18px; border-radius: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0px 2px 4px rgba(0,0,0,0.04);">
+                        <div style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <div style="width: 12px; height: 12px; background: #27ae60; border-radius: 2px;"></div>
+                                <span class="nome-materia-cert" style="color: #16a34a; font-weight: bold;">POWERPLANT</span>
+                            </div>
+                            <div class="status-media-cert" style="color: #4b4b4b; font-weight: bold;">Média: <span id="cert-media-powerplant" style="color: #16a34a;">--</span>%</div>
+                            <div class="icone-diploma-wrapper">
+                                <img src="diplomaverde.jpg" id="img-cert-powerplant" class="icone-diploma-cert" style="width: 35px; height: auto;">
+                            </div>
+                        </div>
+                        <!-- Pílula de Bloqueio com o estilo exato -->
+                        <div id="status-bloqueio-powerplant" style="text-align: center; background: #f3f4f6; border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: bold; color: #9ca3af; letter-spacing: 0.5px;">
+                            BLOQUEADO (Requer Média 70%, Faltam 500 Questões)
+                        </div>
+                    </div>
 
-</div>
-  
-                </div>
-          </div>
-            
- 
-        <div class="secao-titulo">Itens de Inspeção Obrigatória(Certificados)</div>
-        <div id="lista-certificados">
-            <div class="favorito-item" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong style="color: #2c3e50; display:block; margin-bottom:10px;">Certificados Especiais de Mérito</strong>
-
-<div id="container-certificados-lista" style="margin-top: 10px;">
-    
-    <div class="linha-certificado">
-    <div class="nome-materia-cert">BRONZE</div>
-    <div class="status-media-cert">Média Global: <span id="cert-media-bronze">--</span>% </div>
-    <div class="icone-diploma-wrapper">
-       <img src="bronze.jpg" id="img-cert-bronze" class="icone-diploma-cert">
-    </div>
-</div>
-
-<div class="linha-certificado">
-    <div class="nome-materia-cert">SILVER</div>
-    <div class="status-media-cert">Média Global: <span id="cert-media-silver">--</span>% </div>
-    <div class="icone-diploma-wrapper">
-      <img src="silver.jpg" id="img-cert-silver" class="icone-diploma-cert">
-    </div>
-</div>
-
-<div class="linha-certificado">
-    <div class="nome-materia-cert">GOLD</div>
-    <div class="status-media-cert">Média Global: <span id="cert-media-gold">--</span>% </div>
-    <div class="icone-diploma-wrapper">
-        <img src="gold.jpg" id="img-cert-gold" class="icone-diploma-cert">
-    </div>
-</div>
-                         
                 </div>
             </div>
         </div>
     </div>
 
-    <button onclick="tentarSair()" style="background-color: #e74c3c; color: white; border: none; padding: 20px 80px; border-radius: 10px; cursor: pointer; font-weight: bold; margin: 10px auto; display: block; font-size: 16px;">
-        Sair do Sistema
+        <!-- ITENS DE INSPEÇÃO OBRIGATÓRIA (CERTIFICADOS ESPECIAIS DE MÉRITO) -->
+
+    <div class="secao-branca">
+        <div class="secao-titulo">Itens de Inspeção Obrigatória (Certificados)</div>
+
+<hr style="border: none; border-top: 2px solid #f3f4f6; margin: 15px 0;">
+
+<div class="border-b-2 border-gray-100 pb-3 mb-4"></div>
+
+        <div id="lista-certificados-especiais">
+            <div class="favorito-item" style="display: flex; justify-content: space-between; flex-direction: column; align-items: stretch; background: #ffffff; border: 2px solid #e5e7eb; border-radius: 16px; padding: 20px;">
+                <strong style="color: #2c3e50; display: block; margin-bottom: 15px; font-size: 15px;">Certificados Especiais de Mérito</strong>
+                
+                                                                                <div id="container-especiais-lista" style="display: flex; flex-direction: column; gap: 12px;">
+                    
+                    <!-- MÉRITO OURO (Topo) -->
+                    <div style="background: linear-gradient(145deg, #fff3a0, #f1c40f); border: 2.5px solid #f1c40f; padding: 14px 14px; border-radius: 14px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0px 2px 4px rgba(0,0,0,0.04); box-sizing: border-box;">
+                        <div style="display: grid; grid-template-columns: 25px 1fr 35px; align-items: center; width: 100%;">
+                            <div style="text-align: left;">
+                                <span style="font-size: 35px; class="text-4xl my-1 grayscale">🥇</span>
+                            </div>
+                            <div class="nome-materia-cert" style="color: #ca8a04; font-weight: bold; text-align: center; font-size: 17px;">MÉRITO OURO</div>
+                            <div class="status-media-cert" style="color: #4b4b4b; font-weight: bold; text-align: right; line-height: 1.1; font-size: 13px;">
+                                Média<br>Global: <span id="cert-media-gold" style="color: #ca8a04;">--</span>%
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; width: 100%;">
+                            <div class="icone-diploma-wrapper">
+                                <img src="gold.jpg" id="img-cert-gold-diploma" class="icone-diploma-cert" style="width: 35px; height: auto;">
+                            </div>
+                        </div>
+
+                        <div id="status-bloqueio-gold" style="text-align: center; background: #f3f4f6; border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: bold; color: #9ca3af; letter-spacing: 0.5px;">
+                            BLOQUEADO (Requer Média Global 90%, Total 4500Q, Mín 1500/módulo)
+                        </div>
+                    </div>
+
+                    <!-- MÉRITO PRATA (Meio) -->
+                    <div style="background: #f8fafc; border: 2.5px solid #cbd5e1; border-radius: 16px; padding: 14px 14px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <div style="display: grid; grid-template-columns: 25px 1fr 35px; align-items: center; width: 100%;">
+                            <div style="text-align: left;">
+                                <span style="font-size: 35px; class="text-4xl my-1 grayscale">🥈</span>
+                            </div>
+                            <div class="nome-materia-cert" style="color: #475569; font-weight: bold; text-align: center; font-size: 17px;">MÉRITO PRATA</div>
+                            <div class="status-media-cert" style="color: #4b4b4b; font-weight: bold; text-align: right; line-height: 1.1; font-size: 13px;">
+                                Média<br>Global: <span id="cert-media-silver" style="color: #475569;">--</span>%
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; width: 100%;">
+                            <div class="icone-diploma-wrapper">
+                                <img src="silver.jpg" id="img-cert-silver-diploma" class="icone-diploma-cert" style="width: 35px; height: auto;">
+                            </div>
+                        </div>
+
+                        <div id="status-bloqueio-silver" style="text-align: center; background: #f3f4f6; border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: bold; color: #9ca3af; letter-spacing: 0.5px;">
+                            BLOQUEADO (Requer Média Global 80%, Total 3000Q, Mín 1000/módulo)
+                        </div>
+                    </div>
+
+                    <!-- MÉRITO BRONZE (Baixo) -->
+                    <div style="background: linear-gradient(145deg, #f1dfcf, #e2a78f); border: 2.5px solid #78350f; border-radius: 16px; padding: 14px 14px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
+                        <div style="display: grid; grid-template-columns: 25px 1fr 35px; align-items: center; width: 100%;">
+                            <div style="text-align: left;">
+                                <span style="font-size: 35px; class="text-4xl my-1 grayscale">🥉</span>
+                            </div>
+                            <div class="nome-materia-cert" style="color: #78350f; font-weight: bold; text-align: center; font-size: 17px;">MÉRITO BRONZE</div>
+                            <div class="status-media-cert" style="color: #4b4b4b; font-weight: bold; text-align: right; line-height: 1.1; font-size: 13px;">
+                                Média<br>Global: <span id="cert-media-bronze" style="color: #78350f;">--</span>%
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: center; width: 100%;">
+                            <div class="icone-diploma-wrapper">
+                                <img src="bronze.jpg" id="img-cert-bronze-diploma" class="icone-diploma-cert" style="width: 35px; height: auto;">
+                            </div>
+                        </div>
+
+                        <div id="status-bloqueio-bronze" style="text-align: center; background: #f3f4f6; border-radius: 20px; padding: 6px 12px; font-size: 11px; font-weight: bold; color: #9ca3af; letter-spacing: 0.5px;">
+                            BLOQUEADO (Requer Média Global 70%, Total 1500Q, Mín 500/módulo)
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <button onclick="tentarSair()" style="background-color: #e74c3c;     color: white; 
+border: none; 
+padding: 20px 80px; 
+border-radius: 20px; 
+box-shadow: 0px 8px 0px #ea2b2b;
+cursor: pointer; 
+font-weight: bold; 
+margin: 10px auto; 
+display: block; 
+font-family: 'Fredoka', sans-serif;
+font-size: 16px;">
+
+        SAIR DO SISTEMA
     </button>
 
 <script type="module">
@@ -575,6 +805,7 @@ await alimentarFavoritos();
 alimentarLogBookReal(); 
 carregarDadosParaTeia();
 carregarDadosCertificados();  
+carregarDadosPerfil();
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
@@ -867,16 +1098,32 @@ async function carregarDadosCertificados() {
         }
     });
 
-    // 1. ATUALIZA OS INDIVIDUAIS (Igual você já tinha)
-    const atualizarLinhaNormal = (idHtml, chaveBanco) => {
+    // 1. ATUALIZA OS INDIVIDUAIS
+
+        const atualizarLinhaNormal = (idHtml, chaveBanco) => {
         const d = acumulador[chaveBanco];
         const media = d.qtdSimulados > 0 ? (d.somaNotas / d.qtdSimulados).toFixed(1) : 0;
         document.getElementById(`cert-media-${idHtml}`).innerText = media;
 
+        const pílulaAviso = document.getElementById(`status-bloqueio-${idHtml}`);
+        
+        // Calcula o que falta para exibir na mensagem de bloqueio
+        let faltamQ = Math.max(0, 500 - d.totalQuestoes);
+        let statusTexto = [];
+        if (parseFloat(media) < 70) statusTexto.push("Requer Média 70%");
+        if (d.totalQuestoes < 500) statusTexto.push(`Faltam ${faltamQ} Questões`);
+
         if (parseFloat(media) >= 70 && d.totalQuestoes >= 500) {
             ativarBotao(idHtml, chaveBanco, media);
+            if (pílulaAviso) pílulaAviso.style.display = 'none'; // Some quando desbloqueado!
+        } else {
+            if (pílulaAviso && statusTexto.length > 0) {
+                pílulaAviso.innerText = `BLOQUEADO (${statusTexto.join(', ')})`;
+                pílulaAviso.style.display = 'block';
+            }
         }
     };
+
 
     // 2. LÓGICA DOS ESPECIAIS (A NOVA IDEIA)
     const totalQuestoesGeral = acumulador.General.totalQuestoes + acumulador.Airframe.totalQuestoes + acumulador.Powerplant.totalQuestoes;
@@ -907,9 +1154,9 @@ atualizarSistemaNivel(totalQuestoesGeral, parseFloat(mediaGlobal));
     const minA = acumulador.Airframe.totalQuestoes;
     const minP = acumulador.Powerplant.totalQuestoes;
 
-    // Função Auxiliar para Ativar
-    function ativarBotao(id, materiaNome, mediaValor) {
-        const img = document.getElementById(`img-cert-${id}`);
+// Função auxiliar interna para ativar o diploma 
+    function ativarBotaoEspecial(id, materiaNome, mediaValor) {
+        const img = document.getElementById(`img-cert-${id}-diploma`);
         const nomeAl = document.getElementById('user-display-name')?.innerText || "Estudante";
         if(img) {
             img.classList.add('diploma-ativo');
@@ -921,22 +1168,34 @@ atualizarSistemaNivel(totalQuestoesGeral, parseFloat(mediaGlobal));
 
     // --- VALIDAÇÃO DOS NÍVEIS ESPECIAIS ---
     
-    // BRONZE: Global >= 70% | Total >= 1500 | Min 500/módulo
-    document.getElementById('cert-media-bronze').innerText = mediaGlobal;
-    if (parseFloat(mediaGlobal) >= 70 && totalQuestoesGeral >= 1500 && minG >= 500 && minA >= 500 && minP >= 500) {
-        ativarBotao('bronze', 'Bronze', mediaGlobal);
-    }
-
-    // SILVER: Global >= 80% | Total >= 3000 | Min 1000/módulo
-    document.getElementById('cert-media-silver').innerText = mediaGlobal;
-    if (parseFloat(mediaGlobal) >= 80 && totalQuestoesGeral >= 3000 && minG >= 1000 && minA >= 1000 && minP >= 1000) {
-        ativarBotao('silver', 'Silver', mediaGlobal);
-    }
-
-    // GOLD: Global >= 90% | Total >= 4500 | Min 1500/módulo
+    // GOLD (Ouro)
     document.getElementById('cert-media-gold').innerText = mediaGlobal;
+    const pilulaGold = document.getElementById('status-bloqueio-gold');
     if (parseFloat(mediaGlobal) >= 90 && totalQuestoesGeral >= 4500 && minG >= 1500 && minA >= 1500 && minP >= 1500) {
-        ativarBotao('gold', 'Gold', mediaGlobal);
+        ativarBotaoEspecial('gold', 'Gold', mediaGlobal);
+        if (pilulaGold) pilulaGold.style.display = 'none';
+    } else if (pilulaGold) {
+        pilulaGold.style.display = 'block';
+    }
+
+    // SILVER (Prata)
+    document.getElementById('cert-media-silver').innerText = mediaGlobal;
+    const pilulaSilver = document.getElementById('status-bloqueio-silver');
+    if (parseFloat(mediaGlobal) >= 80 && totalQuestoesGeral >= 3000 && minG >= 1000 && minA >= 1000 && minP >= 1000) {
+        ativarBotaoEspecial('silver', 'Silver', mediaGlobal);
+        if (pilulaSilver) pilulaSilver.style.display = 'none';
+    } else if (pilulaSilver) {
+        pilulaSilver.style.display = 'block';
+    }
+
+    // BRONZE
+    document.getElementById('cert-media-bronze').innerText = mediaGlobal;
+    const pilulaBronze = document.getElementById('status-bloqueio-bronze');
+    if (parseFloat(mediaGlobal) >= 70 && totalQuestoesGeral >= 1500 && minG >= 500 && minA >= 500 && minP >= 500) {
+        ativarBotaoEspecial('bronze', 'Bronze', mediaGlobal);
+        if (pilulaBronze) pilulaBronze.style.display = 'none';
+    } else if (pilulaBronze) {
+        pilulaBronze.style.display = 'block';
     }
 
     // Chama as atualizações individuais
@@ -1025,6 +1284,42 @@ function atualizarSistemaNivel(total, media) {
     if (meta) {
         let proximo = total < 1500 ? 1500 : total < 3000 ? 3000 : 4500;
         meta.innerText = total >= 4500 ? "MÁXIMO" : `FALTAM ${proximo - total} QUESTÕES`;
+    }
+}
+
+async function carregarContadoresPerfil() {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Busca o histórico do aluno na mesma tabela que o certificado usa
+        const { data: historico, error } = await supabase
+            .from('historico_simulados')
+            .select('tipo')
+            .eq('user_id', user.id);
+
+        if (error) throw error;
+
+        let totalProvas = 0;
+        let totalSimulados = 0;
+
+        if (historico && historico.length > 0) {
+            historico.forEach(item => {
+                // Conta baseado no campo 'tipo' (igual à lógica do seu certificado)
+                if (item.tipo === 'Prova') totalProvas++;
+                if (item.tipo === 'Simulado') totalSimulados++;
+            });
+        }
+
+        // Insere os valores reais nas caixas criadas no HTML
+        const elRevisoes = document.getElementById('contador-revisoes');
+        const elSimulados = document.getElementById('contador-simulados');
+
+if (elRevisoes) elRevisoes.innerText = `${totalProvas} Concluídas`;
+        if (elSimulados) elSimulados.innerText = `${totalSimulados} Concluídos`; ```
+
+    } catch (e) {
+        console.error("Erro ao carregar contadores do perfil:", e);
     }
 }
 
