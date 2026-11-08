@@ -1316,11 +1316,10 @@ async function carregarContadoresPerfil() {
         const elSimulados = document.getElementById('contador-simulados');
 
 if (elRevisoes) elRevisoes.innerText = `${totalProvas} Concluídas`;
-        if (elSimulados) elSimulados.innerText = `${totalSimulados} Concluídos`; ```
-
-    } catch (e) {
-        console.error("Erro ao carregar contadores do perfil:", e);
-    }
+      if (elSimulados) elSimulados.innerText = `${totalSimulados} Concluídos`;
+  } catch (e) {
+      console.error("Erro ao carregar contadores do perfil:", e);
+  }
 }
 
 </script>
