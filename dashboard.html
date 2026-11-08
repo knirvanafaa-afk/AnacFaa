@@ -1162,6 +1162,19 @@ atualizarSistemaNivel(totalQuestoesGeral, parseFloat(mediaGlobal));
     const minA = acumulador.Airframe.totalQuestoes;
     const minP = acumulador.Powerplant.totalQuestoes;
 
+// Função Auxiliar para Ativar os Diplomas Normais (General, Airframe, Powerplant)
+    function ativarBotao(id, materiaNome, mediaValor) {
+        const img = document.getElementById(`img-cert-${id}`);
+        const nomeAl = document.getElementById('user-display-name')?.innerText || "Estudante";
+        if(img) {
+            img.classList.add('diploma-ativo');
+            img.onclick = () => {
+                window.location.href = `certificado_pronto.html?materia=${materiaNome}&media=${mediaValor}&nome=${encodeURIComponent(nomeAl)}`;
+            };
+        }
+    }
+
+
 // Função auxiliar interna para ativar o diploma 
     function ativarBotaoEspecial(id, materiaNome, mediaValor) {
         const img = document.getElementById(`img-cert-${id}-diploma`);
