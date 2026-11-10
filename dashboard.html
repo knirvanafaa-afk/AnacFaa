@@ -459,6 +459,34 @@ font-family: 'Nunito', sans-serif;
 
 </div>
 
+<!-- CAIXAS DE QUANTIDADE DE QUESTÕES POR MATÉRIA -->
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; width: 100%;">
+    
+    <!-- General -->
+    <div style="background: #ffffff; border: 2px solid #93c5fd; border-radius: 10px; padding: 8px; text-align: center;">
+        <div style="font-size: 9px; font-weight: 800; color: #2563eb; text-transform: uppercase;">General</div>
+        <div id="questoes-general" style="font-size: 14px; font-weight: bold; color: #1e3a8a; margin-top: 2px;">0 Qst</div>
+    </div>
+
+    <!-- Airframe -->
+    <div style="background: #ffffff; border: 2px solid #fca5a5; border-radius: 10px; padding: 8px; text-align: center;">
+        <div style="font-size: 9px; font-weight: 800; color: #dc2626; text-transform: uppercase;">Airframe</div>
+        <div id="questoes-airframe" style="font-size: 14px; font-weight: bold; color: #7f1d1d; margin-top: 2px;">0 Qst</div>
+    </div>
+
+    <!-- Powerplant -->
+    <div style="background: #ffffff; border: 2px solid #86efac; border-radius: 10px; padding: 8px; text-align: center;">
+        <div style="font-size: 9px; font-weight: 800; color: #16a34a; text-transform: uppercase;">Powerplant</div>
+        <div id="questoes-powerplant" style="font-size: 14px; font-weight: bold; color: #14532d; margin-top: 2px;">0 Qst</div>
+    </div>
+
+</div>
+
+<!-- TOTAL GERAL -->
+<div style="background: linear-gradient(145deg, #fff5eb, #fde3cc); border: 1.5px solid #b37059; border-radius: 10px; padding: 6px; text-align: center; margin-top: 8px; font-size: 12px; font-weight: bold; color: #78350f;">
+    Total Geral Realizadas: <span id="questoes-total-geral">0</span> Questões
+</div>
+
 </div>
 
 </div>
@@ -1073,6 +1101,13 @@ if (!confirmar) return;
 };
 
 async function carregarDadosCertificados() {
+
+// Insere os totais de questões nas caixas do topo
+    document.getElementById('questoes-general').innerText = `${acumulador.General.totalQuestoes} Qst`;
+    document.getElementById('questoes-airframe').innerText = `${acumulador.Airframe.totalQuestoes} Qst`;
+    document.getElementById('questoes-powerplant').innerText = `${acumulador.Powerplant.totalQuestoes} Qst`;
+    document.getElementById('questoes-total-geral').innerText = totalQuestoesGeral;
+
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
