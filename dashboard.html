@@ -1102,12 +1102,6 @@ if (!confirmar) return;
 
 async function carregarDadosCertificados() {
 
-// Insere os totais de questões nas caixas do topo
-    document.getElementById('questoes-general').innerText = `${acumulador.General.totalQuestoes} Qst`;
-    document.getElementById('questoes-airframe').innerText = `${acumulador.Airframe.totalQuestoes} Qst`;
-    document.getElementById('questoes-powerplant').innerText = `${acumulador.Powerplant.totalQuestoes} Qst`;
-    document.getElementById('questoes-total-geral').innerText = totalQuestoesGeral;
-
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -1170,6 +1164,12 @@ async function carregarDadosCertificados() {
 
     // 2. LÓGICA DOS ESPECIAIS (A NOVA IDEIA)
     const totalQuestoesGeral = acumulador.General.totalQuestoes + acumulador.Airframe.totalQuestoes + acumulador.Powerplant.totalQuestoes;
+
+// Insere os totais de questões nas caixas do topo
+    document.getElementById('questoes-general').innerText = `${acumulador.General.totalQuestoes} Qst`;
+    document.getElementById('questoes-airframe').innerText = `${acumulador.Airframe.totalQuestoes} Qst`;
+    document.getElementById('questoes-powerplant').innerText = `${acumulador.Powerplant.totalQuestoes} Qst`;
+    document.getElementById('questoes-total-geral').innerText = totalQuestoesGeral;
     
     // Cálculo das Médias Individuais para a Média Global
     const mG = acumulador.General.qtdSimulados > 0 ? (acumulador.General.somaNotas / acumulador.General.qtdSimulados) : 0;
