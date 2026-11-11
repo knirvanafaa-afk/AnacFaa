@@ -1166,9 +1166,9 @@ async function carregarDadosCertificados() {
     const totalQuestoesGeral = acumulador.General.totalQuestoes + acumulador.Airframe.totalQuestoes + acumulador.Powerplant.totalQuestoes;
 
 // Insere os totais de questões nas caixas do topo
-    document.getElementById('questoes-general').innerText = `${acumulador.General.totalQuestoes} Qst`;
-    document.getElementById('questoes-airframe').innerText = `${acumulador.Airframe.totalQuestoes} Qst`;
-    document.getElementById('questoes-powerplant').innerText = `${acumulador.Powerplant.totalQuestoes} Qst`;
+    document.getElementById('questoes-general').innerText = `${acumulador.General.totalQuestoes} Questões`;
+    document.getElementById('questoes-airframe').innerText = `${acumulador.Airframe.totalQuestoes} Questões`;
+    document.getElementById('questoes-powerplant').innerText = `${acumulador.Powerplant.totalQuestoes} Questões`;
     document.getElementById('questoes-total-geral').innerText = totalQuestoesGeral;
     
     // Cálculo das Médias Individuais para a Média Global
