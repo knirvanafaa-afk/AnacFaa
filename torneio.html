@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <title>Torneio - Ranking de Mecânicos</title>
+    <style>
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+        }
+
+        .btn-voltar {
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0px 4px 0px #1e8449;
+            transition: 0.1s;
+            margin-bottom: 20px;
+            text-decoration: none;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .btn-voltar:active {
+            transform: translateY(3px);
+            box-shadow: 0px 1px 0px #1e8449;
+        }
+
+        .perfil-header {
+            background-color: #fff9c4;
+            border: 2.5px solid #f1c40f;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0px 8px 0px #d1d5db;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .perfil-header h1 {
+            margin: 0;
+            font-family: 'Fredoka', sans-serif;
+            color: #78350f;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        .perfil-header p {
+            margin: 6px 0 0;
+            font-size: 13px;
+            font-weight: bold;
+            color: #7f8c8d;
+        }
+
+        .secao-verde {
+            background: linear-gradient(135deg, #065f46 0%, #022c22 100%);
+            padding: 20px;
+            border-radius: 24px;
+            border: 2.5px solid #064e3b;
+            box-shadow: 0px 8px 0px #064e3b;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-sizing: border-box;
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        .secao-titulo {
+            border-left: 5px solid #f1c40f;
+            padding-left: 15px;
+            margin: 0;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        .titulo-tabela-historico {
+            font-family: 'Nunito', sans-serif;
+            font-size: 12px;
+            font-weight: 800;
+            background-color: rgba(15, 118, 110, 0.5);
+            color: #a7f3d0;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            white-space: nowrap;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .secao-verde th {
+            color: #f1c40f;
+            text-transform: uppercase;
+            font-size: 12px;
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(15, 118, 110, 0.6);
+            text-align: center;
+        }
+
+        .secao-verde th.col-nome,
+        .secao-verde td.col-nome {
+            text-align: left;
+        }
+
+        .secao-verde td {
+            color: white;
+            text-align: center;
+            padding: 14px 10px;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .secao-verde tr:last-child td {
+            border-bottom: none;
+        }
+
+        .pos-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 32px;
+            height: 32px;
+            border-radius: 10px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .pos-1 { background: linear-gradient(145deg, #fff3a0, #f1c40f); color: #78350f; border: 2px solid #ca8a04; }
+        .pos-2 { background: linear-gradient(145deg, #f8fafc, #cbd5e1); color: #334155; border: 2px solid #94a3b8; }
+        .pos-3 { background: linear-gradient(145deg, #f1dfcf, #e2a78f); color: #78350f; border: 2px solid #b37059; }
+        .pos-normal { background: rgba(255, 255, 255, 0.12); color: #a7f3d0; border: 1px solid rgba(167, 243, 208, 0.3); }
+
+        .linha-usuario-atual {
+            background-color: rgba(241, 196, 15, 0.15);
+        }
+    </style>
+</head>
+<body>
+
+<div id="custom-alert" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; justify-content: center; align-items: center;">
+    <div style="background: #fff9c4; border: 3px solid #f1c40f; padding: 25px; border-radius: 20px; max-width: 300px; text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);">
+        <p id="alert-message" style="color: #333; font-weight: bold; font-size: 18px; margin-bottom: 20px;"></p>
+        <button onclick="fecharAlerta()" style="background: #27ae60; color: white; border: none; padding: 10px 30px; border-radius: 10px; cursor: pointer; font-weight: bold; text-transform: uppercase;">OK</button>
+    </div>
+</div>
+
+<div class="container">
+    <button class="btn-voltar" onclick="window.location.href='dashboard.html'">⬅ Voltar ao Dashboard</button>
+
+    <div class="perfil-header">
+        <h1>🏆 Torneio de Manutenção</h1>
+        <p>Ranking Geral - Top 10 Mecânicos</p>
+    </div>
+
+    <div class="secao-verde">
+        <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(15, 118, 110, 0.6); padding-bottom: 12px; width: 100%;">
+            <div class="secao-titulo">Classificação Geral</div>
+            <div class="titulo-tabela-historico">Top 10</div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>POS</th>
+                    <th class="col-nome">ALUNO</th>
+                    <th>NOTA</th>
+                    <th>QUESTÕES</th>
+                    <th>PONTOS</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-ranking">
+                <tr>
+                    <td colspan="5" style="text-align: center; color: #a7f3d0;">Carregando classificação...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    import { validarAcessoTotal } from './seguranca.js';
+
+    const supabaseUrl = 'https://ymyxikhlhkkvcufgwufe.supabase.co';
+    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlteXhpa2hsaGtrdmN1Zmd3dWZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5MTc4MTYsImV4cCI6MjA4NjQ5MzgxNn0.kcbbkKDx1Jt2ayX2KwJa0Pr8ZsGTj4BTxV1y2RXU9WA';
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    window.mostrarMensagem = (texto) => {
+        document.getElementById('alert-message').innerText = texto;
+        document.getElementById('custom-alert').style.display = 'flex';
+    };
+
+    window.fecharAlerta = () => {
+        document.getElementById('custom-alert').style.display = 'none';
+    };
+
+    await validarAcessoTotal(false);
+
+    async function carregarRanking() {
+        const tbody = document.getElementById('tabela-ranking');
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            const currentUserId = user ? user.id : null;
+
+            const [{ data: profiles, error: errProf }, { data: historico, error: errHist }] = await Promise.all([
+                supabase.from('profiles').select('id, username'),
+                supabase.from('historico_simulados').select('user_id, acertos, total_questoes, nota')
+            ]);
+
+            if (errProf) throw errProf;
+            if (errHist) throw errHist;
+
+            const mapaNomes = {};
+            (profiles || []).forEach(p => {
+                mapaNomes[p.id] = p.username || 'Mecânico';
+            });
+
+            const acumulador = {};
+
+            (historico || []).forEach(item => {
+                const uid = item.user_id;
+                if (!uid) return;
+
+                if (!acumulador[uid]) {
+                    acumulador[uid] = {
+                        user_id: uid,
+                        nome: mapaNomes[uid] || 'Mecânico',
+                        somaNotas: 0,
+                        qtdSimulados: 0,
+                        totalQuestoes: 0,
+                        pontosAcumulados: 0
+                    };
+                }
+
+                const qtdQ = parseInt(item.total_questoes || 0);
+                const nota = parseFloat(item.nota || 0);
+                const acertos = parseInt(item.acertos || 0);
+
+                acumulador[uid].somaNotas += nota;
+                acumulador[uid].qtdSimulados += 1;
+                acumulador[uid].totalQuestoes += qtdQ;
+                acumulador[uid].pontosAcumulados += acertos;
+            });
+
+            const ranking = Object.values(acumulador)
+                .map(aluno => ({
+                    ...aluno,
+                    mediaNota: aluno.qtdSimulados > 0 ? (aluno.somaNotas / aluno.qtdSimulados) : 0
+                }))
+                .sort((a, b) => {
+                    if (b.pontosAcumulados !== a.pontosAcumulados) {
+                        return b.pontosAcumulados - a.pontosAcumulados;
+                    }
+                    return b.mediaNota - a.mediaNota;
+                })
+                .slice(0, 10);
+
+            if (ranking.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #a7f3d0;">Nenhum registro encontrado ainda.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = '';
+
+            ranking.forEach((aluno, index) => {
+                const pos = index + 1;
+                let classePos = 'pos-normal';
+                let textoPos = `${pos}º`;
+
+                if (pos === 1) { classePos = 'pos-1'; textoPos = '🥇 1º'; }
+                else if (pos === 2) { classePos = 'pos-2'; textoPos = '🥈 2º'; }
+                else if (pos === 3) { classePos = 'pos-3'; textoPos = '🥉 3º'; }
+
+                const tr = document.createElement('tr');
+                if (currentUserId && aluno.user_id === currentUserId) {
+                    tr.classList.add('linha-usuario-atual');
+                }
+
+                tr.innerHTML = `
+                    <td><span class="pos-badge ${classePos}">${textoPos}</span></td>
+                    <td class="col-nome" style="font-weight: bold;">${aluno.nome}</td>
+                    <td style="font-weight: bold; color: #f1c40f;">${aluno.mediaNota.toFixed(1)}%</td>
+                    <td>${aluno.totalQuestoes}</td>
+                    <td style="font-weight: bold; color: #a7f3d0;">${aluno.pontosAcumulados} pts</td>
+                `;
+
+                tbody.appendChild(tr);
+            });
+
+        } catch (err) {
+            console.error('Erro ao carregar torneio:', err);
+            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #fca5a5;">Erro ao carregar ranking.</td></tr>';
+        }
+    }
+
+    carregarRanking();
+</script>
+</body>
+</html>
